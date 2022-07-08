@@ -1,0 +1,6 @@
+[requires]
+raylib/4.0.0
+wasmer/2.3.0
+
+[generators]
+cmake
