@@ -88,7 +88,7 @@ bool setup_bot(const char* wasm_file_path, WasmData* wasm_data) {
 	}
 
 	wasm_data->num_bots += 1;
-	wasm_data->bot_data_list = realloc(wasm_data->bot_data_list, wasm_data->num_bots);
+	wasm_data->bot_data_list = realloc(wasm_data->bot_data_list, sizeof(BotWasmData) * wasm_data->num_bots);
 	BotWasmData bot_wasm_data = {
 		.wasm_exports = wasm_exports,
 		.wasm_import_object = wasm_import_object,
