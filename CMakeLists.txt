@@ -1,20 +1,20 @@
 cmake_minimum_required(VERSION 3.11) # FetchContent is available in 3.11+
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+
 set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=c99 -O0 -Wall -Wextra -pipe")
 
-if (UNIX AND NOT ${PLATFORM} STREQUAL "Web")
+if (UNIX)
 	# Use mold on Linux
-	set(CMAKE_C_COMPILER /usr/bin/clang)
-	set(CMAKE_LINKER /usr/bin/mold)
-	
+	set(CMAKE_C_COMPILER clang)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-ld=mold")
 endif()
 
 project(main)
 
-set(OpenGL_GL_PREFERENCE GLVND)
-
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
+
+set(OpenGL_GL_PREFERENCE GLVND)
 
 file(GLOB SRC_FILES src/*.c)
 
