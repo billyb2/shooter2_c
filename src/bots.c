@@ -1,11 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "minimal_player_info.h"
 #include "player.h"
 #include "bots.h"
 #include "bot_actions_def.h"
 #include "include/wasm.h"
 #include "include/wasmer.h"
+#include "wasmer_ext.h"
+
+typedef struct GetByteResult {
+	uint8_t byte;
+	bool valid;
+
+} GetByteResult;
+
 
 WasmData setup_wasm() {
 	WasmData wasm_data = {
@@ -15,6 +24,18 @@ WasmData setup_wasm() {
 	};
 
 	return wasm_data;
+
+}
+
+bool check_wasm_function(const char* func_name, wasm_func_t* func) {
+	if (func == NULL) {
+		printf("Error: Function %s not found", func_name);
+		return false;
+
+	} else {
+		return true;
+
+	}
 
 }
 
@@ -61,10 +82,20 @@ bool setup_bot(const char* wasm_file_path, WasmData* wasm_data) {
 
 	}
 
+	wasm_exporttype_vec_t exports_type;
+	wasm_module_exports(wasm_module, &exports_type);
+	
+	if (exports_type.size == 0) {
+		printf("Error getting exports_type\n");
+		return false;
+
+	}
+
 	wasm_extern_vec_t wasm_import_object = WASM_EMPTY_VEC;
 	wasm_instance_t* wasm_instance = wasm_instance_new(wasm_store, wasm_module, &wasm_import_object, NULL);
 
 	wasm_extern_vec_t wasm_exports;
+
 	wasm_instance_exports(wasm_instance, &wasm_exports);
 
 	if (wasm_exports.size == 0) {
@@ -73,13 +104,64 @@ bool setup_bot(const char* wasm_file_path, WasmData* wasm_data) {
 
 	}
 
-	wasm_func_t* calc_actions = wasm_extern_as_func(wasm_exports.data[wasm_exports.size - 1]);
+	size_t* action_to_int_index = get_export_by_name("actions_to_int", exports_type);
+	size_t* get_byte_at_index = get_export_by_name("get_byte_at", exports_type);
+	size_t* set_byte_at_index = get_export_by_name("set_byte_at", exports_type);
+	size_t* get_num_players_ptr_index = get_export_by_name("get_num_players_ptr", exports_type);
+	size_t* get_players_ptr_index = get_export_by_name("get_players_ptr", exports_type);
 
-	if (calc_actions == NULL) {
-		printf("Failed to get calc_actions function\n");
+	if (action_to_int_index == NULL) {
+		printf("Couldn't find actions_to_int index\n");
 		return false;
 
 	}
+
+	if (get_byte_at_index == NULL) {
+		printf("Couldn't find get_byte_at index\n");
+		return false;
+
+	}
+
+	if (set_byte_at_index == NULL) {
+		printf("Couldn't find set_byte_at index\n");
+		return false;
+
+	}
+
+	if (get_num_players_ptr_index == NULL) {
+		printf("Couldn't find get_num_players_ptr index\n");
+		return false;
+
+	}
+
+	if (get_players_ptr_index == NULL) {
+		printf("Couldn't find get_players_ptr index\n");
+		return false;
+
+	}
+
+	wasm_func_t* actions_to_int = wasm_extern_as_func(wasm_exports.data[*action_to_int_index]);
+	wasm_func_t* get_byte_at = wasm_extern_as_func(wasm_exports.data[*get_byte_at_index]);
+	wasm_func_t* set_byte_at = wasm_extern_as_func(wasm_exports.data[*set_byte_at_index]);
+	wasm_func_t* get_num_players_ptr = wasm_extern_as_func(wasm_exports.data[*get_num_players_ptr_index]);
+	wasm_func_t* get_players_ptr = wasm_extern_as_func(wasm_exports.data[*get_players_ptr_index]);
+
+	if (
+			!check_wasm_function("actions_to_int", actions_to_int) || 
+			!check_wasm_function("get_byte_at", get_byte_at) || 
+			!check_wasm_function("set_byte_at", set_byte_at) || 
+			!check_wasm_function("get_num_players_ptr", get_num_players_ptr) || 
+			!check_wasm_function("get_players_ptr", get_players_ptr)
+		) {
+		return false;
+
+	}
+
+	free(action_to_int_index);
+	free(get_byte_at_index);
+	free(set_byte_at_index);
+	free(get_num_players_ptr_index);
+	free(get_players_ptr_index);
 
 	if (!wasm_instance) {
 		printf("Error instantiating moudle\n");
@@ -94,7 +176,11 @@ bool setup_bot(const char* wasm_file_path, WasmData* wasm_data) {
 		.wasm_import_object = wasm_import_object,
 		.wasm_module = wasm_module,
 		.wasm_store = wasm_store,
-		.bot_func = calc_actions,
+		.bot_func = actions_to_int,
+		.get_byte = get_byte_at,
+		.set_byte = set_byte_at,
+		.get_num_players_ptr = get_num_players_ptr,
+		.get_players_ptr = get_players_ptr,
 	};
 	
 
@@ -128,9 +214,95 @@ void act_on_bot(int32_t actions_int, Player* player) {
 
 }
 
-char get_byte(int64_t addr, BotWasmData* bot_wasm_data) {
-	
+GetByteResult get_byte(int64_t addr, BotWasmData* bot_wasm_data) {
+	GetByteResult byte_result;
+
+	wasm_val_t args_val[1] = { WASM_I64_VAL(addr) };
+	wasm_val_vec_t args = WASM_ARRAY_VEC(args_val);
+
+	wasm_val_t results_val[1] = { WASM_INIT_VAL };
+	wasm_val_vec_t results = WASM_ARRAY_VEC(results_val);
+
+	if (wasm_func_call(bot_wasm_data->get_byte, &args, &results)) {
+		printf("Error calling func\n");
+		byte_result.valid = false;
+		return byte_result;
+
+	}
+
+	byte_result.valid = true;
+	byte_result.byte = (uint8_t)results.data->of.i32;
+
+	return byte_result;
 
 }
 
+void set_byte(uint8_t val, int64_t addr, BotWasmData* bot_wasm_data) {
+	wasm_val_t args_val[2] = { WASM_I64_VAL(addr), WASM_I32_VAL(val) };
+	wasm_val_vec_t args = WASM_ARRAY_VEC(args_val);
 
+	wasm_val_t results_val[0];
+	wasm_val_vec_t results = WASM_ARRAY_VEC(results_val);
+
+	if (wasm_func_call(bot_wasm_data->set_byte, &args, &results)) {
+		printf("Error calling func\n");
+
+	}
+
+
+}
+
+void memcpy_to_wasm(const int64_t dst, const void* src, const size_t num_bytes, BotWasmData* bot_data) {
+	const uint8_t* src_ptr = src;
+
+	for (size_t i = 0; i < num_bytes; i += 1) {
+		set_byte(src_ptr[i], dst + i, bot_data);
+
+	}
+
+}
+
+void update_bot_info(Player* players, uint8_t num_players, WasmData* wasm_data) {
+	// First, generate the minimal player info from the normal player info
+	MinimalPlayerInfo* minimal_player_info_list = malloc(num_players * sizeof(MinimalPlayerInfo));
+
+	for (uint8_t i = 0; i < num_players; i += 1) {
+		Player* player = &players[i];
+		minimal_player_info_list[i] = get_minimal_player_info(player);
+
+	}
+
+	wasm_val_t empty_args[0];
+	wasm_val_vec_t args = WASM_ARRAY_VEC(empty_args);
+
+	wasm_val_t results_val[1] = { WASM_INIT_VAL };
+	wasm_val_vec_t results = WASM_ARRAY_VEC(results_val);
+
+	// Then start updating the bot's information
+	for (uint8_t i = 0; i < wasm_data->num_bots; i += 1) {
+		BotWasmData* bot_data = &wasm_data->bot_data_list[i];
+
+		if (wasm_func_call(bot_data->get_num_players_ptr, &args, &results)) {
+			printf("Error getting num_players_ptr\n");
+			return;
+
+		}
+
+		int64_t num_players_ptr = results.data->of.i64;
+
+		if (wasm_func_call(bot_data->get_players_ptr, &args, &results)) {
+			printf("Error getting num_players_ptr\n");
+			return;
+
+		}
+
+		int64_t players_ptr = results.data->of.i64;
+
+		memcpy_to_wasm(num_players_ptr, &num_players, sizeof(uint8_t), bot_data);
+		memcpy_to_wasm(players_ptr, minimal_player_info_list, num_players * sizeof(MinimalPlayerInfo), bot_data);
+
+	}
+
+	free(minimal_player_info_list);
+
+}

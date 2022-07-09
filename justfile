@@ -4,7 +4,7 @@ install_deps:
 
 install_deps_release:
 	mkdir -p build/release
-	conan install --build=raylib --build=wasmer . -if build/debug -of build/debug/
+	conan install --build=raylib --build=wasmer . -if build/release -of build/release/
 
 configure: 
 	cmake -Bbuild/debug -H. -GNinja -DCMAKE_BUILD_TYPE=Debug

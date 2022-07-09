@@ -13,6 +13,8 @@ typedef struct BotWasmData {
 	wasm_func_t* bot_func;
 	wasm_func_t* set_byte;
 	wasm_func_t* get_byte;
+	wasm_func_t* get_num_players_ptr;
+	wasm_func_t* get_players_ptr;
 	
 } BotWasmData;
 
@@ -25,8 +27,7 @@ typedef struct WasmData {
 WasmData setup_wasm();
 bool setup_bot(const char* wasm_file_path, WasmData* wasm_data);
 BotActions int_to_actions(int32_t actions_int);
-void act_on_bot(int32_t actions_int, Player* player);
 
-void set_byte(char val, int64_t addr, BotWasmData* bot_wasm_data);
-char get_byte(int64_t addr, BotWasmData* bot_wasm_data);
+void update_bot_info(Player* players, uint8_t num_players, WasmData* wasm_data);
+void act_on_bot(int32_t actions_int, Player* player);
 #endif

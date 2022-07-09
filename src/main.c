@@ -33,7 +33,7 @@ int main() {
 
 	}
 
-	int num_players = 2;
+	uint8_t num_players = 2;
 	Player* players = malloc(num_players * sizeof(Player));
 
 	players[0] = new_player(200, 200);
@@ -47,8 +47,8 @@ int main() {
 	// Display the window until ESC is pressed
 	while (!WindowShouldClose()) {
 		player_input(&players[0], &DEFAULT_KEY_BINDINGS);
+		update_bot_info(players, num_players, &wasm_data);
 
-				
 		for (uint16_t i = 0; i < wasm_data.num_bots; i += 1) {
 			BotWasmData* bot = &wasm_data.bot_data_list[i];
 

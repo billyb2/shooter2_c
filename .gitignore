@@ -1,2 +1,3 @@
 build/
 bots/*.wasm
+bot_src/**/*.wasm

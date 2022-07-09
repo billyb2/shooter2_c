@@ -1,7 +1,8 @@
 #include "minimal_player_info.h"
+#include "bot_mem.h"
 
-uint8_t NUM_PLAYERS;
-MinimalPlayerInfo PLAYERS[4];
+static uint8_t NUM_PLAYERS;
+static MinimalPlayerInfo PLAYERS[4];
 
 void set_byte_at(int64_t mem_addr_int, int32_t val) {
 	char* mem_addr = (char*)mem_addr_int;
