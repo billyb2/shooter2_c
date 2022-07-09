@@ -27,19 +27,21 @@ int main() {
 
 	WasmData wasm_data = setup_wasm();
 
-	if (!setup_bot("bots/simple_bot.wasm", &wasm_data)) {
+	uint8_t num_players = 3;
+	Player* players = malloc(num_players * sizeof(Player));
+
+	players[0] = new_player(200, 200);
+	players[1] = new_player(200, 100);
+	players[2] = new_player(200, 300);
+
+
+	if (!setup_bot("bots/simple_bot.wasm", &wasm_data, 1)) {
 		printf("Failed to setup bot");
 		return 1;
 
 	}
 
-	uint8_t num_players = 2;
-	Player* players = malloc(num_players * sizeof(Player));
-
-	players[0] = new_player(200, 200);
-	players[1] = new_player(200, 100);
-
-    SetTargetFPS(60);
+	SetTargetFPS(60);
 
 	wasm_val_t args_val[0];
 	wasm_val_vec_t args = WASM_ARRAY_VEC(args_val);
@@ -61,7 +63,7 @@ int main() {
 
 			}
 
-			act_on_bot(results.data[0].of.i32, &players[i + 1]);
+			act_on_bot(results.data[0].of.i32, &players[bot->player_index]);
 
 		}
 
@@ -82,6 +84,7 @@ int main() {
     CloseWindow();
 
 	free(players);
+	free(wasm_data.bot_data_list);
 
     return 0;
 }

@@ -13,7 +13,7 @@ Player new_player(uint16_t pos_x, uint16_t pos_y) {
 
 }
 
-MinimalPlayerInfo get_minimal_player_info(Player* player) {
+MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 	MinimalPlayerInfo minimal_player = {
 		.pos_x = player->pos_x,
 		.pos_y = player->pos_y,

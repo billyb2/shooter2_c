@@ -4,5 +4,6 @@
 #include "minimal_player_info.h"
 
 int64_t get_num_players_ptr();
+int64_t get_player_index_ptr();
 int64_t get_players_ptr();
 #endif
