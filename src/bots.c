@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "include/raylib.h"
 #include "minimal_player_info.h"
 #include "player.h"
 #include "bots.h"
 #include "bot_actions_def.h"
 #include "include/wasmer.h"
+#include "projectile.h"
 #include "wasmer_ext.h"
 #include "wasm_strings.h"
 
@@ -195,11 +197,9 @@ bool setup_bot(const char* wasm_file_path, WasmData* wasm_data, uint8_t player_i
 
 }
 
-void act_on_bot(int32_t actions_int, Player* player) {
+void act_on_bot(int64_t actions_int, Player* player, Projectile** projectiles, uint16_t* num_projectiles) {
 	BotActions actions;
-
-	actions.movement_direction_up_down = actions_int & 0xFF;
-	actions.movement_direction_left_right = (actions_int >> 8) & 0xFF;
+	memcpy(&actions, &actions_int, sizeof(BotActions));
 
 	if (actions.movement_direction_left_right == 0) {
 		player->pos_x -= player->speed;
@@ -217,11 +217,18 @@ void act_on_bot(int32_t actions_int, Player* player) {
 
 	}
 
+	player->direction = actions.direction;
+
+	if (actions.shooting) {
+		shoot(projectiles, num_projectiles, player, player->direction);
+
+	}
+
 }
 
 
 
-void update_bot_info(const Player* players, uint8_t num_players, WasmData* wasm_data) {
+void update_bot_info(Player* players, uint8_t num_players, WasmData* wasm_data, Projectile** projectiles, uint16_t* num_projectiles) {
 	// First, generate the minimal player info from the normal player info
 	MinimalPlayerInfo* minimal_player_info_list = malloc(num_players * sizeof(MinimalPlayerInfo));
 
@@ -268,6 +275,17 @@ void update_bot_info(const Player* players, uint8_t num_players, WasmData* wasm_
 		memcpy_to_wasm(num_players_ptr, &num_players, sizeof(uint8_t), bot_data);
 		memcpy_to_wasm(players_ptr, minimal_player_info_list, num_players * sizeof(MinimalPlayerInfo), bot_data);
 		memcpy_to_wasm(player_index_ptr, &bot_data->player_index, sizeof(uint8_t), bot_data);
+
+		wasm_val_t results_val[1] = { WASM_INIT_VAL };
+		wasm_val_vec_t results = WASM_ARRAY_VEC(results_val);
+
+		if (wasm_func_call(bot_data->bot_func, &args, &results)) {
+			printf("Error calling func\n");
+			exit(1);
+
+		}
+
+		act_on_bot(results.data[0].of.i64, &players[bot_data->player_index], projectiles, num_projectiles);
 
 	}
 

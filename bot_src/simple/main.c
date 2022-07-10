@@ -1,10 +1,12 @@
 #include "bot_actions.h"
 #include "bot_mem.h"
 #include "minimal_player_info.h"
-#include <stdint.h>
 
 BotActions calc_actions() {
+	static float direction = 0.0;
+
 	BotActions actions;
+
 	const uint8_t* num_players_ptr = (uint8_t*)get_num_players_ptr();
 	uint8_t num_players = *num_players_ptr;
 
@@ -27,6 +29,11 @@ BotActions calc_actions() {
 		actions.movement_direction_up_down = NONE;
 
 	}
+
+	direction += 0.1;
+
+	actions.direction = direction;
+	actions.shooting = true;
 
 	return actions;
 }

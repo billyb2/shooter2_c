@@ -6,6 +6,7 @@
 #include "math.h"
 #include "player.h"
 #include "input.h"
+#include "projectile.h"
 
 #include "include/raylib.h"
 #include "include/wasm.h"
@@ -19,6 +20,7 @@ const KeyBindings DEFAULT_KEY_BINDINGS = {
 	.down = KEY_S,
 	.left = KEY_A,
 	.right = KEY_D,
+	.ability = KEY_Q,
 
 };
 
@@ -29,10 +31,13 @@ int main() {
 
 	uint8_t num_players = 3;
 	Player* players = malloc(num_players * sizeof(Player));
+	
+	uint16_t num_projectiles = 0;
+	Projectile* projectiles = NULL;
 
-	players[0] = new_player(200, 200);
-	players[1] = new_player(200, 100);
-	players[2] = new_player(200, 300);
+	players[0] = new_player(200, 200, Teleporation);
+	players[1] = new_player(200, 100, Teleporation);
+	players[2] = new_player(200, 300, Teleporation);
 
 
 	if (!setup_bot("bots/simple_bot.wasm", &wasm_data, 1)) {
@@ -48,33 +53,23 @@ int main() {
 
 	// Display the window until ESC is pressed
 	while (!WindowShouldClose()) {
-		player_input(&players[0], &DEFAULT_KEY_BINDINGS);
-		update_bot_info(players, num_players, &wasm_data);
+		player_input(&players[0], &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles);
+		update_bot_info(players, num_players, &wasm_data, &projectiles, &num_projectiles);
+		update_projectiles(&projectiles, &num_projectiles);
 
-		for (uint16_t i = 0; i < wasm_data.num_bots; i += 1) {
-			BotWasmData* bot = &wasm_data.bot_data_list[i];
-
-			wasm_val_t results_val[1] = { WASM_INIT_VAL };
-			wasm_val_vec_t results = WASM_ARRAY_VEC(results_val);
-
-			if (wasm_func_call(bot->bot_func, &args, &results)) {
-				printf("Error calling func\n");
-				return 1;
-
-			}
-
-			act_on_bot(results.data[0].of.i32, &players[bot->player_index]);
-
-		}
-
-		
 		BeginDrawing();
 			
 			ClearBackground(RAYWHITE);
 
-			for (int i = 0; i < num_players; i += 1) {
+			for (uint8_t i = 0; i < num_players; i += 1) {
 				Player player = players[i];
 				DrawCircle((float)player.pos_x, (float)player.pos_y, 10.0, RED);
+
+			}
+
+			for (uint16_t i = 0; i < num_projectiles; i += 1) {
+				Projectile projectile = projectiles[i];
+				DrawCircle((float)projectile.pos_x, (float)projectile.pos_y, 3.0, BLACK);
 
 			}
 
@@ -84,6 +79,7 @@ int main() {
     CloseWindow();
 
 	free(players);
+	free(projectiles);
 	free(wasm_data.bot_data_list);
 
     return 0;

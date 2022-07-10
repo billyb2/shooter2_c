@@ -2,7 +2,15 @@ cmake_minimum_required(VERSION 3.11) # FetchContent is available in 3.11+
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=c99 -O0 -Wall -Wextra -pipe")
+set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=c99 -Wall -Wextra -pipe")
+
+if(CMAKE_BUILD_TYPE MATCHES RELEASE)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -flto")
+endif()
+
+if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
+endif()
 
 if (UNIX)
 	# Use mold on Linux

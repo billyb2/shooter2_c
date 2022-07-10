@@ -13,6 +13,6 @@
 BotActions calc_actions();
 
 /// Since wasm functions *must* return 4 bytes, we just pack all the data into an i32
-int32_t actions_to_int();
+int64_t actions_to_int();
 
 #endif

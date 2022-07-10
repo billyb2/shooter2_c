@@ -5,6 +5,7 @@
 typedef struct MinimalPlayerInfo {
 	uint16_t pos_x;
 	uint16_t pos_y;
+	float direction;
 
 } MinimalPlayerInfo;
 #endif

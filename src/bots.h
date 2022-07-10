@@ -1,6 +1,7 @@
 #ifndef BOTS_H
 #define BOTS_H
 #include "player.h"
+#include "projectile.h"
 #include "bot_actions_def.h"
 #include "include/wasmer.h"
 #include <stdint.h>
@@ -30,6 +31,5 @@ WasmData setup_wasm();
 bool setup_bot(const char* wasm_file_path, WasmData* wasm_data, uint8_t player_index);
 BotActions int_to_actions(int32_t actions_int);
 
-void update_bot_info(const Player* players, uint8_t num_players, WasmData* wasm_data);
-void act_on_bot(int32_t actions_int, Player* player);
+void update_bot_info(Player* players, uint8_t num_players, WasmData* wasm_data, Projectile** projectiles, uint16_t* num_projectiles);
 #endif
