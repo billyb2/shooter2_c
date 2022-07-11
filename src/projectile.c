@@ -12,7 +12,7 @@ extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 
 // A cheap and lazy way of doing this, but it's simple
-void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, const Player* players, uint8_t num_players) {
+void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Player* players, uint8_t num_players) {
 	Projectile* buff_projectile_list = malloc(*num_projectiles * sizeof(Projectile));
 	uint16_t new_num_projectiles = 0;
 
@@ -30,10 +30,21 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, con
 				
 			} else if (projectile_should_be_copied) {
 				for(uint8_t i = 0; i < num_players; i += 1) {
-					const Player* player = &players[i];
+					Player* player = &players[i];
+
+					if (player->health == 0) {
+						continue;
+
+					}
+
 					uint16_t half_proj_size = (uint16_t)(projectile->size) / 2;
 
 					bool collision = aabb_collision(player->pos_x - PLAYER_SIZE / 2, player->pos_y - PLAYER_SIZE / 2, PLAYER_SIZE, projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size);
+
+					if (collision) {
+						player->health = saturating_sub(player->health, 50);
+
+					}
 
 					projectile_should_be_copied = !collision;
 
@@ -94,9 +105,12 @@ Projectile new_projectile(uint16_t pos_x, uint16_t pos_y, float angle, Projectil
 }
 
 void shoot(Projectile ** projectiles, uint16_t* num_projectiles, const Player* player, float angle) { 
-	*num_projectiles += 1;
-	*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
+	if (player->health > 0) {
+		*num_projectiles += 1;
+		*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
 
-	(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet);
+		(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet);
+
+	}
 
 }

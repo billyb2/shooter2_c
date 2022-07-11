@@ -62,7 +62,18 @@ int main() {
 
 			for (uint8_t i = 0; i < num_players; i += 1) {
 				Player* player = &players[i];
-				DrawCircle((float)player->pos_x, (float)player->pos_y, PLAYER_SIZE, RED);
+
+				Vector4 color_normalized = {
+					.x = 1.0,
+					.y = 0.0,
+					.z = 0.0,
+					.w = (float)(player->health) / 500.0,
+
+				};
+
+				Color color =  ColorFromNormalized(color_normalized);
+
+				DrawCircle((float)player->pos_x, (float)player->pos_y, PLAYER_SIZE, color);
 
 			}
 

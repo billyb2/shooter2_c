@@ -201,21 +201,13 @@ void act_on_bot(int64_t actions_int, Player* player, Projectile** projectiles, u
 	BotActions actions;
 	memcpy(&actions, &actions_int, sizeof(BotActions));
 
-	if (actions.movement_direction_left_right == 0) {
-		player->pos_x -= player->speed;
+	PlayerMovementInfo movement_info = {
+		.x_axis = actions.movement_direction_left_right,
+		.y_axis = actions.movement_direction_up_down,
 
-	} else if (actions.movement_direction_left_right == 0xFF) {
-		player->pos_x += player->speed;
+	};
 
-	}
-
-	if (actions.movement_direction_up_down == 0) {
-		player->pos_y -= player->speed;
-
-	} else if (actions.movement_direction_up_down == 0xFF) {
-		player->pos_y += player->speed;
-
-	}
+	move_player(player, movement_info);
 
 	player->direction = actions.direction;
 

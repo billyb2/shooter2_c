@@ -22,22 +22,32 @@ void player_input(Player* player, const KeyBindings* key_bindings, Projectile** 
 		
 	}
 
+	PlayerMovementInfo movement_info = {
+		.x_axis = NoneX,
+		.y_axis = NoneY,
+
+	};
+
 	// Movement input
 	if (IsKeyDown(key_bindings->up)) {
-		player->pos_y = saturating_sub(player->pos_y, player->speed);
+		movement_info.y_axis = Up;
 	}
 
 	if (IsKeyDown(key_bindings->down)) {
-		player->pos_y += player->speed;
+		movement_info.y_axis = Down;
+
 	}
 
 	if (IsKeyDown(key_bindings->left)) {
-		player->pos_x = saturating_sub(player->pos_x, player->speed);
+		movement_info.x_axis = Left;
 	}
 
 	if (IsKeyDown(key_bindings->right)) {
-		player->pos_x += player->speed;
+		movement_info.x_axis = Right;
+
 	}
+
+	move_player(player, movement_info);	
 
 	player->direction = get_angle(mouse_pos.x, mouse_pos.y, (float)player->pos_x, (float)player->pos_y); 
 

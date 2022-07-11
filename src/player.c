@@ -34,6 +34,11 @@ MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 }
 
 void use_ability(Player* player) {
+	if (player->health == 0) {
+		return;
+
+	}
+
 	if (player->remaining_ability_cooldown_frames > 0) {
 		return;
 
@@ -48,6 +53,34 @@ void use_ability(Player* player) {
 
 		// 5 seconds times 60 fps
 		player->remaining_ability_cooldown_frames = 5 * 60;
+
+	}
+
+}
+
+void move_player(Player* player, PlayerMovementInfo movement_info) {
+	if (player->health == 0) {
+		return;
+
+	}
+
+	if (movement_info.x_axis == Left) {
+		player->pos_x = saturating_sub(player->pos_x, player->speed);
+
+	}
+
+	if (movement_info.x_axis == Right) {
+		player->pos_x += player->speed;
+	
+	}
+
+	if (movement_info.y_axis == Up) {
+		player->pos_y = saturating_sub(player->pos_y, player->speed);
+
+	}
+
+	if (movement_info.y_axis == Down) {
+		player->pos_y += player->speed;
 
 	}
 
