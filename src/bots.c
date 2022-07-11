@@ -219,8 +219,13 @@ void act_on_bot(int64_t actions_int, Player* player, Projectile** projectiles, u
 
 	player->direction = actions.direction;
 
-	if (actions.shooting) {
+	if ((actions.shooting_and_ability & 0xF0) == 0xF0) {
 		shoot(projectiles, num_projectiles, player, player->direction);
+
+	}
+
+	if ((actions.shooting_and_ability & 0x0F) == 0x0F) {
+		use_ability(player);
 
 	}
 

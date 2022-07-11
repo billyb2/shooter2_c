@@ -29,7 +29,7 @@ int64_t actions_to_int() {
 	bytecpy(res_ptr, &actions.movement_direction_up_down);
 	bytecpy(res_ptr + 1, &actions.movement_direction_left_right);
 	memcpy(res_ptr + 2, &actions.direction, sizeof(uint32_t));
-	bytecpy(res_ptr + 6, &actions.shooting);
+	bytecpy(res_ptr + 6, &actions.shooting_and_ability);
 
 	return res;
 }

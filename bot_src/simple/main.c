@@ -1,9 +1,12 @@
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "bot_actions.h"
 #include "bot_mem.h"
 #include "minimal_player_info.h"
 
 BotActions calc_actions() {
-	static float direction = 0.0;
+	static bool moving_up = true;
 
 	BotActions actions;
 
@@ -15,25 +18,54 @@ BotActions calc_actions() {
 
 	const MinimalPlayerInfo* minimal_player_info_list = (MinimalPlayerInfo*)get_players_ptr();
 	const MinimalPlayerInfo my_player = minimal_player_info_list[player_index];
-	
-	if (my_player.pos_x < 500) {
-		actions.movement_direction_left_right = RIGHT;
-		actions.movement_direction_up_down = NONE;
 
-	} else if (my_player.pos_y < 300) {
-		actions.movement_direction_left_right = NONE;
-		actions.movement_direction_up_down = DOWN;
+	
+	actions.movement_direction_left_right = NONE;
+	actions.movement_direction_up_down = NONE;
+	actions.shooting_and_ability = 0x00;
+
+
+	if (my_player.pos_x < 600) {
+		actions.movement_direction_left_right = RIGHT;
+
+	} 
+
+	if (moving_up) {
+		actions.movement_direction_up_down = UP;
+		
+		if (my_player.pos_y < 20) {
+			moving_up = false;
+
+		}
 
 	} else {
-		actions.movement_direction_left_right = NONE;
-		actions.movement_direction_up_down = NONE;
+		actions.movement_direction_up_down = DOWN;
+
+		if (my_player.pos_y > 400) {
+			moving_up = true;
+
+		}
+
 
 	}
 
-	direction += 0.1;
+	
+	actions.direction = 3.1415926535;
 
-	actions.direction = direction;
-	actions.shooting = true;
+	for (uint8_t i = 0; i < num_players; i += 1) {
+		if (i == player_index) { continue; }
+
+		MinimalPlayerInfo enemy_player = minimal_player_info_list[i];
+
+		uint16_t low_range = enemy_player.pos_y - 25;
+		uint16_t high_range = enemy_player.pos_y + 25;
+
+		if (my_player.pos_y > low_range && my_player.pos_y < high_range) {
+			set_should_shoot(&actions.shooting_and_ability, true);
+
+		}
+
+	}
 
 	return actions;
 }

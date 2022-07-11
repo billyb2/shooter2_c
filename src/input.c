@@ -14,13 +14,11 @@ extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 
 void player_input(Player* player, const KeyBindings* key_bindings, Projectile** projectiles, uint16_t* num_projectiles) {
-	uint16_t old_speed = player->speed;
-
 	Vector2 mouse_pos = GetMousePosition();
 
 	// Ability input
 	if (IsKeyDown(key_bindings->ability)) {
-		player->speed = player->speed * 15;
+		use_ability(player);
 		
 	}
 
@@ -49,5 +47,4 @@ void player_input(Player* player, const KeyBindings* key_bindings, Projectile** 
 
 	}
 
-	player->speed = old_speed;	
 }

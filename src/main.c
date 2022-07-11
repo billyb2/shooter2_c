@@ -48,14 +48,13 @@ int main() {
 
 	SetTargetFPS(60);
 
-	wasm_val_t args_val[0];
-	wasm_val_vec_t args = WASM_ARRAY_VEC(args_val);
-
 	// Display the window until ESC is pressed
 	while (!WindowShouldClose()) {
-		player_input(&players[0], &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles);
+		update_player_cooldowns(players, num_players);
+
+		player_input(players, &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles);
 		update_bot_info(players, num_players, &wasm_data, &projectiles, &num_projectiles);
-		update_projectiles(&projectiles, &num_projectiles);
+		update_projectiles(&projectiles, &num_projectiles, players, num_players);
 
 		BeginDrawing();
 			

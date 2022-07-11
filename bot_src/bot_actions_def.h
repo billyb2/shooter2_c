@@ -9,6 +9,6 @@ typedef  struct __attribute__((__packed__)) BotActions {
 	// 4 bytes
 	float direction;
 	// 1 byte
-	bool shooting;
+	unsigned char shooting_and_ability;
 } BotActions;
 #endif

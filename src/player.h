@@ -16,10 +16,14 @@ struct Player {
 	Ability ability;
 	// TODO: integer addition only
 	float direction;
+	uint16_t health;
+	uint16_t remaining_ability_cooldown_frames;
 };
 
 typedef struct Player Player;
 
 Player new_player(uint16_t pos_x, uint16_t pos_y, Ability ability);
 MinimalPlayerInfo get_minimal_player_info(const Player* player);
+void use_ability(Player* player);
+void update_player_cooldowns(Player* players, uint8_t num_players);
 #endif

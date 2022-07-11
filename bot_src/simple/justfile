@@ -1,5 +1,12 @@
 build:
-	clang -Wall -Wextra --target=wasm32 -nostdlib -Wl,--no-entry -Wl,--export=actions_to_int -Wl,--export=get_byte_at -Wl,--export=set_byte_at -Wl,--export=get_num_players_ptr -Wl,--export=get_players_ptr -Wl,--export=get_player_index_ptr -o simple_bot.wasm bot_mem.c bot_actions.c main.c 
+	clang -O0 -pipe -Wall -Wextra --target=wasm32 -nostdlib -Wl,--no-entry -Wl,--export=actions_to_int -Wl,--export=get_byte_at -Wl,--export=set_byte_at -Wl,--export=get_num_players_ptr -Wl,--export=get_players_ptr -Wl,--export=get_player_index_ptr -o simple_bot.wasm bot_mem.c bot_actions.c main.c 
 
 copy: build
+	cp simple_bot.wasm ../../bots/simple_bot.wasm
+
+
+build_release:
+	clang -O3 -flto -pipe -Wall -Wextra --target=wasm32 -nostdlib -Wl,--no-entry -Wl,--export=actions_to_int -Wl,--export=get_byte_at -Wl,--export=set_byte_at -Wl,--export=get_num_players_ptr -Wl,--export=get_players_ptr -Wl,--export=get_player_index_ptr -o simple_bot.wasm bot_mem.c bot_actions.c main.c 
+
+copy_release: build_release
 	cp simple_bot.wasm ../../bots/simple_bot.wasm

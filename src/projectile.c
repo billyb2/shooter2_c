@@ -12,7 +12,7 @@ extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 
 // A cheap and lazy way of doing this, but it's simple
-void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles) {
+void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, const Player* players, uint8_t num_players) {
 	Projectile* buff_projectile_list = malloc(*num_projectiles * sizeof(Projectile));
 	uint16_t new_num_projectiles = 0;
 
