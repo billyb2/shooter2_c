@@ -28,6 +28,22 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, con
 			if (projectile->pos_x > SCREEN_WIDTH || projectile->pos_x < 0 || projectile->pos_y < 0 || projectile->pos_y > SCREEN_HEIGHT) {
 				projectile_should_be_copied = false;
 				
+			} else if (projectile_should_be_copied) {
+				for(uint8_t i = 0; i < num_players; i += 1) {
+					const Player* player = &players[i];
+					uint16_t half_proj_size = (uint16_t)(projectile->size) / 2;
+
+					bool collision = aabb_collision(player->pos_x - PLAYER_SIZE / 2, player->pos_y - PLAYER_SIZE / 2, PLAYER_SIZE, projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size);
+
+					projectile_should_be_copied = !collision;
+
+					if (!projectile_should_be_copied) {
+						break;
+
+					}
+
+				}
+
 			}
 
 		}
@@ -69,6 +85,7 @@ Projectile new_projectile(uint16_t pos_x, uint16_t pos_y, float angle, Projectil
 		.projectile_type = StandardBullet,
 		.speed_x = (int16_t)(cosf(angle) * (float)speed),
 		.speed_y = (int16_t)(sinf(angle) * (float)speed),
+		.size = 2,
 
 	};
 

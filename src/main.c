@@ -61,15 +61,14 @@ int main() {
 			ClearBackground(RAYWHITE);
 
 			for (uint8_t i = 0; i < num_players; i += 1) {
-				Player player = players[i];
-				DrawCircle((float)player.pos_x, (float)player.pos_y, 10.0, RED);
+				Player* player = &players[i];
+				DrawCircle((float)player->pos_x, (float)player->pos_y, PLAYER_SIZE, RED);
 
 			}
 
 			for (uint16_t i = 0; i < num_projectiles; i += 1) {
-				Projectile projectile = projectiles[i];
-				DrawCircle((float)projectile.pos_x, (float)projectile.pos_y, 3.0, BLACK);
-
+				Projectile* projectile = &projectiles[i];
+				DrawCircle((float)projectile->pos_x, (float)projectile->pos_y, projectile->size, BLACK);
 			}
 
 		EndDrawing();

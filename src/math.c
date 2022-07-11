@@ -41,3 +41,14 @@ float get_angle(float cx, float cy, float ex, float ey) {
 
 	return angle;
 }
+
+
+bool aabb_collision(uint16_t pos_x1, uint16_t pos_y1, uint16_t size1, uint16_t pos_x2, uint16_t pos_y2, uint16_t size2) {
+	return (pos_x1 < pos_x2 + size2 &&
+    pos_x1 + size1 > pos_x2 &&
+    pos_y1 < pos_y2 + size2 &&
+    pos_y1 + size1 > pos_y2);
+
+	;
+
+}

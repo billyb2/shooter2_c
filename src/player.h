@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "minimal_player_info.h"
 
+#define PLAYER_SIZE 10
+
 typedef enum Ability {
 	Teleporation,
 

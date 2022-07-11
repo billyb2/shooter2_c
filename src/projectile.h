@@ -16,6 +16,8 @@ typedef struct Projectile {
 	int16_t speed_x;
 	int16_t speed_y;
 
+	uint8_t size;
+
 	ProjectileType projectile_type;
 
 } Projectile;
