@@ -16,6 +16,7 @@ Player new_player(uint16_t pos_x, uint16_t pos_y, Ability ability) {
 		.direction = 0.0,
 		.health = 500,
 		.remaining_ability_cooldown_frames = 0,
+		.remaining_shooting_cooldown_frames = 0,
 	};
 
 	return player;
@@ -91,6 +92,7 @@ void update_player_cooldowns(Player* players, uint8_t num_players) {
 		Player* player = &players[i];
 
 		player->remaining_ability_cooldown_frames = saturating_sub(player->remaining_ability_cooldown_frames, 1);
+		player->remaining_shooting_cooldown_frames = saturating_sub(player->remaining_shooting_cooldown_frames, 1);
 
 	}
 

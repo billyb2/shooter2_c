@@ -104,13 +104,21 @@ Projectile new_projectile(uint16_t pos_x, uint16_t pos_y, float angle, Projectil
 
 }
 
-void shoot(Projectile ** projectiles, uint16_t* num_projectiles, const Player* player, float angle) { 
-	if (player->health > 0) {
-		*num_projectiles += 1;
-		*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
-
-		(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet);
+void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player, float angle) { 
+	if (player->health == 0) {
+		return;
 
 	}
+
+	if (player->remaining_shooting_cooldown_frames > 0) {
+		return;
+
+	}
+
+	*num_projectiles += 1;
+	*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
+
+	(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet);
+	player->remaining_shooting_cooldown_frames = 5;
 
 }

@@ -40,6 +40,7 @@ typedef struct Player {
 	float direction;
 	uint16_t health;
 	uint16_t remaining_ability_cooldown_frames;
+	uint16_t remaining_shooting_cooldown_frames;
 } Player;
 
 Player new_player(uint16_t pos_x, uint16_t pos_y, Ability ability);
