@@ -14,5 +14,5 @@ typedef struct {
 	KeyboardKey ability;
 } KeyBindings;
 
-void player_input(Player* player, const Camera2D* camera, const KeyBindings* key_bindings, Projectile** projectiles, uint16_t* num_projectiles, const Map* map);
+void player_input(Player* player, const Camera2D* camera, const KeyBindings* key_bindings, Projectile** projectiles, uint16_t* num_projectiles, const Map* map, bool using_keyboard);
 #endif
