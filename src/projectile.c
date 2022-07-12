@@ -90,12 +90,15 @@ int16_t get_projectile_speed(ProjectileType projectile_type) {
 Projectile new_projectile(uint16_t pos_x, uint16_t pos_y, float angle, ProjectileType projectile_type) {
 	int16_t speed = get_projectile_speed(projectile_type);
 
+	int16_t speed_x = (int16_t)(cosf(angle) * (float)speed);
+	int16_t speed_y = (int16_t)(sinf(angle) * (float)speed);
+
 	Projectile new_projectile = {
-		.pos_x = pos_x,
-		.pos_y = pos_y,
+		.speed_x = speed_x, 
+		.speed_y = speed_y, 
+		.pos_x = pos_x + speed_x,
+		.pos_y = pos_y + speed_y,
 		.projectile_type = StandardBullet,
-		.speed_x = (int16_t)(cosf(angle) * (float)speed),
-		.speed_y = (int16_t)(sinf(angle) * (float)speed),
 		.size = 2,
 
 	};
