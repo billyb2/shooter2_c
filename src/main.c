@@ -65,7 +65,7 @@ int main() {
 	while (!WindowShouldClose()) {
 		update_player_cooldowns(players, num_players);
 
-		player_input(&players[0], &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles, &map);
+		player_input(&players[0], &camera, &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles, &map);
 		update_bot_info(players, num_players, &wasm_data, &projectiles, &num_projectiles, &map);
 		update_projectiles(&projectiles, &num_projectiles, players, num_players, &map);
 		move_camera(&camera, &map, players[0].pos_x, players[0].pos_y);

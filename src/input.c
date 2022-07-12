@@ -13,7 +13,7 @@
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 
-void player_input(Player* player, const KeyBindings* key_bindings, Projectile** projectiles, uint16_t* num_projectiles, const Map* map) {
+void player_input(Player* player, const Camera2D* camera, const KeyBindings* key_bindings, Projectile** projectiles, uint16_t* num_projectiles, const Map* map) {
 	Vector2 mouse_pos = GetMousePosition();
 
 	// Ability input
@@ -49,8 +49,32 @@ void player_input(Player* player, const KeyBindings* key_bindings, Projectile** 
 
 	move_player(player, movement_info, map);	
 
-	player->direction = get_angle(mouse_pos.x, mouse_pos.y, (float)SCREEN_WIDTH / 2.0, (float)SCREEN_HEIGHT / 2.0);
+	float angle_target_x;
+	float angle_target_y;
 
+	if (player->pos_x < SCREEN_WIDTH / 2) {
+		angle_target_x = player->pos_x;
+	
+	} else if (player->pos_x > map->size_x - SCREEN_WIDTH / 2) {
+		angle_target_x = player->pos_x - map->size_x + (float)SCREEN_WIDTH;
+
+	} else {
+		angle_target_x = (float)SCREEN_WIDTH / 2.0;
+
+	}
+
+	if (player->pos_y < SCREEN_HEIGHT / 2) {
+		angle_target_y = player->pos_y;
+	
+	} else if (player->pos_y > map->size_x - SCREEN_HEIGHT / 2) {
+		angle_target_y = player->pos_y - map->size_y + (float)SCREEN_HEIGHT;
+
+	} else {
+		angle_target_y = (float)SCREEN_HEIGHT / 2.0;
+
+	}
+
+	player->direction = get_angle(mouse_pos.x, mouse_pos.y, angle_target_x, angle_target_y);
 
 	if (IsMouseButtonDown(0)) {
 		shoot(projectiles, num_projectiles, player, player->direction);
