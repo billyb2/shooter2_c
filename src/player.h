@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include <stdint.h>
+#include "map.h"
 #include "minimal_player_info.h"
 
 #define PLAYER_SIZE 10
@@ -45,7 +46,7 @@ typedef struct Player {
 
 Player new_player(uint16_t pos_x, uint16_t pos_y, Ability ability);
 MinimalPlayerInfo get_minimal_player_info(const Player* player);
-void use_ability(Player* player);
+void use_ability(Player* player, const Map* map);
 void update_player_cooldowns(Player* players, uint8_t num_players);
-void move_player(Player* player, PlayerMovementInfo movement_info);
+void move_player(Player* player, PlayerMovementInfo movement_info, const Map* map);
 #endif

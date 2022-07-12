@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "camera.h"
 #include "bots.h"
+#include "map.h"
 #include "math.h"
 #include "player.h"
 #include "input.h"
@@ -26,6 +28,16 @@ const KeyBindings DEFAULT_KEY_BINDINGS = {
 
 int main() {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "shooter2");
+
+	Camera2D camera = { 0 };
+	camera.offset = (Vector2){ (float)SCREEN_WIDTH / 2.0, (float)SCREEN_HEIGHT / 2.0 };
+	camera.rotation = 0.0;
+	camera.zoom = 1.0;
+
+	Map map = {
+		.size_x = 1000,
+		.size_y = 1000,
+	};
 
 	WasmData wasm_data = setup_wasm();
 
@@ -52,13 +64,14 @@ int main() {
 	while (!WindowShouldClose()) {
 		update_player_cooldowns(players, num_players);
 
-		player_input(players, &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles);
-		update_bot_info(players, num_players, &wasm_data, &projectiles, &num_projectiles);
-		update_projectiles(&projectiles, &num_projectiles, players, num_players);
+		player_input(&players[0], &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles, &map);
+		update_bot_info(players, num_players, &wasm_data, &projectiles, &num_projectiles, &map);
+		update_projectiles(&projectiles, &num_projectiles, players, num_players, &map);
+		move_camera(&camera, &map, players[0].pos_x, players[0].pos_y);
 
 		BeginDrawing();
-			
 			ClearBackground(RAYWHITE);
+			BeginMode2D(camera);
 
 			for (uint8_t i = 0; i < num_players; i += 1) {
 				Player* player = &players[i];

@@ -197,7 +197,7 @@ bool setup_bot(const char* wasm_file_path, WasmData* wasm_data, uint8_t player_i
 
 }
 
-void act_on_bot(int64_t actions_int, Player* player, Projectile** projectiles, uint16_t* num_projectiles) {
+void act_on_bot(int64_t actions_int, Player* player, Projectile** projectiles, uint16_t* num_projectiles, const Map* map) {
 	BotActions actions;
 	memcpy(&actions, &actions_int, sizeof(BotActions));
 
@@ -207,7 +207,7 @@ void act_on_bot(int64_t actions_int, Player* player, Projectile** projectiles, u
 
 	};
 
-	move_player(player, movement_info);
+	move_player(player, movement_info, map);
 
 	player->direction = actions.direction;
 
@@ -217,7 +217,7 @@ void act_on_bot(int64_t actions_int, Player* player, Projectile** projectiles, u
 	}
 
 	if ((actions.shooting_and_ability & 0x0F) == 0x0F) {
-		use_ability(player);
+		use_ability(player, map);
 
 	}
 
@@ -225,7 +225,7 @@ void act_on_bot(int64_t actions_int, Player* player, Projectile** projectiles, u
 
 
 
-void update_bot_info(Player* players, uint8_t num_players, WasmData* wasm_data, Projectile** projectiles, uint16_t* num_projectiles) {
+void update_bot_info(Player* players, uint8_t num_players, WasmData* wasm_data, Projectile** projectiles, uint16_t* num_projectiles, const Map* map) {
 	// First, generate the minimal player info from the normal player info
 	MinimalPlayerInfo* minimal_player_info_list = malloc(num_players * sizeof(MinimalPlayerInfo));
 
@@ -282,7 +282,7 @@ void update_bot_info(Player* players, uint8_t num_players, WasmData* wasm_data, 
 
 		}
 
-		act_on_bot(results.data[0].of.i64, &players[bot_data->player_index], projectiles, num_projectiles);
+		act_on_bot(results.data[0].of.i64, &players[bot_data->player_index], projectiles, num_projectiles, map);
 
 	}
 

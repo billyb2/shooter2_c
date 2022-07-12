@@ -31,5 +31,5 @@ WasmData setup_wasm();
 bool setup_bot(const char* wasm_file_path, WasmData* wasm_data, uint8_t player_index);
 BotActions int_to_actions(int32_t actions_int);
 
-void update_bot_info(Player* players, uint8_t num_players, WasmData* wasm_data, Projectile** projectiles, uint16_t* num_projectiles);
+void update_bot_info(Player* players, uint8_t num_players, WasmData* wasm_data, Projectile** projectiles, uint16_t* num_projectiles, const Map* map);
 #endif

@@ -2,6 +2,7 @@
 #define INPUT_H
 
 #include "include/raylib.h"
+#include "map.h"
 #include "player.h"
 #include "projectile.h"
 
@@ -13,5 +14,5 @@ typedef struct {
 	KeyboardKey ability;
 } KeyBindings;
 
-void player_input(Player* player, const KeyBindings* key_bindings, Projectile** projectiles, uint16_t* num_projectiles);
+void player_input(Player* player, const KeyBindings* key_bindings, Projectile** projectiles, uint16_t* num_projectiles, const Map* map);
 #endif

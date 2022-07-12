@@ -12,7 +12,7 @@ extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 
 // A cheap and lazy way of doing this, but it's simple
-void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Player* players, uint8_t num_players) {
+void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Player* players, uint8_t num_players, const Map* map) {
 	Projectile* buff_projectile_list = malloc(*num_projectiles * sizeof(Projectile));
 	uint16_t new_num_projectiles = 0;
 
@@ -25,7 +25,7 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 			projectile->pos_x = (int16_t)projectile->pos_x + projectile->speed_x;
 			projectile->pos_y = (int16_t)projectile->pos_y + projectile->speed_y;
 
-			if (projectile->pos_x > SCREEN_WIDTH || projectile->pos_x < 0 || projectile->pos_y < 0 || projectile->pos_y > SCREEN_HEIGHT) {
+			if (projectile->pos_x > map->size_x || projectile->pos_x < 0 || projectile->pos_y < 0 || projectile->pos_y > map->size_y) {
 				projectile_should_be_copied = false;
 				
 			} else if (projectile_should_be_copied) {

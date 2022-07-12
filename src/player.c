@@ -2,6 +2,7 @@
 #include <math.h>
 
 #include "minimal_player_info.h"
+#include "map.h"
 #include "math.h"
 #include "player.h"
 
@@ -34,7 +35,7 @@ MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 
 }
 
-void use_ability(Player* player) {
+void use_ability(Player* player, const Map* map) {
 	if (player->health == 0) {
 		return;
 
@@ -49,8 +50,24 @@ void use_ability(Player* player) {
 		int16_t speed_x = (uint16_t)(cosf(player->direction) * TELEPORATION_SPEED);
 		int16_t speed_y = (uint16_t)(sinf(player->direction) * TELEPORATION_SPEED);
 
-		player->pos_x = (uint16_t)((int16_t)player->pos_x + speed_x);
-		player->pos_y = (uint16_t)((int16_t)player->pos_y + speed_y);
+		uint16_t potential_x = (uint16_t)((int16_t)player->pos_x + speed_x);
+		uint16_t potential_y = (uint16_t)((int16_t)player->pos_y + speed_y);
+
+		if (potential_x > map->size_x) {
+			player->pos_x = map->size_x - 1;
+
+		} else {
+			player->pos_x = potential_x;
+
+		}
+
+		if (potential_y > map->size_y) {
+			player->pos_y = map->size_y - 1;
+
+		} else {
+			player->pos_y = potential_y;
+
+		}
 
 		// 5 seconds times 60 fps
 		player->remaining_ability_cooldown_frames = 5 * 60;
@@ -59,7 +76,7 @@ void use_ability(Player* player) {
 
 }
 
-void move_player(Player* player, PlayerMovementInfo movement_info) {
+void move_player(Player* player, PlayerMovementInfo movement_info, const Map* map) {
 	if (player->health == 0) {
 		return;
 
@@ -71,7 +88,10 @@ void move_player(Player* player, PlayerMovementInfo movement_info) {
 	}
 
 	if (movement_info.x_axis == Right) {
-		player->pos_x += player->speed;
+		if (player->pos_x + player->speed < map->size_x) {
+			player->pos_x += player->speed;
+
+		}
 	
 	}
 
@@ -81,7 +101,10 @@ void move_player(Player* player, PlayerMovementInfo movement_info) {
 	}
 
 	if (movement_info.y_axis == Down) {
-		player->pos_y += player->speed;
+		if (player->pos_y + player->speed < map->size_y) {
+			player->pos_y += player->speed;
+
+		}
 
 	}
 
