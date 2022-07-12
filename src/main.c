@@ -8,6 +8,7 @@
 #include "math.h"
 #include "player.h"
 #include "input.h"
+#include "render.h"
 #include "projectile.h"
 
 #include "include/raylib.h"
@@ -69,33 +70,8 @@ int main() {
 		update_projectiles(&projectiles, &num_projectiles, players, num_players, &map);
 		move_camera(&camera, &map, players[0].pos_x, players[0].pos_y);
 
-		BeginDrawing();
-			ClearBackground(RAYWHITE);
-			BeginMode2D(camera);
+		render(camera, players, num_players, projectiles, num_projectiles, &map);
 
-			for (uint8_t i = 0; i < num_players; i += 1) {
-				Player* player = &players[i];
-
-				Vector4 color_normalized = {
-					.x = 1.0,
-					.y = 0.0,
-					.z = 0.0,
-					.w = (float)(player->health) / 500.0,
-
-				};
-
-				Color color =  ColorFromNormalized(color_normalized);
-
-				DrawCircle((float)player->pos_x, (float)player->pos_y, PLAYER_SIZE, color);
-
-			}
-
-			for (uint16_t i = 0; i < num_projectiles; i += 1) {
-				Projectile* projectile = &projectiles[i];
-				DrawCircle((float)projectile->pos_x, (float)projectile->pos_y, projectile->size, BLACK);
-			}
-
-		EndDrawing();
 	}
 
     CloseWindow();
