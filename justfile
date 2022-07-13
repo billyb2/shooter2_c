@@ -1,10 +1,10 @@
 install_deps:
 	mkdir -p build/debug
-	conan install --profile conan_linux_profile --build=raylib --build=missing . -if build/debug -of build/debug/
+	conan install --profile conan_linux_profile --build=missing . -if build/debug -of build/debug/
 
 install_deps_release:
 	mkdir -p build/release
-	conan install --profile conan_linux_profile --build=raylib --build=missing . -if build/release -of build/release/
+	conan install --profile conan_linux_profile --build=missing . -if build/release -of build/release/
 
 configure: 
 	cmake -Bbuild/debug -H. -GNinja -DCMAKE_BUILD_TYPE=Debug
