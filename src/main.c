@@ -42,22 +42,23 @@ int main() {
 
 	WasmData wasm_data = setup_wasm();
 
-	uint8_t num_players = 3;
+	uint8_t num_players = 2;
 	Player* players = malloc(num_players * sizeof(Player));
 	
 	uint16_t num_projectiles = 0;
 	Projectile* projectiles = NULL;
 
-	players[0] = new_player(200, 200, Teleporation);
-	players[1] = new_player(200, 100, Teleporation);
-	players[2] = new_player(200, 300, Teleporation);
+	players[0] = new_player(200, 200, Teleporation, Shotgun);
+	players[1] = new_player(200, 100, Teleporation, AssaultRifle);
 
 
+	/*
 	if (!setup_bot("bots/simple_bot.wasm", &wasm_data, 1)) {
 		printf("Failed to setup bot");
 		return 1;
 
 	}
+	*/
 
 	SetTargetFPS(60);
 
@@ -65,7 +66,7 @@ int main() {
 	while (!WindowShouldClose()) {
 		update_player_cooldowns(players, num_players);
 
-		player_input(&players[0], &camera, &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles, &map, false);
+		player_input(&players[0], &camera, &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles, &map, true);
 		update_bot_info(players, num_players, &wasm_data, &projectiles, &num_projectiles, &map);
 		update_projectiles(&projectiles, &num_projectiles, players, num_players, &map);
 		move_camera(&camera, &map, players[0].pos_x, players[0].pos_y);

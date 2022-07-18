@@ -1,0 +1,3 @@
+[submodule "deps/wasmer_easy_fork"]
+	path = deps/wasmer_easy_fork
+	url = https://github.com/billyb2/wasmer_easy_fork.git

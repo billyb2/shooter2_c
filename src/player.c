@@ -8,12 +8,13 @@
 
 #define TELEPORATION_SPEED 250.0
 
-Player new_player(uint16_t pos_x, uint16_t pos_y, Ability ability) {
+Player new_player(uint16_t pos_x, uint16_t pos_y, Ability ability, Weapon weapon) {
 	Player player = {
 		.pos_x = pos_x,
 		.pos_y = pos_y,
 		.speed = 5,
 		.ability = ability,
+		.weapon = weapon,
 		.direction = 0.0,
 		.health = 500,
 		.remaining_ability_cooldown_frames = 0,

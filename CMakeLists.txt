@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.11) # FetchContent is available in 3.11+
 
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=c99 -Wall -Wextra -pipe")
+set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=c99 -Wall -Wextra -pedantic -pipe")
 
-if(CMAKE_BUILD_TYPE MATCHES RELEASE)
+if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+	message("Release build")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -flto")
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+	message("Debug build")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
 endif()
 
