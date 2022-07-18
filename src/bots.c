@@ -36,7 +36,7 @@ bool check_wasm_function(const char* func_name, wasm_func_t* func) {
 
 bool setup_bot(const char* wasm_file_path, WasmData* wasm_data, uint8_t player_index) {
 	// First, load the wasmfile
-	FILE* wasm_file = fopen(wasm_file_path, "r");
+	FILE* wasm_file = fopen(wasm_file_path, "rb");
 
 	if (wasm_file == NULL) {
 		printf("Opening wasm file failed");
@@ -63,7 +63,25 @@ bool setup_bot(const char* wasm_file_path, WasmData* wasm_data, uint8_t player_i
 
 	}
 
-	fread(wasm_byte_vec.data, wasm_file_size, 1, wasm_file);
+	size_t total_num_read_bytes = 0;
+	size_t amt_read = 0;
+
+	while (total_num_read_bytes < wasm_file_size) {
+		size_t amt_read = fread(&wasm_byte_vec.data[total_num_read_bytes], 1, wasm_file_size, wasm_file);
+		total_num_read_bytes += amt_read;
+
+		if (amt_read == 0) {
+			break;
+
+		}
+	}
+
+	if (total_num_read_bytes != wasm_byte_vec.size) {
+		printf("Error reading file: Tried to read %ld, instead read %ld\n", wasm_byte_vec.size, total_num_read_bytes);
+		return false;
+
+	}
+
 	fclose(wasm_file);
 
 	wasm_engine_t* wasm_engine = wasm_data->wasm_engine;
