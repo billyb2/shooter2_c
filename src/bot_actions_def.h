@@ -1,1 +1,1 @@
-../bot_src/bot_actions_def.h
+../bot_src/c/bot_actions_def.h

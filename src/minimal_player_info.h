@@ -1,1 +1,1 @@
-../bot_src/minimal_player_info.h
+../bot_src/c/minimal_player_info.h

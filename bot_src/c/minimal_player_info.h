@@ -8,4 +8,10 @@ typedef struct MinimalPlayerInfo {
 	float direction;
 
 } MinimalPlayerInfo;
+
+typedef struct MinimalProjectileInfo {
+	uint16_t pos_x;
+	uint16_t pos_y;
+
+} MinimalProjectileInfo;
 #endif

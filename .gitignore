@@ -3,3 +3,5 @@ bots/*.wasm
 bot_src/**/*.wasm
 deps/wasmer/*
 wasmer.dll
+**/target*/
+**/target_web/

@@ -1,0 +1,26 @@
+build: 
+	cargo build  -Zbuild-std=std,proc_macro,panic_abort --target=x86_64-unknown-linux-gnu --target-dir=target_/
+
+build_windows:
+	cargo build -Zbuild-std=std,proc_macro,panic_abort --target=x86_64-pc-windows-gnu --target-dir=target_windows/
+
+build_release:
+	cargo build --release -Zbuild-std=std,proc_macro,panic_abort --target=x86_64-unknown-linux-gnu --target-dir=target_/
+
+build_windows_release:
+	cargo build --release -Zbuild-std=std,proc_macro,panic_abort --target=x86_64-pc-windows-gnu --target-dir=target_windows/
+
+copy: build
+	cp target_/x86_64-unknown-linux-gnu/debug/libbot_handler.a ../../build/
+
+copy_release: build_release
+	cp target_/x86_64-unknown-linux-gnu/release/libbot_handler.a ../../build/
+
+copy_windows: build_windows
+	mkdir -p ../../build/windows/
+	cp target_windows/x86_64-pc-windows-gnu/debug/libbot_handler.a ../../build/windows/
+
+
+copy_windows_release: build_windows_release
+	mkdir -p ../../build/windows/
+	cp target_windows/x86_64-pc-windows-gnu/release/libbot_handler.a ../../build/windows/

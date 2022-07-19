@@ -28,7 +28,7 @@ float get_angle(float cx, float cy, float ex, float ey) {
 			angle = PI / 2.0;
 
 		} else {
-			angle = PI;
+			angle = 0.0;
 
 		}
 

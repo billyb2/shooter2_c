@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11) # FetchContent is available in 3.11+
 
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=c99 -Wall -Wextra -pedantic -pipe")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Wextra -pedantic -pipe -gdwarf-4")
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 	message("Release build")
@@ -9,13 +9,29 @@ endif()
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 	message("Debug build")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -gdwarf-4")
 endif()
 
-if (${CMAKE_SYSTEM_NAME} NOT STREQUAL "Windows")
-	# Use mold on Linux
-	set(CMAKE_C_COMPILER clang)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-ld=mold")
+if (DEFINED CMAKE_SYSTEM_NAME)
+	if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+		# Use mold on Linux
+		message("Using mold linker")
+		set(CMAKE_C_COMPILER clang)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-ld=mold")
+		set(BOT_HANDLER_LIB "${CMAKE_CURRENT_SOURCE_DIR}/build/libbot_handler.a")
+	endif()
+
+	if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+		set(BOT_HANDLER_LIB "${CMAKE_CURRENT_SOURCE_DIR}/build/windows/libbot_handler.a")
+		set(WINDOWS_LIBS "-lws2_32 -luserenv -lbcrypt")
+	endif()
+
+
+endif()
+
+if (NOT DEFINED CMAKE_SYSTEM_NAME)
+	message(FATAL_ERROR "System name not defined")
+
 endif()
 
 project(main)
@@ -41,44 +57,14 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
   endif()
 endif()
 
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-	set(IS_WINDOWS "-windows")
-	set(WASMER_LIB "${CMAKE_CURRENT_SOURCE_DIR}/deps/wasmer/package/lib/wasmer.dll.a")
-endif()
-
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-	set(WASMER_LIB "${CMAKE_CURRENT_SOURCE_DIR}/deps/wasmer/package/lib/libwasmer.a")
-
-endif()
-
-
-add_custom_command(
-	OUTPUT
-		${CMAKE_CURRENT_SOURCE_DIR}/deps/wasmer/package/
-		${WASMER_LIB}
-		COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/deps/wasmer/ build-capi${IS_WINDOWS} 
-		COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/deps/wasmer/ package-capi 
-		COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/deps/wasmer/package/lib/wasmer.dll . || true
-)
-
-add_custom_target(
-	wasmer ALL
-	DEPENDS ${WASMER_LIB}
-)
-
-if(NOT WASMER_LIB)
-    message(FATAL_ERROR "wasmer library not found")
-endif()
-
-if(WASMER_LIB)
-	message("Wasmer lib located at ${WASMER_LIB}")
-endif()
-
-
 file(GLOB SRC_FILES src/*.c)
 
+if(NOT DEFINED BOT_HANDLER_LIB)
+	message(FATAL_ERROR "Bot handler lib not set, exiting...")
+endif()
+
 add_executable(${PROJECT_NAME} ${SRC_FILES})
-target_link_libraries(${PROJECT_NAME} raylib ${WASMER_LIB})
+target_link_libraries(${PROJECT_NAME} raylib ${BOT_HANDLER_LIB} ${WINDOWS_LIBS})
 
 # Checks if OSX and links appropriate frameworks (Only required on MacOS)
 if (APPLE)

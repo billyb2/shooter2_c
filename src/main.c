@@ -3,9 +3,11 @@
 #include <stdint.h>
 
 #include "camera.h"
-#include "bots.h"
+#include "bot_handler.h"
+//#include "bots.h"
 #include "map.h"
 #include "math.h"
+#include "minimal_player_info.h"
 #include "player.h"
 #include "input.h"
 #include "render.h"
@@ -40,8 +42,6 @@ int main() {
 		.size_y = 1000,
 	};
 
-	WasmData wasm_data = setup_wasm();
-
 	uint8_t num_players = 2;
 	Player* players = malloc(num_players * sizeof(Player));
 	
@@ -51,14 +51,11 @@ int main() {
 	players[0] = new_player(200, 200, Teleporation, Shotgun);
 	players[1] = new_player(200, 100, Teleporation, AssaultRifle);
 
-
-	/*
-	if (!setup_bot("bots/simple_bot.wasm", &wasm_data, 1)) {
+	if (setup_bot("bots/scared.wasm", 1) != 0) {
 		printf("Failed to setup bot");
 		return 1;
 
 	}
-	*/
 
 	SetTargetFPS(60);
 
@@ -67,7 +64,8 @@ int main() {
 		update_player_cooldowns(players, num_players);
 
 		player_input(&players[0], &camera, &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles, &map, true);
-		update_bot_info(players, num_players, &wasm_data, &projectiles, &num_projectiles, &map);
+
+		update_bot_info(players, num_players, &projectiles, &num_projectiles, &map);
 		update_projectiles(&projectiles, &num_projectiles, players, num_players, &map);
 		move_camera(&camera, &map, players[0].pos_x, players[0].pos_y);
 
@@ -79,7 +77,7 @@ int main() {
 
 	free(players);
 	free(projectiles);
-	free(wasm_data.bot_data_list);
+	//free(wasm_data.bot_data_list);
 
     return 0;
 }

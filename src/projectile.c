@@ -121,7 +121,7 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 			*num_projectiles += 1;
 			*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
 
-			(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, 10.0, 100);
+			(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, 10.0, 200);
 
 			player->remaining_shooting_cooldown_frames = 5;
 
@@ -148,7 +148,7 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 
 				}
 
-				*projectile = new_projectile(player->pos_x, player->pos_y, recoil_angle, StandardBullet, 11.0, 90);
+				*projectile = new_projectile(player->pos_x, player->pos_y, recoil_angle, StandardBullet, 11.0, 110);
 
 			}
 

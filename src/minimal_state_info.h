@@ -1,0 +1,1 @@
+../bot_src/c/minimal_state_info.h

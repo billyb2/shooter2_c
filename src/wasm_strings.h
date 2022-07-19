@@ -11,7 +11,7 @@ typedef struct GetByteResult {
 } GetByteResult;
 
 
-GetByteResult get_byte(int64_t addr, BotWasmData* bot_wasm_data);
-void memcpy_to_wasm(const int64_t dst, const void* src, const size_t num_bytes, BotWasmData* bot_data);
+GetByteResult get_byte(int64_t addr, BotData* bot_wasm_data);
+void memcpy_to_wasm(const int64_t dst, const void* src, const size_t num_bytes, BotData* bot_data);
 
 #endif
