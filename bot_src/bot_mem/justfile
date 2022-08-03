@@ -1,0 +1,6 @@
+build: 
+	cargo build -Zbuild-std=core,std,proc_macro,panic_abort --target-dir=target_web/
+
+build_release:
+	cargo build --release -Zbuild-std=core,std,proc_macro,panic_abort --target-dir=target_web/
+

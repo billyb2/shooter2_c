@@ -51,7 +51,7 @@ int main() {
 	players[0] = new_player(200, 200, Teleporation, Shotgun);
 	players[1] = new_player(200, 100, Teleporation, AssaultRifle);
 
-	if (setup_bot("bots/scared.wasm", 1) != 0) {
+	if (setup_bot("bots/aggro.wasm", 1) != 0) {
 		printf("Failed to setup bot");
 		return 1;
 

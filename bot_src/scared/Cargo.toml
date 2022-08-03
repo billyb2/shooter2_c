@@ -24,7 +24,4 @@ strip = true
 opt-level = 3
 
 [dependencies]
-once_cell = "1"
-
-[build-dependencies]
-bindgen = { version = "0.60", default-features = false }
+bot_mem = { path = "../bot_mem/" }
