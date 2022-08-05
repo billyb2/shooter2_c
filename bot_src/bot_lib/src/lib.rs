@@ -5,7 +5,8 @@ use std::{fs, slice};
 use std::mem::size_of;
 use std::sync::{Arc, Mutex};
 use std::error::Error;
-use std::ffi::{CStr, c_char};
+use std::ffi::CStr;
+use std::os::raw::c_char;
 use once_cell::sync::Lazy;
 use wasmer::{Module, NativeFunc, Store, Instance, imports, ExportError};
 
