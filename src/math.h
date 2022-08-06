@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-uint16_t saturating_sub(uint16_t x, uint16_t y);
+float saturating_sub(float x, float y);
 float get_angle(float cx, float cy, float ex, float ey);
-bool aabb_collision(uint16_t pos_x1, uint16_t pos_y1, uint16_t size1, uint16_t pos_x2, uint16_t pos_y2, uint16_t size2);
+bool aabb_collision(float pos_x1, float pos_y1, float size1, float pos_x2, float pos_y2, float size2);
 #endif

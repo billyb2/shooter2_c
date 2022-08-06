@@ -4,6 +4,6 @@
 #include "map.h"
 #include "include/raylib.h"
 
-void move_camera(Camera2D* camera, const Map* map, uint16_t pos_x, uint16_t pos_y);
+void move_camera(Camera2D* camera, const Map* map, float pos_x, float pos_y);
 
 #endif

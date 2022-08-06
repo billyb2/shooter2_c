@@ -34,9 +34,9 @@ typedef struct PlayerMovementInfo {
 } PlayerMovementInfo;
 
 typedef struct Player {
-	uint16_t pos_x;
-	uint16_t pos_y;
-	uint16_t speed;
+	float pos_x;
+	float pos_y;
+	float speed;
 	Ability ability;
 	Weapon weapon;
 	// TODO: integer addition only

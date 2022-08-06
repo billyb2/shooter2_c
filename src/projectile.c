@@ -23,8 +23,11 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 		bool projectile_should_be_copied = true;
 
 		if (projectile->projectile_type == StandardBullet) {
-			projectile->pos_x = (int16_t)projectile->pos_x + projectile->speed_x;
-			projectile->pos_y = (int16_t)projectile->pos_y + projectile->speed_y;
+			float speed_x = cosf(projectile->angle) * projectile->speed;
+			float speed_y = sinf(projectile->angle) * projectile->speed;
+
+			projectile->pos_x = projectile->pos_x + speed_x;
+			projectile->pos_y = projectile->pos_y + speed_y;
 
 			if (projectile->pos_x > map->size_x || projectile->pos_x < 0 || projectile->pos_y < 0 || projectile->pos_y > map->size_y) {
 				projectile_should_be_copied = false;
@@ -40,7 +43,7 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 
 					uint16_t half_proj_size = (uint16_t)(projectile->size) / 2;
 
-					bool collision = aabb_collision(player->pos_x - PLAYER_SIZE / 2, player->pos_y - PLAYER_SIZE / 2, PLAYER_SIZE, projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size);
+					bool collision = aabb_collision(player->pos_x - PLAYER_SIZE / 2.0, player->pos_y - PLAYER_SIZE / 2.0, PLAYER_SIZE, projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size);
 
 					if (collision) {
 						player->health = saturating_sub(player->health, projectile->damage);
@@ -77,14 +80,14 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 }
 
 Projectile new_projectile(uint16_t pos_x, uint16_t pos_y, float angle, ProjectileType projectile_type, float speed, uint16_t damage) {
-	int16_t speed_x = (int16_t)(cosf(angle) * speed);
-	int16_t speed_y = (int16_t)(sinf(angle) * speed);
+	float speed_x = cosf(angle) * speed;
+	float speed_y = sinf(angle) * speed;
 
 	Projectile new_projectile = {
-		.speed_x = speed_x, 
-		.speed_y = speed_y, 
 		.pos_x = pos_x + speed_x,
 		.pos_y = pos_y + speed_y,
+		.speed = speed,
+		.angle = angle,
 		.projectile_type = projectile_type,
 		.size = 2,
 		.damage = damage,
@@ -148,7 +151,7 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 
 				}
 
-				*projectile = new_projectile(player->pos_x, player->pos_y, recoil_angle, StandardBullet, 11.0, 110);
+				*projectile = new_projectile(player->pos_x + ceilf(cosf(recoil_angle) * PROJECTILE_SPEED), player->pos_y + ceilf(sinf(recoil_angle) * PROJECTILE_SPEED), recoil_angle, StandardBullet, PROJECTILE_SPEED, 110);
 
 			}
 

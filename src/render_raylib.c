@@ -23,13 +23,13 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 
 			Color color =  ColorFromNormalized(color_normalized);
 
-			DrawCircle((float)player->pos_x, (float)player->pos_y, PLAYER_SIZE, color);
+			DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE, color);
 
 		}
 
 		for (uint16_t i = 0; i < num_projectiles; i += 1) {
 			const Projectile* projectile = &projectiles[i];
-			DrawCircle((float)projectile->pos_x, (float)projectile->pos_y, projectile->size, BLACK);
+			DrawCircle(projectile->pos_x, projectile->pos_y, projectile->size, BLACK);
 		}
 
 	EndDrawing();
