@@ -3,12 +3,14 @@ use std::path::PathBuf;
 
 fn main() {
     println!("cargo:rerun-if-changed=../c/player.h");
+    /*
+    println!("cargo:rerun-if-changed=../c/minimal_player_info.h");
     println!("cargo:rerun-if-changed=../c/bot_actions_def.h");
     println!("cargo:rerun-if-changed=../c/bot_actions.h");
     println!("cargo:rerun-if-changed=src/c/player.c");
-    println!("cargo:rerun-if-changed=src/c/player.h");
     println!("cargo:rerun-if-changed=src/c/projectile.c");
     println!("cargo:rerun-if-changed=src/c/projectile.h");
+    */
 
     let bot_actions_bindings = bindgen::Builder::default()
         .header("../c/player.h")

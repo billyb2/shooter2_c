@@ -9,9 +9,6 @@
 #include "math.h"
 #include "weapon.h"
 
-extern int SCREEN_WIDTH;
-extern int SCREEN_HEIGHT;
-
 // A cheap and lazy way of doing this, but it's simple
 void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Player* players, uint8_t num_players, const Map* map) {
 	Projectile* buff_projectile_list = malloc(*num_projectiles * sizeof(Projectile));
@@ -111,12 +108,24 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 
 	switch (player->weapon) {
 		case AssaultRifle:
+			#define DAMAGE 30
+			#define RECOIL 0.045
+
 			*num_projectiles += 1;
 			*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
 
-			(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, 8.0, 60);
+			float recoil = RECOIL * ((float)rand() / (float)RAND_MAX);
+			
+			if (rand() > RAND_MAX / 2) {
+				recoil = -recoil;
+				
+			}
 
-			player->remaining_shooting_cooldown_frames = 5;
+			angle += recoil;
+
+			(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, 14.0, DAMAGE);
+
+			player->remaining_shooting_cooldown_frames = 3;
 
 			break;
 		
@@ -131,8 +140,9 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 			break;
 
 		case Shotgun:
-			#define NUM_SHOTGUN_PROJECTILES 8
-			#define RECOIL_ANGLE_AMT 0.085
+			#define NUM_SHOTGUN_PROJECTILES 9
+			#define PROJECTILE_SPEED 16.0
+			#define RECOIL_ANGLE_AMT 0.025
 
 			*num_projectiles += NUM_SHOTGUN_PROJECTILES;
 			*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));

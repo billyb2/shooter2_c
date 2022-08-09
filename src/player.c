@@ -78,6 +78,9 @@ void use_ability(Player* player, const Map* map) {
 }
 
 void move_player(Player* player, PlayerMovementInfo movement_info, const Map* map) {
+	float old_pos_x = player->pos_x;
+	float old_pos_y = player->pos_y;
+
 	if (player->health == 0) {
 		return;
 
@@ -106,6 +109,12 @@ void move_player(Player* player, PlayerMovementInfo movement_info, const Map* ma
 			player->pos_y += player->speed;
 
 		}
+
+	}
+
+	if (map_collision(map, player->pos_x, player->pos_y, PLAYER_SIZE)) {
+		player->pos_x = old_pos_x;
+		player->pos_y = old_pos_y;
 
 	}
 

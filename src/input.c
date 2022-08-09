@@ -10,8 +10,8 @@
 #include "math.h"
 #include "projectile.h"
 
-extern int SCREEN_WIDTH;
-extern int SCREEN_HEIGHT;
+extern float SCREEN_WIDTH;
+extern float SCREEN_HEIGHT;
 
 void keyboard_input(Player* player, const Camera2D* camera, const KeyBindings* key_bindings, Projectile** projectiles, uint16_t* num_projectiles, const Map* map) {
 	Vector2 mouse_pos = GetMousePosition();
@@ -52,14 +52,14 @@ void keyboard_input(Player* player, const Camera2D* camera, const KeyBindings* k
 	float angle_target_x;
 	float angle_target_y;
 
-	if (player->pos_x < SCREEN_WIDTH / 2) {
+	if (player->pos_x < SCREEN_WIDTH / 2.0) {
 		angle_target_x = player->pos_x;
 	
-	} else if (player->pos_x > map->size_x - SCREEN_WIDTH / 2) {
-		angle_target_x = player->pos_x - map->size_x + (float)SCREEN_WIDTH;
+	} else if (player->pos_x > map->size_x - SCREEN_WIDTH / 2.0) {
+		angle_target_x = player->pos_x - map->size_x + SCREEN_WIDTH;
 
 	} else {
-		angle_target_x = (float)SCREEN_WIDTH / 2.0;
+		angle_target_x = SCREEN_WIDTH / 2.0;
 
 	}
 

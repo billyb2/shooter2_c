@@ -1,4 +1,6 @@
 #![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
+#![allow(non_upper_case_globals)]
 
 use std::intrinsics::copy_nonoverlapping;
 use std::{fs, slice};
@@ -11,10 +13,15 @@ use wasmer::{Module, NativeFunc, Store, Instance, imports, ExportError};
 
 include!(concat!(env!("OUT_DIR"), "/bot_actions.rs"));
 
+#[allow(dead_code)]
 const UP:u8 = 0x00;
+#[allow(dead_code)]
 const DOWN:u8 = 0xFF; 
+#[allow(dead_code)]
 const LEFT:u8 = 0x00; 
+#[allow(dead_code)]
 const RIGHT:u8 = 0xFF;
+#[allow(dead_code)]
 const NONE:u8 = 0x80;
 
 impl Into<BotActions> for i64 {
