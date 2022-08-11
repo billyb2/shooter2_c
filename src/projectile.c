@@ -23,10 +23,10 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 		bool projectile_should_be_copied = true;
 
 		if (projectile->projectile_type == StandardBullet) {
-			projectile->pos_x = (int16_t)projectile->pos_x + projectile->speed_x;
-			projectile->pos_y = (int16_t)projectile->pos_y + projectile->speed_y;
+			projectile->pos_x += projectile->speed * cosf(projectile->angle);
+			projectile->pos_y += projectile->speed * sinf(projectile->angle);
 
-			if (projectile->pos_x > map->size_x || projectile->pos_x < 0 || projectile->pos_y < 0 || projectile->pos_y > map->size_y) {
+			if (projectile->pos_x > map->size_x || projectile->pos_x < 0.0 || projectile->pos_y < 0.0 || projectile->pos_y > map->size_y) {
 				projectile_should_be_copied = false;
 				
 			} else if (projectile_should_be_copied) {
@@ -77,14 +77,11 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 }
 
 Projectile new_projectile(uint16_t pos_x, uint16_t pos_y, float angle, ProjectileType projectile_type, float speed, uint16_t damage) {
-	int16_t speed_x = (int16_t)(cosf(angle) * speed);
-	int16_t speed_y = (int16_t)(sinf(angle) * speed);
-
 	Projectile new_projectile = {
-		.speed_x = speed_x, 
-		.speed_y = speed_y, 
-		.pos_x = pos_x + speed_x,
-		.pos_y = pos_y + speed_y,
+		.pos_x = pos_x,
+		.pos_y = pos_y,
+		.angle = angle,
+		.speed = speed,
 		.projectile_type = projectile_type,
 		.size = 2,
 		.damage = damage,

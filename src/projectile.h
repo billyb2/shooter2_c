@@ -11,11 +11,11 @@ typedef enum ProjectileType {
 } ProjectileType;
 
 typedef struct Projectile {
-	uint16_t pos_x;
-	uint16_t pos_y;
+	float pos_x;
+	float pos_y;
 
-	int16_t speed_x;
-	int16_t speed_y;
+	float angle;
+	float speed;
 
 	uint8_t size;
 	uint16_t damage;

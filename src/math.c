@@ -3,7 +3,7 @@
 #include "include/raylib.h"
 #include "math.h"
 
-uint16_t saturating_sub(uint16_t x, uint16_t y) {
+float saturating_sub(float x, float y) {
 	if (y > x) {
 		return 0;
 
@@ -43,7 +43,7 @@ float get_angle(float cx, float cy, float ex, float ey) {
 }
 
 
-bool aabb_collision(uint16_t pos_x1, uint16_t pos_y1, uint16_t size1, uint16_t pos_x2, uint16_t pos_y2, uint16_t size2) {
+bool aabb_collision(float pos_x1, float pos_y1, float size1, float pos_x2, float pos_y2, float size2) {
 	return (pos_x1 < pos_x2 + size2 &&
     pos_x1 + size1 > pos_x2 &&
     pos_y1 < pos_y2 + size2 &&

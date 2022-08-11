@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "map.h"
-#include "minimal_player_info.h"
+#include "minimal_state_info.h"
 #include "weapon.h"
 
 #define PLAYER_SIZE 10
@@ -34,19 +34,18 @@ typedef struct PlayerMovementInfo {
 } PlayerMovementInfo;
 
 typedef struct Player {
-	uint16_t pos_x;
-	uint16_t pos_y;
-	uint16_t speed;
+	float pos_x;
+	float pos_y;
+	float speed;
 	Ability ability;
 	Weapon weapon;
-	// TODO: integer addition only
 	float direction;
 	uint16_t health;
 	uint16_t remaining_ability_cooldown_frames;
 	uint16_t remaining_shooting_cooldown_frames;
 } Player;
 
-Player new_player(uint16_t pos_x, uint16_t pos_y, Ability ability, Weapon weapon);
+Player new_player(float pos_x, float pos_y, Ability ability, Weapon weapon);
 MinimalPlayerInfo get_minimal_player_info(const Player* player);
 void use_ability(Player* player, const Map* map);
 void update_player_cooldowns(Player* players, uint8_t num_players);

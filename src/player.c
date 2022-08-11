@@ -1,14 +1,14 @@
 #include <stdint.h>
 #include <math.h>
 
-#include "minimal_player_info.h"
+#include "minimal_state_info.h"
 #include "map.h"
 #include "math.h"
 #include "player.h"
 
 #define TELEPORATION_SPEED 250.0
 
-Player new_player(uint16_t pos_x, uint16_t pos_y, Ability ability, Weapon weapon) {
+Player new_player(float pos_x, float pos_y, Ability ability, Weapon weapon) {
 	Player player = {
 		.pos_x = pos_x,
 		.pos_y = pos_y,
@@ -37,43 +37,28 @@ MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 }
 
 void use_ability(Player* player, const Map* map) {
-	if (player->health == 0) {
+	if (player->health == 0 || player->remaining_ability_cooldown_frames > 0) {
 		return;
 
 	}
 
-	if (player->remaining_ability_cooldown_frames > 0) {
-		return;
+	switch (player->ability) {
+		case Teleporation: {
+			float potential_x = player->pos_x + cosf(player->direction) * TELEPORATION_SPEED;
+			float potential_y = player->pos_y + sinf(player->direction) * TELEPORATION_SPEED;
 
-	}
+			if (!map_collision(potential_x, potential_y, PLAYER_SIZE, PLAYER_SIZE, map)) {
+				player->pos_x = potential_x;
+				player->pos_y = potential_y;
 
-	if (player->ability == Teleporation) {
-		int16_t speed_x = (uint16_t)(cosf(player->direction) * TELEPORATION_SPEED);
-		int16_t speed_y = (uint16_t)(sinf(player->direction) * TELEPORATION_SPEED);
+				player->remaining_ability_cooldown_frames = 5 * 60;
 
-		uint16_t potential_x = (uint16_t)((int16_t)player->pos_x + speed_x);
-		uint16_t potential_y = (uint16_t)((int16_t)player->pos_y + speed_y);
+			}
 
-		if (potential_x > map->size_x) {
-			player->pos_x = map->size_x - 1;
-
-		} else {
-			player->pos_x = potential_x;
-
+			break;
 		}
 
-		if (potential_y > map->size_y) {
-			player->pos_y = map->size_y - 1;
-
-		} else {
-			player->pos_y = potential_y;
-
-		}
-
-		// 5 seconds times 60 fps
-		player->remaining_ability_cooldown_frames = 5 * 60;
-
-	}
+	};
 
 }
 

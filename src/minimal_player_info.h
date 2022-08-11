@@ -1,1 +1,0 @@
-../bot_src/c/minimal_player_info.h
