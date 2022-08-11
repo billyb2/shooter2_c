@@ -9,6 +9,7 @@
 #include "input.h"
 #include "math.h"
 #include "projectile.h"
+#include "weapon.h"
 
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
@@ -52,10 +53,10 @@ void keyboard_input(Player* player, const Camera2D* camera, const KeyBindings* k
 	float angle_target_x;
 	float angle_target_y;
 
-	if (player->pos_x < SCREEN_WIDTH / 2) {
+	if (player->pos_x < SCREEN_WIDTH / 2.0) {
 		angle_target_x = player->pos_x;
 	
-	} else if (player->pos_x > map->size_x - SCREEN_WIDTH / 2) {
+	} else if (player->pos_x > map->size_x - SCREEN_WIDTH / 2.0) {
 		angle_target_x = player->pos_x - map->size_x + (float)SCREEN_WIDTH;
 
 	} else {
@@ -63,10 +64,10 @@ void keyboard_input(Player* player, const Camera2D* camera, const KeyBindings* k
 
 	}
 
-	if (player->pos_y < SCREEN_HEIGHT / 2) {
+	if (player->pos_y < SCREEN_HEIGHT / 2.0) {
 		angle_target_y = player->pos_y;
 	
-	} else if (player->pos_y > map->size_x - SCREEN_HEIGHT / 2) {
+	} else if (player->pos_y > map->size_x - SCREEN_HEIGHT / 2.0) {
 		angle_target_y = player->pos_y - map->size_y + (float)SCREEN_HEIGHT;
 
 	} else {
@@ -77,7 +78,22 @@ void keyboard_input(Player* player, const Camera2D* camera, const KeyBindings* k
 	player->direction = get_angle(mouse_pos.x, mouse_pos.y, angle_target_x, angle_target_y);
 
 	if (IsMouseButtonDown(0)) {
-		shoot(projectiles, num_projectiles, player, player->direction);
+		shoot(projectiles, num_projectiles, player, player->direction, Primary, 0.0);
+
+	}
+
+	if (IsKeyDown(KEY_G)) {
+		float throw_distance = distance(player->pos_x, player->pos_y, mouse_pos.x, mouse_pos.y);
+
+		if (throw_distance > 350.0) {
+			throw_distance = 350.0;
+
+		}
+
+		// Make throw_distance a value between 0 and 1, to set the initial speed of thw throwable
+		throw_distance = throw_distance / 350.0;
+		
+		shoot(projectiles, num_projectiles, player, player->direction, Tertiary, throw_distance);
 
 	}
 
@@ -140,7 +156,7 @@ void controller_input(Player* player, const Camera2D* camera, Projectile** proje
 	}
 
 	if (IsGamepadButtonDown(gamepad_id, GAMEPAD_BUTTON_RIGHT_TRIGGER_2)) {
-		shoot(projectiles, num_projectiles, player, player->direction);
+		shoot(projectiles, num_projectiles, player, player->direction, Primary, 0.0);
 
 	}
 

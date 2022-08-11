@@ -1,5 +1,11 @@
 #ifndef WEAPON_H
 #define WEAPON_H
+typedef enum WeaponIndex {
+	Primary,
+	Tertiary,
+
+} WeaponIndex;
+
 typedef enum Weapon {
 	AssaultRifle,
 	Pistol,
@@ -8,6 +14,10 @@ typedef enum Weapon {
 
 } Weapon;
 
+typedef enum Throwable {
+	Grenade,
+
+} Throwable;
 
 
 #endif

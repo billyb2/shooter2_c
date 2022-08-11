@@ -42,6 +42,15 @@ float get_angle(float cx, float cy, float ex, float ey) {
 	return angle;
 }
 
+float distance2(float x1, float y1, float x2, float y2) {
+	return powf((x2 - x1), 2.0) + powf((y2 - y1), 2.0);
+}
+
+float distance(float x1, float y1, float x2, float y2) {
+	return sqrtf(distance2(x1, y2, x2, y2));
+
+}
+
 
 bool aabb_collision(float pos_x1, float pos_y1, float size1, float pos_x2, float pos_y2, float size2) {
 	return (pos_x1 < pos_x2 + size2 &&

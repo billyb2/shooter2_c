@@ -1,9 +1,11 @@
 #include <stdint.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "include/raylib.h"
+#include "map.h"
 #include "player.h"
 #include "projectile.h"
 #include "math.h"
@@ -19,46 +21,84 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 
 	for (uint16_t i = 0; i < *num_projectiles; i += 1) {
 		Projectile* projectile = &(*projectiles)[i];
+		projectile->num_frames_existed += 1;
 
 		bool projectile_should_be_copied = true;
 
-		if (projectile->projectile_type == StandardBullet) {
-			projectile->pos_x += projectile->speed * cosf(projectile->angle);
-			projectile->pos_y += projectile->speed * sinf(projectile->angle);
+		projectile->pos_x += projectile->speed * cosf(projectile->angle);
+		projectile->pos_y += projectile->speed * sinf(projectile->angle);
 
-			if (projectile->pos_x > map->size_x || projectile->pos_x < 0.0 || projectile->pos_y < 0.0 || projectile->pos_y > map->size_y) {
-				projectile_should_be_copied = false;
-				
-			} else if (projectile_should_be_copied) {
-				for(uint8_t i = 0; i < num_players; i += 1) {
-					Player* player = &players[i];
+		switch (projectile->projectile_type) {
+			case StandardBullet: {
+				if (projectile->pos_x > map->size_x || projectile->pos_x < 0.0 || projectile->pos_y < 0.0 || projectile->pos_y > map->size_y) {
+					projectile_should_be_copied = false;
+					
+				} else if (projectile_should_be_copied) {
+					for(uint8_t i = 0; i < num_players; i += 1) {
+						Player* player = &players[i];
 
-					if (player->health == 0) {
-						continue;
+						if (player->health == 0) {
+							continue;
 
-					}
+						}
 
-					uint16_t half_proj_size = (uint16_t)(projectile->size) / 2;
+						float half_proj_size = projectile->size / 2.0;
 
-					bool collision = aabb_collision(player->pos_x - PLAYER_SIZE / 2, player->pos_y - PLAYER_SIZE / 2, PLAYER_SIZE, projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size);
+						bool player_collision = aabb_collision(player->pos_x - PLAYER_SIZE / 2.0, player->pos_y - PLAYER_SIZE / 2.0, PLAYER_SIZE, projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size);
+						bool collided_with_map = map_collision(projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size, projectile->size, map);
 
-					if (collision) {
-						player->health = saturating_sub(player->health, projectile->damage);
+						if (player_collision) {
+							player->health = saturating_sub(player->health, projectile->damage);
 
-					}
+						}
 
-					projectile_should_be_copied = !collision;
-
-					if (!projectile_should_be_copied) {
-						break;
+						projectile_should_be_copied = !player_collision && !collided_with_map;
 
 					}
 
 				}
 
+				break;
+			}
+
+			case GrenadeProj: {
+				// 2.5 seconds
+				#define FRAMES_TILL_EXPLOSION 3 * 30
+				projectile->speed = saturating_sub(projectile->speed, 0.15);
+
+				for (uint8_t i = 0; i < num_players; i += 1) {
+					Player* player = &players[i];
+
+					bool should_explode = projectile->num_frames_existed >= FRAMES_TILL_EXPLOSION;
+
+					float half_proj_size = projectile->size / 2.0;
+					bool collided_with_map = map_collision(projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size, projectile->size, map);
+
+					if (should_explode) {
+						#define MAX_GRENADE_DAMAGE_DISTANCE 200.0
+
+						float distance_to_player = distance(player->pos_x, player->pos_y, projectile->pos_x, projectile->pos_y);
+						
+						if (distance_to_player >= MAX_GRENADE_DAMAGE_DISTANCE) {
+							distance_to_player = MAX_GRENADE_DAMAGE_DISTANCE;
+
+						}
+
+						float damage_ratio = powf(1.0 - (distance_to_player / MAX_GRENADE_DAMAGE_DISTANCE), 1.2);
+						player->health = saturating_sub(player->health, projectile->damage * damage_ratio);
+
+					}
+
+					projectile_should_be_copied = !collided_with_map && !should_explode;
+
+				}
+
+				break;
+
 			}
 
 		}
+
 
 		if (projectile_should_be_copied) {
 			buff_projectile_list[new_num_projectiles] = *projectile;
@@ -77,14 +117,28 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 }
 
 Projectile new_projectile(uint16_t pos_x, uint16_t pos_y, float angle, ProjectileType projectile_type, float speed, uint16_t damage) {
+	uint8_t size;
+
+	switch (projectile_type) {
+		case StandardBullet:
+			size = 2;
+			break;
+
+		case GrenadeProj:
+			size = 5;
+			break;
+
+	};
+
 	Projectile new_projectile = {
 		.pos_x = pos_x,
 		.pos_y = pos_y,
 		.angle = angle,
 		.speed = speed,
 		.projectile_type = projectile_type,
-		.size = 2,
+		.size = size,
 		.damage = damage,
+		.num_frames_existed = 0,
 
 	};
 
@@ -92,70 +146,102 @@ Projectile new_projectile(uint16_t pos_x, uint16_t pos_y, float angle, Projectil
 
 }
 
-void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player, float angle) { 
+void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player, float angle, WeaponIndex weapon_index, float throw_distance) { 
 	if (player->health == 0) {
 		return;
 
 	}
 
-	if (player->remaining_shooting_cooldown_frames > 0) {
-		return;
+	// Use primary weapon
+	if (weapon_index == Primary)  {
+		if (player->remaining_shooting_cooldown_frames > 0) {
+			return;
 
-	}
+		}
 
-	switch (player->weapon) {
-		case AssaultRifle:
-			*num_projectiles += 1;
-			*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
+		switch (player->weapon) {
+			case AssaultRifle:
+				*num_projectiles += 1;
+				*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
 
-			(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, 8.0, 60);
+				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, 8.0, 60);
 
-			player->remaining_shooting_cooldown_frames = 5;
+				player->remaining_shooting_cooldown_frames = 5;
 
-			break;
-		
-		case Pistol:
-			*num_projectiles += 1;
-			*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
+				break;
+			
+			case Pistol:
+				*num_projectiles += 1;
+				*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
 
-			(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, 10.0, 200);
+				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, 10.0, 200);
 
-			player->remaining_shooting_cooldown_frames = 5;
+				player->remaining_shooting_cooldown_frames = 5;
 
-			break;
+				break;
 
-		case Shotgun:
-			#define NUM_SHOTGUN_PROJECTILES 8
-			#define RECOIL_ANGLE_AMT 0.085
+			case Shotgun:
+				#define NUM_SHOTGUN_PROJECTILES 8
+				#define RECOIL_ANGLE_AMT 0.085
 
-			*num_projectiles += NUM_SHOTGUN_PROJECTILES;
-			*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
+				*num_projectiles += NUM_SHOTGUN_PROJECTILES;
+				*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
 
-			float recoil_angle = angle - (RECOIL_ANGLE_AMT * ((float)NUM_SHOTGUN_PROJECTILES / 2.0));
-			float rand_jitter = ((float)RECOIL_ANGLE_AMT) * ((float)rand() / (float)RAND_MAX);
+				float recoil_angle = angle - (RECOIL_ANGLE_AMT * ((float)NUM_SHOTGUN_PROJECTILES / 2.0));
+				float rand_jitter = ((float)RECOIL_ANGLE_AMT) * ((float)rand() / (float)RAND_MAX);
 
-			for (uint8_t i = *num_projectiles - NUM_SHOTGUN_PROJECTILES; i < *num_projectiles; i += 1) {
-				Projectile* projectile = &(*projectiles)[i];
+				for (uint8_t i = *num_projectiles - NUM_SHOTGUN_PROJECTILES; i < *num_projectiles; i += 1) {
+					Projectile* projectile = &(*projectiles)[i];
 
-				if (rand() > RAND_MAX / 2) {
-					recoil_angle += RECOIL_ANGLE_AMT + rand_jitter;
+					if (rand() > RAND_MAX / 2) {
+						recoil_angle += RECOIL_ANGLE_AMT + rand_jitter;
 
-				} else {
-					recoil_angle += RECOIL_ANGLE_AMT - rand_jitter;
+					} else {
+						recoil_angle += RECOIL_ANGLE_AMT - rand_jitter;
+
+					}
+
+					*projectile = new_projectile(player->pos_x, player->pos_y, recoil_angle, StandardBullet, 11.0, 110);
 
 				}
 
-				*projectile = new_projectile(player->pos_x, player->pos_y, recoil_angle, StandardBullet, 11.0, 110);
-
-			}
-
-			player->remaining_shooting_cooldown_frames = 45;
+				player->remaining_shooting_cooldown_frames = 45;
 
 
-		case None:
-			break;
+			case None:
+				break;
 
-	};
+		};
+
+	// Using throwable
+	} else if (weapon_index == Tertiary) {
+		if (player->remaining_throwable_cooldown_frames > 0) {
+			return;
+
+		}
+
+		if (player->num_throwables == 0) {
+			return;
+
+		}
+
+		player->num_throwables -= 1;
+
+		switch (player->throwable) {
+			case Grenade: {
+				*num_projectiles += 1;
+				*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
+
+				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, GrenadeProj, 15.0 * throw_distance, 450);
+
+				player->remaining_throwable_cooldown_frames = 80;
+
+				break;
+			};
+
+		};
+
+	}
 
 }
 
@@ -176,7 +262,7 @@ ProjectileType get_projectile_for_weapon(Weapon weapon) {
 			break;
 
 		case None:
-			projectile_type = Melee;
+			//projectile_type = Melee;
 			break;
 	};
 

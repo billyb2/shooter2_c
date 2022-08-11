@@ -9,6 +9,7 @@
 #include "input.h"
 #include "render.h"
 #include "projectile.h"
+#include "weapon.h"
 
 #include "include/raylib.h"
 
@@ -43,8 +44,8 @@ int main() {
 	uint16_t num_projectiles = 0;
 	Projectile* projectiles = NULL;
 
-	players[0] = new_player(200, 200, Stim, Shotgun);
-	players[1] = new_player(200, 100, Warp, AssaultRifle);
+	players[0] = new_player(200, 200, Stim, Shotgun, Grenade);
+	players[1] = new_player(200, 100, Warp, AssaultRifle, Grenade);
 
 	SetTargetFPS(60);
 

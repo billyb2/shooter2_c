@@ -40,15 +40,18 @@ typedef struct Player {
 	float speed;
 	Ability ability;
 	Weapon weapon;
+	uint8_t num_throwables;
+	Throwable throwable;
 	float direction;
 	uint16_t health;
 	uint16_t remaining_ability_cooldown_frames;
 	uint16_t remaining_shooting_cooldown_frames;
+	uint16_t remaining_throwable_cooldown_frames;
 	bool using_ability;
 
 } Player;
 
-Player new_player(float pos_x, float pos_y, Ability ability, Weapon weapon);
+Player new_player(float pos_x, float pos_y, Ability ability, Weapon weapon, Throwable throwable);
 MinimalPlayerInfo get_minimal_player_info(const Player* player);
 void use_ability(Player* player, const Map* map);
 void update_player_cooldowns(Player* players, uint8_t num_players);

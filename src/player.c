@@ -5,17 +5,28 @@
 #include "map.h"
 #include "math.h"
 #include "player.h"
+#include "weapon.h"
 
 #define DEFAULT_PLAYER_SPEED 5.0
 #define TELEPORATION_SPEED 250.0
 
-Player new_player(float pos_x, float pos_y, Ability ability, Weapon weapon) {
+Player new_player(float pos_x, float pos_y, Ability ability, Weapon weapon, Throwable throwable) {
+	uint8_t num_throwables;
+
+	switch (throwable) {
+		case Grenade:
+			num_throwables = 3;
+			break;
+	};
+
 	Player player = {
 		.pos_x = pos_x,
 		.pos_y = pos_y,
 		.speed = DEFAULT_PLAYER_SPEED,
 		.ability = ability,
 		.weapon = weapon,
+		.num_throwables = num_throwables,
+		.throwable = throwable,
 		.direction = 0.0,
 		.health = 500,
 		.remaining_ability_cooldown_frames = 0,
@@ -115,6 +126,7 @@ void update_player_cooldowns(Player* players, uint8_t num_players) {
 
 		player->remaining_ability_cooldown_frames = saturating_sub(player->remaining_ability_cooldown_frames, 1);
 		player->remaining_shooting_cooldown_frames = saturating_sub(player->remaining_shooting_cooldown_frames, 1);
+		player->remaining_throwable_cooldown_frames = saturating_sub(player->remaining_throwable_cooldown_frames, 1);
 
 		if (player->remaining_ability_cooldown_frames == 0) {
 			player->using_ability = false;

@@ -3,10 +3,11 @@
 #include <stdint.h>
 #include "include/raylib.h"
 #include "player.h"
+#include "weapon.h"
 
 typedef enum ProjectileType {
 	StandardBullet,
-	Melee,
+	GrenadeProj,
 
 } ProjectileType;
 
@@ -20,10 +21,12 @@ typedef struct Projectile {
 	uint8_t size;
 	uint16_t damage;
 
+	uint16_t num_frames_existed; 
+
 	ProjectileType projectile_type;
 
 } Projectile;
 
 void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Player* players, uint8_t num_players, const Map* map);
-void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player, float angle);
+void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player, float angle, WeaponIndex weapon_index, float throw_distance);
 #endif
