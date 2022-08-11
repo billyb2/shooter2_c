@@ -3,19 +3,14 @@
 #include <stdint.h>
 
 #include "camera.h"
-#include "bot_handler.h"
-//#include "bots.h"
 #include "map.h"
 #include "math.h"
-#include "minimal_player_info.h"
 #include "player.h"
 #include "input.h"
 #include "render.h"
 #include "projectile.h"
 
 #include "include/raylib.h"
-#include "include/wasm.h"
-#include "include/wasmer.h"
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 450;
@@ -51,12 +46,6 @@ int main() {
 	players[0] = new_player(200, 200, Teleporation, Shotgun);
 	players[1] = new_player(200, 100, Teleporation, AssaultRifle);
 
-	if (setup_bot("bots/aggro.wasm", 1) != 0) {
-		printf("Failed to setup bot");
-		return 1;
-
-	}
-
 	SetTargetFPS(60);
 
 	// Display the window until ESC is pressed
@@ -65,7 +54,6 @@ int main() {
 
 		player_input(&players[0], &camera, &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles, &map, true);
 
-		update_bot_info(players, num_players, &projectiles, &num_projectiles, &map);
 		update_projectiles(&projectiles, &num_projectiles, players, num_players, &map);
 		move_camera(&camera, &map, players[0].pos_x, players[0].pos_y);
 
@@ -77,7 +65,6 @@ int main() {
 
 	free(players);
 	free(projectiles);
-	//free(wasm_data.bot_data_list);
 
     return 0;
 }

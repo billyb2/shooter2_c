@@ -10,28 +10,16 @@ configure_windows:
 configure_windows_release:
 	cmake -Bbuild/release_win -H. -GNinja -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=win.toolchain.cmake
 
-copy_bot_handler:
-	just -u bot_src/bot_lib/ copy
-
-copy_bot_handler_windows:
-	just -u bot_src/bot_lib/ copy_windows
-
-copy_bot_handler_release:
-	just -u bot_src/bot_lib/ copy_release
-
-copy_bot_handler_windows_release:
-	just -u bot_src/bot_lib/ copy_windows_release
-
-build: copy_bot_handler
+build:
 	ninja -Cbuild/debug -j4
 
-build_release: copy_bot_handler_release
+build_release:
 	ninja -Cbuild/release -j4
 
-build_windows: copy_bot_handler_windows
+build_windows:
 	ninja -Cbuild/debug_win -j4
 
-build_windows_release: copy_bot_handler_windows_release
+build_windows_release:
 	ninja -Cbuild/release_win -j4
 
 run: build 

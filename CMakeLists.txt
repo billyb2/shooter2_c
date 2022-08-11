@@ -18,11 +18,9 @@ if (DEFINED CMAKE_SYSTEM_NAME)
 		message("Using mold linker")
 		set(CMAKE_C_COMPILER clang)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-ld=mold")
-		set(BOT_HANDLER_LIB "${CMAKE_CURRENT_SOURCE_DIR}/build/libbot_handler.a")
 	endif()
 
 	if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-		set(BOT_HANDLER_LIB "${CMAKE_CURRENT_SOURCE_DIR}/build/windows/libbot_handler.a")
 		set(WINDOWS_LIBS "-lws2_32 -luserenv -lbcrypt")
 	endif()
 
@@ -59,12 +57,8 @@ endif()
 
 file(GLOB SRC_FILES src/*.c)
 
-if(NOT DEFINED BOT_HANDLER_LIB)
-	message(FATAL_ERROR "Bot handler lib not set, exiting...")
-endif()
-
 add_executable(${PROJECT_NAME} ${SRC_FILES})
-target_link_libraries(${PROJECT_NAME} raylib ${BOT_HANDLER_LIB} ${WINDOWS_LIBS})
+target_link_libraries(${PROJECT_NAME} raylib ${WINDOWS_LIBS})
 
 # Checks if OSX and links appropriate frameworks (Only required on MacOS)
 if (APPLE)
