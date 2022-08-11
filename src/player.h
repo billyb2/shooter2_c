@@ -9,7 +9,8 @@
 #define PLAYER_SIZE 10
 
 typedef enum Ability {
-	Teleporation,
+	Warp,
+	Stim,
 
 } Ability;
 
@@ -43,6 +44,8 @@ typedef struct Player {
 	uint16_t health;
 	uint16_t remaining_ability_cooldown_frames;
 	uint16_t remaining_shooting_cooldown_frames;
+	bool using_ability;
+
 } Player;
 
 Player new_player(float pos_x, float pos_y, Ability ability, Weapon weapon);

@@ -43,8 +43,8 @@ int main() {
 	uint16_t num_projectiles = 0;
 	Projectile* projectiles = NULL;
 
-	players[0] = new_player(200, 200, Teleporation, Shotgun);
-	players[1] = new_player(200, 100, Teleporation, AssaultRifle);
+	players[0] = new_player(200, 200, Stim, Shotgun);
+	players[1] = new_player(200, 100, Warp, AssaultRifle);
 
 	SetTargetFPS(60);
 
