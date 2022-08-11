@@ -10,11 +10,13 @@
 #include "render.h"
 #include "projectile.h"
 #include "weapon.h"
+#include "rand.h"
 
 #include "include/raylib.h"
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 450;
+
 
 const KeyBindings DEFAULT_KEY_BINDINGS = {
 	.up = KEY_W,
@@ -26,6 +28,7 @@ const KeyBindings DEFAULT_KEY_BINDINGS = {
 };
 
 int main() {
+	init_fast_rand();
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "shooter2");
 
 	Camera2D camera = { 0 };

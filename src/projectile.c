@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "include/raylib.h"
+#include "rand.h"
 #include "map.h"
 #include "player.h"
 #include "projectile.h"
@@ -188,12 +189,12 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 				*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
 
 				float recoil_angle = angle - (RECOIL_ANGLE_AMT * ((float)NUM_SHOTGUN_PROJECTILES / 2.0));
-				float rand_jitter = ((float)RECOIL_ANGLE_AMT) * ((float)rand() / (float)RAND_MAX);
+				float rand_jitter = ((float)RECOIL_ANGLE_AMT) * ((float)fast_rand() / (float)FAST_RAND_MAX);
 
-				for (uint8_t i = *num_projectiles - NUM_SHOTGUN_PROJECTILES; i < *num_projectiles; i += 1) {
+				for (uint16_t i = *num_projectiles - NUM_SHOTGUN_PROJECTILES; i < *num_projectiles; i += 1) {
 					Projectile* projectile = &(*projectiles)[i];
 
-					if (rand() > RAND_MAX / 2) {
+					if (fast_rand() > FAST_RAND_MAX / 2) {
 						recoil_angle += RECOIL_ANGLE_AMT + rand_jitter;
 
 					} else {
@@ -206,6 +207,7 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 				}
 
 				player->remaining_shooting_cooldown_frames = 45;
+				break;
 
 
 			case None:
