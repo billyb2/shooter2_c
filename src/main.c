@@ -1,14 +1,19 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdint.h>
+
+#define MAIN_C
 
 #include "camera.h"
 #include "map.h"
 #include "math.h"
+#include "net_info.h"
 #include "player.h"
 #include "input.h"
 #include "render.h"
 #include "projectile.h"
+#include "net.h"
 #include "weapon.h"
 #include "rand.h"
 
@@ -27,7 +32,7 @@ const KeyBindings DEFAULT_KEY_BINDINGS = {
 
 };
 
-int main() {
+int main(const int argc, const char** argv) {
 	init_fast_rand();
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "shooter2");
 
@@ -48,18 +53,52 @@ int main() {
 	Projectile* projectiles = NULL;
 
 	players[0] = new_player(200, 200, Stim, Shotgun, Grenade);
-	players[1] = new_player(200, 100, Warp, AssaultRifle, Grenade);
+	players[1] = new_player(200, 100, Warp, Shotgun, Grenade);
 
 	SetTargetFPS(60);
+
+	bool hosting;
+
+	if (argc == 2) {
+		if (strcmp(argv[1], "true") == 0) {
+			printf("Hosting server\n");
+			hosting = true;
+
+		} else if (strcmp(argv[1], "false") == 0) {
+			printf("Connecting to server\n");
+			hosting = false;
+
+		} else {
+			fprintf(stderr, "Invalid value given for [hosting]\n");
+			printf("Usage: ./main [hosting]\n");
+			exit(-1);
+
+		}
+
+	} else {
+		printf("Usage: ./main [hosting]\n");
+		exit(-1);
+	
+	}
+
+	NetworkInfo network_info = init_networking(hosting, "127.0.0.1");
 
 	// Display the window until ESC is pressed
 	while (!WindowShouldClose()) {
 		update_player_cooldowns(players, num_players);
 
 		player_input(&players[0], &camera, &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles, &map, true);
-
+		use_weapons(players, num_players, &projectiles, &num_projectiles);
 		update_projectiles(&projectiles, &num_projectiles, players, num_players, &map);
 		move_camera(&camera, &map, players[0].pos_x, players[0].pos_y);
+
+		if (network_info.is_server) {
+			handle_server_networking(&network_info, 0, players, num_players);
+
+		} else {
+			handle_client_networking(&network_info, &players[0], &players[1]);
+
+		}
 
 		render(camera, players, num_players, projectiles, num_projectiles, &map);
 

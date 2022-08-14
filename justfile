@@ -22,17 +22,29 @@ build_windows:
 build_windows_release:
 	ninja -Cbuild/release_win -j4
 
-run: build 
-	build/debug/main
+run_server: build 
+	build/debug/main true
 
-run_release: build_release 
-	build/release/main
+run_client: build
+	build/debug/main false
 
-run_windows: build_windows
-	wine build/debug_win/main.exe
+run_release_server: build_release 
+	build/release/main true
 
-run_windows_release: build_windows_release
-	wine build/release_win/main.exe
+run_release_client: build_release
+	build/release/main false
+
+run_windows_client: build_windows
+	wine build/debug_win/main.exe false
+
+run_windows_server: build_windows
+	wine build/debug_win/main.exe true
+
+run_windows_release_server: build_windows_release
+	wine build/release_win/main.exe true
+
+run_windows_release_client: build_windows_release
+	wine build/release_win/main.exe false
 
 clean: 
 	rm -r build/

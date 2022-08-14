@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -76,13 +77,17 @@ void keyboard_input(Player* player, const Camera2D* camera, const KeyBindings* k
 	}
 
 	player->direction = get_angle(mouse_pos.x, mouse_pos.y, angle_target_x, angle_target_y);
+	bool shooting_input = false;
 
 	if (IsMouseButtonDown(0)) {
-		shoot(projectiles, num_projectiles, player, player->direction, Primary, 0.0);
+		player->equipped_weapon = Primary;
+		shooting_input = true;
 
 	}
 
 	if (IsKeyDown(KEY_G)) {
+		player->equipped_weapon = Tertiary;
+		shooting_input = true;
 		float throw_distance = distance(player->pos_x, player->pos_y, mouse_pos.x, mouse_pos.y);
 
 		if (throw_distance > 350.0) {
@@ -92,10 +97,15 @@ void keyboard_input(Player* player, const Camera2D* camera, const KeyBindings* k
 
 		// Make throw_distance a value between 0 and 1, to set the initial speed of thw throwable
 		throw_distance = throw_distance / 350.0;
-		
-		shoot(projectiles, num_projectiles, player, player->direction, Tertiary, throw_distance);
 
+		player->throw_ratio = throw_distance;
+
+		
 	}
+
+	player->shooting = shooting_input;
+
+
 
 }
 

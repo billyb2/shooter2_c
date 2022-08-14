@@ -271,3 +271,27 @@ ProjectileType get_projectile_for_weapon(Weapon weapon) {
 	return projectile_type;
 
 }
+
+void use_weapons(Player* players, uint8_t num_players, Projectile** projectiles, uint16_t* num_projectiles) {
+	for (uint8_t i = 0; i < num_players; i += 1) { 
+		Player* player = &players[i];
+
+		if (player->shooting) {
+			switch (player->equipped_weapon) {
+				case Primary: 
+					shoot(projectiles, num_projectiles, player, player->direction, Primary, 0.0);
+					break;
+
+				case Tertiary: {
+					shoot(projectiles, num_projectiles, player, player->direction, Tertiary, player->throw_ratio);
+					break;
+
+				}
+
+
+			}
+
+		}
+
+	}
+}

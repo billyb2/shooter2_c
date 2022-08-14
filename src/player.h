@@ -47,7 +47,11 @@ typedef struct Player {
 	uint16_t remaining_ability_cooldown_frames;
 	uint16_t remaining_shooting_cooldown_frames;
 	uint16_t remaining_throwable_cooldown_frames;
+	
+	bool shooting;
 	bool using_ability;
+	WeaponIndex equipped_weapon;
+	float throw_ratio;
 
 } Player;
 

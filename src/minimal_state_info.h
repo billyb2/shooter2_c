@@ -1,6 +1,7 @@
 #ifndef MINIMAL_PLAYER_INFO_H
 #define MINIMAL_PLAYER_INFO_H
 #include <stdint.h>
+#include <assert.h>
 
 typedef struct MinimalPlayerInfo {
 	float pos_x;
@@ -8,6 +9,9 @@ typedef struct MinimalPlayerInfo {
 	float direction;
 
 } MinimalPlayerInfo;
+
+
+static_assert((sizeof(MinimalPlayerInfo) == 12), "MinimalPlayerInfo is the wrong size, add padding");
 
 typedef struct MinimalProjectileInfo {
 	float pos_x;
@@ -18,5 +22,8 @@ typedef struct MinimalProjectileInfo {
 	uint16_t size;
 
 } MinimalProjectileInfo;
+
+
+static_assert((sizeof(MinimalProjectileInfo) == 20), "MinimalProjectileInfo is the wrong size, add padding");
 
 #endif

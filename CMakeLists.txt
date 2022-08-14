@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11) # FetchContent is available in 3.11+
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Wextra -pedantic -pipe -gdwarf-4")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall -Wextra -pedantic -pipe -gdwarf-4")
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 	message("Release build")
@@ -17,10 +17,11 @@ if (DEFINED CMAKE_SYSTEM_NAME)
 		# Use mold on Linux
 		message("Using mold linker")
 		set(CMAKE_C_COMPILER clang)
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-ld=mold")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-ld=mold -fcolor-diagnostics")
 	endif()
 
 	if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fdiagnostics-color")
 		set(WINDOWS_LIBS "-lws2_32 -luserenv -lbcrypt")
 	endif()
 

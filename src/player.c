@@ -32,6 +32,9 @@ Player new_player(float pos_x, float pos_y, Ability ability, Weapon weapon, Thro
 		.remaining_ability_cooldown_frames = 0,
 		.remaining_shooting_cooldown_frames = 0,
 		.using_ability = false,
+		.shooting = false,
+		.equipped_weapon = Primary,
+		.throw_ratio = 0.5,
 	};
 
 	return player;
