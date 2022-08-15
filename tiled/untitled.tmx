@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.9" tiledversion="1.9.1" orientation="orthogonal" renderorder="right-down" compressionlevel="9" width="30" height="20" tilewidth="50" tileheight="50" infinite="0" nextlayerid="2" nextobjectid="1">
+ <editorsettings>
+  <export target="../maps/untitled.custom" format="custom"/>
+ </editorsettings>
+ <tileset firstgid="1" name="tileset" tilewidth="50" tileheight="50" tilecount="2" columns="0">
+  <grid orientation="orthogonal" width="1" height="1"/>
+  <tile id="0">
+   <image width="50" height="50" source="sprites/red.png"/>
+  </tile>
+  <tile id="1">
+   <image width="50" height="50" source="sprites/green.png"/>
+  </tile>
+ </tileset>
+ <layer id="1" name="Tile Layer 1" width="30" height="20">
+  <data encoding="base64" compression="zstd">
+   KLUv/WBgCJ0AACgBAAEAAgQA1QAedu49IMUewAI=
+  </data>
+ </layer>
+</map>

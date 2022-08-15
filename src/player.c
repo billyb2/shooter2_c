@@ -96,26 +96,40 @@ void move_player(Player* player, PlayerMovementInfo movement_info, const Map* ma
 	}
 
 	if (movement_info.x_axis == Left) {
-		player->pos_x = saturating_sub(player->pos_x, player->speed);
+		float potential_x = saturating_sub(player->pos_x, player->speed);
+
+		if (!map_collision(potential_x, player->pos_y, PLAYER_SIZE, PLAYER_SIZE, map)) {
+			player->pos_x = potential_x;
+
+		}
 
 	}
 
 	if (movement_info.x_axis == Right) {
-		if (player->pos_x + player->speed < map->size_x) {
-			player->pos_x += player->speed;
+		float potential_x = player->pos_x + player->speed;
+
+		if (!map_collision(potential_x, player->pos_y, PLAYER_SIZE, PLAYER_SIZE, map)) {
+			player->pos_x = potential_x;
 
 		}
 	
 	}
 
 	if (movement_info.y_axis == Up) {
-		player->pos_y = saturating_sub(player->pos_y, player->speed);
+		float potential_y = saturating_sub(player->pos_y, player->speed);
+
+		if (!map_collision(player->pos_x, potential_y, PLAYER_SIZE, PLAYER_SIZE, map)) {
+			player->pos_y = potential_y;
+
+		}
 
 	}
 
 	if (movement_info.y_axis == Down) {
-		if (player->pos_y + player->speed < map->size_y) {
-			player->pos_y += player->speed;
+		float potential_y = player->pos_y + player->speed;
+
+		if (!map_collision(player->pos_x, potential_y, PLAYER_SIZE, PLAYER_SIZE, map)) {
+			player->pos_y = potential_y;
 
 		}
 

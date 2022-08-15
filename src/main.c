@@ -41,10 +41,7 @@ int main(const int argc, const char** argv) {
 	camera.rotation = 0.0;
 	camera.zoom = 1.0;
 
-	Map map = {
-		.size_x = 1000,
-		.size_y = 1000,
-	};
+	Map map = new_map("maps/untitled.custom"); 
 
 	uint8_t num_players = 2;
 	Player* players = malloc(num_players * sizeof(Player));
@@ -53,7 +50,7 @@ int main(const int argc, const char** argv) {
 	Projectile* projectiles = NULL;
 
 	players[0] = new_player(200, 200, Stim, Shotgun, Grenade);
-	players[1] = new_player(200, 100, Warp, Shotgun, Grenade);
+	players[1] = new_player(200, 300, Warp, Shotgun, Grenade);
 
 	SetTargetFPS(60);
 

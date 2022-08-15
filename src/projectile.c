@@ -45,7 +45,7 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 
 						float half_proj_size = projectile->size / 2.0;
 
-						bool player_collision = aabb_collision(player->pos_x - PLAYER_SIZE / 2.0, player->pos_y - PLAYER_SIZE / 2.0, PLAYER_SIZE, projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size);
+						bool player_collision = aabb_collision(player->pos_x - PLAYER_SIZE / 2.0, player->pos_y - PLAYER_SIZE / 2.0, PLAYER_SIZE, PLAYER_SIZE, projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size, projectile->size);
 						bool collided_with_map = map_collision(projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size, projectile->size, map);
 
 						if (player_collision) {
@@ -117,7 +117,7 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 
 }
 
-Projectile new_projectile(uint16_t pos_x, uint16_t pos_y, float angle, ProjectileType projectile_type, float speed, uint16_t damage) {
+Projectile new_projectile(float pos_x, float pos_y, float angle, ProjectileType projectile_type, float speed, uint16_t damage) {
 	uint8_t size;
 
 	switch (projectile_type) {
