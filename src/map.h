@@ -12,7 +12,7 @@ typedef struct MapObject {
 	float size_x;
 	float size_y;
 
-	Texture2D texture;
+	Texture2D* texture;
 	bool spawn_point;
 
 } MapObject;
@@ -21,7 +21,9 @@ typedef struct Map {
 	float size_x;
 	float size_y;
 	uint16_t num_objects;
+	uint16_t num_textures;
 	MapObject* objects;
+	Texture* textures;
 
 } Map;
 

@@ -37,9 +37,7 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 			const MapObject* map_obj = &map->objects[i];
 
 			if (!map_obj->spawn_point) {
-				Color color;
-
-				DrawTexture(map_obj->texture, map_obj->pos_x, map_obj->pos_y, WHITE);
+				DrawTexture(*map_obj->texture, map_obj->pos_x, map_obj->pos_y, WHITE);
 
 			}
 

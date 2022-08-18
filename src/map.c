@@ -74,7 +74,7 @@ Map new_map(const char* file_name) {
 	map_bin += sizeof(uint16_t);
 
 	// Poor man's hashmap. Honestly a fine solution for now but should FIXME
-	char** index_to_file_name = malloc(sizeof(char*));
+	Texture2D* index_to_texture = malloc(sizeof(Texture2D));
 
 	while (num_tiles > 0) {
 		uint16_t* tile_id = (uint16_t*)(map_bin);
@@ -82,19 +82,28 @@ Map new_map(const char* file_name) {
 
 		if (*tile_id > largest_id) {
 			largest_id = *tile_id;
-			index_to_file_name = realloc(index_to_file_name, (largest_id + 1) * sizeof(char**));
+			index_to_texture = realloc(index_to_texture, (largest_id + 1) * sizeof(Texture));
 
 		}
 
 		char* file_name = (char*)(map_bin);
-		int file_name_len = strlen(file_name);
+		uint32_t file_name_len = strlen(file_name);
 
 		#define SPRITES_PATH "sprites/"
 		#define SPRITES_PATH_LEN 8
 
-		index_to_file_name[*tile_id] = malloc(SPRITES_PATH_LEN + file_name_len + 1);
-		memcpy(index_to_file_name[*tile_id], SPRITES_PATH, SPRITES_PATH_LEN);
-		memcpy(index_to_file_name[*tile_id] + SPRITES_PATH_LEN, file_name, file_name_len + 1);
+		char* file_path = malloc(SPRITES_PATH_LEN + file_name_len + 1);
+		memcpy(file_path, SPRITES_PATH, SPRITES_PATH_LEN);
+		memcpy(file_path + SPRITES_PATH_LEN, file_name, file_name_len + 1);
+
+		Image image = LoadImage(file_path);
+		ImageCrop(&image, (Rectangle){ 0.0, 0.0, tile_width, tile_height });
+
+		free(file_path);
+
+		index_to_texture[*tile_id] = LoadTextureFromImage(image);
+
+		UnloadImage(image);
 
 		map_header_size += file_name_len + 1;
 		map_bin += file_name_len + 1;
@@ -107,18 +116,12 @@ Map new_map(const char* file_name) {
 
 	map.num_objects = (map_file_size - map_header_size) / MAP_OBJ_SIZE;
 	map.objects = malloc(map.num_objects * sizeof(MapObject));
+	map.textures = index_to_texture;
 
 	for (uint16_t i = 0; i < map.num_objects; i += 1) {
 		uint16_t* tile_id = (uint16_t*)&map_bin[i * MAP_OBJ_SIZE];
 
-		const char* file_name = index_to_file_name[*tile_id];
-
-		Image image = LoadImage(file_name);
-		ImageCrop(&image, (Rectangle){ 0.0, 0.0, tile_width, tile_height });
-
-		Texture2D texture = LoadTextureFromImage(image);
-
-		UnloadImage(image);
+		Texture2D* texture = &index_to_texture[*tile_id];
 
 		bool spawn = map_bin[i * MAP_OBJ_SIZE + 2] == 255; 
 
