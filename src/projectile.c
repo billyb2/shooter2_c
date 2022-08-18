@@ -131,6 +131,9 @@ Projectile new_projectile(float pos_x, float pos_y, float angle, ProjectileType 
 
 	};
 
+	pos_x += cosf(angle) * speed;
+	pos_y += sinf(angle) * speed;
+
 	Projectile new_projectile = {
 		.pos_x = pos_x,
 		.pos_y = pos_y,
