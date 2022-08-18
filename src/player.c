@@ -1,16 +1,19 @@
+#include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <math.h>
 
 #include "minimal_state_info.h"
 #include "map.h"
 #include "math.h"
 #include "player.h"
+#include "rand.h"
 #include "weapon.h"
 
 #define DEFAULT_PLAYER_SPEED 5.0
 #define TELEPORATION_SPEED 250.0
 
-Player new_player(float pos_x, float pos_y, Ability ability, Weapon weapon, Throwable throwable) {
+Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map) {
 	uint8_t num_throwables;
 
 	switch (throwable) {
@@ -19,9 +22,30 @@ Player new_player(float pos_x, float pos_y, Ability ability, Weapon weapon, Thro
 			break;
 	};
 
+	uint16_t num_spawn_points = 0;
+	const MapObject** spawn_points = malloc(sizeof(MapObject*) * map->num_objects);
+
+	for (uint16_t i = 0; i < map->num_objects; i += 1) {
+		MapObject* map_obj = &map->objects[i];
+		
+		if (map_obj->spawn_point) {
+			spawn_points[num_spawn_points] = map_obj;
+			num_spawn_points += 1;
+		}
+
+	}
+
+	if (num_spawn_points == 0) {
+		fprintf(stderr, "Failed to find any spawn points\n");
+		exit(-1);
+
+	}
+
+	const MapObject* spawn_point = spawn_points[rand_range_u64(0, num_spawn_points)];
+
 	Player player = {
-		.pos_x = pos_x,
-		.pos_y = pos_y,
+		.pos_x = spawn_point->pos_x + 25.0,
+		.pos_y = spawn_point->pos_y + 25.0,
 		.speed = DEFAULT_PLAYER_SPEED,
 		.ability = ability,
 		.weapon = weapon,
@@ -36,6 +60,8 @@ Player new_player(float pos_x, float pos_y, Ability ability, Weapon weapon, Thro
 		.equipped_weapon = Primary,
 		.throw_ratio = 0.5,
 	};
+
+	free(spawn_points);
 
 	return player;
 

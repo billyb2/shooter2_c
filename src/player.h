@@ -55,7 +55,7 @@ typedef struct Player {
 
 } Player;
 
-Player new_player(float pos_x, float pos_y, Ability ability, Weapon weapon, Throwable throwable);
+Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map);
 MinimalPlayerInfo get_minimal_player_info(const Player* player);
 void use_ability(Player* player, const Map* map);
 void update_player_cooldowns(Player* players, uint8_t num_players);

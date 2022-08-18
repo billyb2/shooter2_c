@@ -4,15 +4,13 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "include/raylib.h"
 #include "math.h"
 #include "map.h"
 
 Map new_map(const char* file_name) {
 	Map map = {
-		.objects = NULL,
 		.num_objects = 0,
-		.size_x = 1000.0,
-		.size_y = 1000.0,
 
 	};
 
@@ -49,37 +47,91 @@ Map new_map(const char* file_name) {
 
 	}
 
-	#define MAP_OBJ_SIZE 9
+	float tile_width;
+	float tile_height;
 
-	map.num_objects = map_file_size / 9;
-	map.objects = malloc(map.num_objects * sizeof(MapObject));
+	uint32_t map_header_size = 18;
 
-	for (uint16_t i = 0; i < map.num_objects; i += 1) {
-		#define MAP_TILE_SIZE 50.0
+	// Get the map's header info
+	memcpy(&map.size_x, map_bin, sizeof(float));
+	map_bin += sizeof(float);
 
-		uint8_t color[4] = { 0 };
+	memcpy(&map.size_y, map_bin, sizeof(float));
+	map_bin += sizeof(float);
 
-		uint8_t tile_id = map_bin[i * MAP_OBJ_SIZE];
+	memcpy(&tile_width, map_bin, sizeof(float));
+	map_bin += sizeof(float);
 
-		if (tile_id == 0) {
-			color[0] = 255;
-			color[3] = 255;
+	memcpy(&tile_height, map_bin, sizeof(float));
+	map_bin += sizeof(float);
 
-		} else if (tile_id == 1) {
-			color[1] = 255;
-			color[3] = 255;
+	uint16_t* num_tiles_ptr = (uint16_t*)(map_bin);
+	uint16_t num_tiles = *num_tiles_ptr;
+	uint16_t largest_id = 0;
+
+	map_bin += sizeof(uint16_t);
+
+	// Poor man's hashmap. Honestly a fine solution for now but should FIXME
+	char** index_to_file_name = malloc(sizeof(char*));
+
+	while (num_tiles > 0) {
+		uint16_t* tile_id = (uint16_t*)(map_bin);
+		map_bin += 2;
+
+		if (*tile_id > largest_id) {
+			largest_id = *tile_id;
+			index_to_file_name = realloc(index_to_file_name, (largest_id + 1) * sizeof(char**));
 
 		}
 
+		char* file_name = (char*)(map_bin);
+		int file_name_len = strlen(file_name);
 
-		memcpy(&map.objects[i].color, &color, 4);
-		memcpy(&map.objects[i].pos_x, &map_bin[i * MAP_OBJ_SIZE + 1], sizeof(float));
-		memcpy(&map.objects[i].pos_y, &map_bin[i * MAP_OBJ_SIZE + 1 + sizeof(float)], sizeof(float));
+		#define SPRITES_PATH "sprites/"
+		#define SPRITES_PATH_LEN 8
 
-		map.objects[i].pos_x *= MAP_TILE_SIZE;
-		map.objects[i].pos_y *= MAP_TILE_SIZE;
-		map.objects[i].size_x = MAP_TILE_SIZE;
-		map.objects[i].size_y = MAP_TILE_SIZE;
+		index_to_file_name[*tile_id] = malloc(SPRITES_PATH_LEN + file_name_len + 1);
+		memcpy(index_to_file_name[*tile_id], SPRITES_PATH, SPRITES_PATH_LEN);
+		memcpy(index_to_file_name[*tile_id] + SPRITES_PATH_LEN, file_name, file_name_len + 1);
+
+		map_header_size += file_name_len + 1;
+		map_bin += file_name_len + 1;
+
+		num_tiles -= 1;
+
+	}
+
+	#define MAP_OBJ_SIZE 11
+
+	map.num_objects = (map_file_size - map_header_size) / MAP_OBJ_SIZE;
+	map.objects = malloc(map.num_objects * sizeof(MapObject));
+
+	for (uint16_t i = 0; i < map.num_objects; i += 1) {
+		uint16_t* tile_id = (uint16_t*)&map_bin[i * MAP_OBJ_SIZE];
+
+		const char* file_name = index_to_file_name[*tile_id];
+
+		Image image = LoadImage(file_name);
+		ImageCrop(&image, (Rectangle){ 0.0, 0.0, tile_width, tile_height });
+
+		Texture2D texture = LoadTextureFromImage(image);
+
+		UnloadImage(image);
+
+		bool spawn = map_bin[i * MAP_OBJ_SIZE + 2] == 255; 
+
+		memcpy(&map.objects[i].pos_x, &map_bin[i * MAP_OBJ_SIZE + 3], sizeof(float));
+		memcpy(&map.objects[i].pos_y, &map_bin[i * MAP_OBJ_SIZE + 3 + sizeof(float)], sizeof(float));
+
+		map.objects[i].spawn_point = spawn;
+
+		map.objects[i].pos_x *= tile_width;
+		map.objects[i].pos_y *= tile_height;
+
+		map.objects[i].size_x = tile_width;
+		map.objects[i].size_y = tile_height;
+
+		map.objects[i].texture = texture;
 
 	}
 
@@ -95,6 +147,11 @@ bool map_collision(float pos_x, float pos_y, float size_x, float size_y, const M
 
 	for (uint16_t i = 0; i < map->num_objects; i += 1) {
 		const MapObject* map_obj = &map->objects[i];
+
+		if (map_obj->spawn_point) {
+			continue;
+
+		}
 
 		if (aabb_collision(pos_x, pos_y, size_x, size_y, map_obj->pos_x, map_obj->pos_y, map_obj->size_x, map_obj->size_y)) {
 			return true;

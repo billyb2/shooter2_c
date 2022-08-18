@@ -1,25 +1,23 @@
 #include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
+#include <threads.h>
+#include <time.h>
 
 #include "wyhash.h"
 #include "rand.h"
 
-uint64_t RNG_SEED = 0;
+thread_local uint64_t RNG_SEED = 0;
 
 void init_fast_rand() {
-	uint32_t first_rand = rand();
-	uint32_t second_rand = rand();
-
-	uint32_t* RNG_SEED_LOWER_BITS = (uint32_t*)&RNG_SEED + 4;
-
-	memcpy(&RNG_SEED, &first_rand, sizeof(uint32_t));
-	memcpy(&RNG_SEED_LOWER_BITS, &second_rand, sizeof(uint32_t));
-
+	RNG_SEED = time(NULL);
 
 }
 
 uint64_t fast_rand() {
 	return wyrand(&RNG_SEED);
 
+}
+
+uint64_t rand_range_u64(uint64_t min, uint64_t max) {
+	return min + (fast_rand() % (max - min));
 }

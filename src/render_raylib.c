@@ -35,11 +35,13 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 
 		for (uint16_t i = 0; i < map->num_objects; i += 1) {
 			const MapObject* map_obj = &map->objects[i];
-			Color color;
 
-			memcpy(&color, &map_obj->color, 4);
+			if (!map_obj->spawn_point) {
+				Color color;
 
-			DrawRectangle(map_obj->pos_x, map_obj->pos_y, map_obj->size_x, map_obj->size_y, color);
+				DrawTexture(map_obj->texture, map_obj->pos_x, map_obj->pos_y, WHITE);
+
+			}
 
 		}
 

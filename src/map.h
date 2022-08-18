@@ -1,6 +1,7 @@
 #ifndef MAP_H
 #define MAP_H
 
+#include "include/raylib.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -11,7 +12,8 @@ typedef struct MapObject {
 	float size_x;
 	float size_y;
 
-	uint8_t color[4];
+	Texture2D texture;
+	bool spawn_point;
 
 } MapObject;
 

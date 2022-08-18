@@ -25,6 +25,7 @@
 #include "player.h"
 
 #define SERVER_HOST_PORT 42069
+#define CLIENT_HOST_PORT 0xB33F
 
 NetworkInfo init_networking(bool hosting, const char* ip_addr) {
 	#ifdef __WIN32__
@@ -56,7 +57,7 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr) {
 
 	if (hosting) {
 		servaddr.sin_port = htons(SERVER_HOST_PORT);
-		socks_to_send_to->sin_port = htons(SERVER_HOST_PORT);
+		socks_to_send_to->sin_port = htons(CLIENT_HOST_PORT);
 
 		if (bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1) {
 			fprintf(stderr, "Failed to bind to ipaddr\n");
@@ -65,7 +66,7 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr) {
 		}
 
 	} else {
-		servaddr.sin_port = htons(SERVER_HOST_PORT);
+		servaddr.sin_port = htons(CLIENT_HOST_PORT);
 
 		socks_to_send_to->sin_family = AF_INET;
 		socks_to_send_to->sin_addr.s_addr = inet_addr(ip_addr);
