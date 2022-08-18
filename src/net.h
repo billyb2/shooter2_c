@@ -17,8 +17,8 @@
 #ifdef __WIN32__
 #define socklen_t int
 
-// winsock2.h conflicts with raylib
 #ifndef MAIN_C
+// winsock2.h conflicts with raylib, so I pull some defs insead
 #include <winsock2.h>
 #endif
 #endif

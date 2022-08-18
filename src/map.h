@@ -1,7 +1,7 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include "include/raylib.h"
+#include "raylib_defs.h"
 #include <stdint.h>
 #include <stdbool.h>
 

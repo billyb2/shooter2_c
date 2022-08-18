@@ -78,6 +78,8 @@
 #ifndef RAYLIB_H
 #define RAYLIB_H
 
+#ifndef NET_H
+
 #include <stdarg.h>     // Required for: va_list - Only used by TraceLogCallback
 
 #define RAYLIB_VERSION  "4.2-dev"
@@ -241,6 +243,8 @@ typedef struct Image {
     int format;             // Data format (PixelFormat type)
 } Image;
 
+#ifndef RAYLIB_DEFS_H
+
 // Texture, tex data stored in GPU memory (VRAM)
 typedef struct Texture {
     unsigned int id;        // OpenGL texture id
@@ -252,6 +256,8 @@ typedef struct Texture {
 
 // Texture2D, same as Texture
 typedef Texture Texture2D;
+
+#endif
 
 // TextureCubemap, same as Texture
 typedef Texture TextureCubemap;
@@ -1562,3 +1568,4 @@ RLAPI void DetachAudioStreamProcessor(AudioStream stream, AudioCallback processo
 #endif
 
 #endif // RAYLIB_H
+#endif

@@ -8,7 +8,8 @@ extern const int SCREEN_WIDTH;
 extern const int SCREEN_HEIGHT;
 
 void move_camera(Camera2D* camera, const Map* map, float pos_x, float pos_y) {
-	bool screen_bigger_than_map_x, screen_bigger_than_map_y = false;
+	bool screen_bigger_than_map_x = false; 
+	bool screen_bigger_than_map_y = false;
 
 	if (SCREEN_WIDTH >= map->size_x) {
 		camera->target.x = SCREEN_WIDTH / 2.0;

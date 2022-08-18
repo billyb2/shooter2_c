@@ -1,15 +1,15 @@
 #include <stdint.h>
 #include <string.h>
-#include <threads.h>
 #include <time.h>
 
 #include "wyhash.h"
 #include "rand.h"
 
-thread_local uint64_t RNG_SEED = 0;
+_Thread_local uint64_t RNG_SEED = 0;
 
 void init_fast_rand() {
-	RNG_SEED = time(NULL);
+	//RNG_SEED = time(NULL);
+	RNG_SEED = 324903923123;
 
 }
 

@@ -7,6 +7,8 @@
 #include "include/raylib.h"
 #include "math.h"
 #include "map.h"
+#include "include/raylib.h"
+#include "raylib_defs.h"
 
 Map new_map(const char* file_name) {
 	Map map = {

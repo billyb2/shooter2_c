@@ -1,9 +1,9 @@
+#define MAIN_C
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-
-#define MAIN_C
 
 #include "camera.h"
 #include "map.h"
@@ -78,7 +78,7 @@ int main(const int argc, const char** argv) {
 	
 	}
 
-	NetworkInfo network_info = init_networking(hosting, "127.0.0.1");
+	NetworkInfo network_info = init_networking(hosting, "192.168.1.70");
 
 	// Display the window until ESC is pressed
 	while (!WindowShouldClose()) {

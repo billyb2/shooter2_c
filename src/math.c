@@ -47,7 +47,7 @@ float distance2(float x1, float y1, float x2, float y2) {
 }
 
 float distance(float x1, float y1, float x2, float y2) {
-	return sqrtf(distance2(x1, y2, x2, y2));
+	return sqrtf(distance2(x1, y1, x2, y2));
 
 }
 
