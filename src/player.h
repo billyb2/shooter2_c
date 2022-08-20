@@ -7,6 +7,7 @@
 #include "weapon.h"
 
 #define PLAYER_SIZE 10
+#define PLAYER_MAX_HEALTH 500
 
 typedef enum Ability {
 	Warp,
@@ -47,7 +48,11 @@ typedef struct Player {
 	uint16_t remaining_ability_cooldown_frames;
 	uint16_t remaining_shooting_cooldown_frames;
 	uint16_t remaining_throwable_cooldown_frames;
-	
+	uint16_t num_frames_dead;
+
+	uint64_t id;
+	bool assigned_id;
+
 	bool shooting;
 	bool using_ability;
 	WeaponIndex equipped_weapon;
@@ -60,4 +65,5 @@ MinimalPlayerInfo get_minimal_player_info(const Player* player);
 void use_ability(Player* player, const Map* map);
 void update_player_cooldowns(Player* players, uint8_t num_players);
 void move_player(Player* player, PlayerMovementInfo movement_info, const Map* map);
+void respawn_players(Player* players, uint8_t num_players);
 #endif

@@ -29,11 +29,10 @@ typedef struct NetworkInfo {
 	struct sockaddr_in* socks_to_send_to;
 	socklen_t addr_len;
 
-
 } NetworkInfo;
 
 
-NetworkInfo init_networking(bool hosting, const char* ip_addr);
+NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player);
 int handle_server_networking(NetworkInfo* network_info, uint8_t my_player_id, Player* players, uint8_t num_players);
-int handle_client_networking(NetworkInfo* network_info, const Player* my_player, Player* other_player);
+int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_players);
 #endif 

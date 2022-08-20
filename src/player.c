@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <time.h>
 #include <math.h>
 
 #include "minimal_state_info.h"
@@ -43,7 +44,10 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 
 	const MapObject* spawn_point = spawn_points[rand_range_u64(0, num_spawn_points)];
 
+	srand(time(NULL));
 	Player player = {
+		.id = rand(),
+		.assigned_id = false,
 		.pos_x = spawn_point->pos_x + 25.0,
 		.pos_y = spawn_point->pos_y + 25.0,
 		.speed = DEFAULT_PLAYER_SPEED,
@@ -52,9 +56,10 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 		.num_throwables = num_throwables,
 		.throwable = throwable,
 		.direction = 0.0,
-		.health = 500,
+		.health = PLAYER_MAX_HEALTH,
 		.remaining_ability_cooldown_frames = 0,
 		.remaining_shooting_cooldown_frames = 0,
+		.num_frames_dead = 0,
 		.using_ability = false,
 		.shooting = false,
 		.equipped_weapon = Primary,
@@ -71,6 +76,7 @@ MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 	MinimalPlayerInfo minimal_player = {
 		.pos_x = player->pos_x,
 		.pos_y = player->pos_y,
+		.health = player->health,
 		.direction = player->direction,
 	};
 
@@ -176,6 +182,25 @@ void update_player_cooldowns(Player* players, uint8_t num_players) {
 
 			if (player->ability == Stim) {
 				player->speed = DEFAULT_PLAYER_SPEED;
+
+			}
+
+		}
+
+	}
+
+}
+
+void respawn_players(Player* players, uint8_t num_players) {
+	for (uint8_t i = 0; i < num_players; i += 1) {
+		Player* player = &players[i];
+
+		if (player->health == 0) {
+			player->num_frames_dead += 1;
+
+			if (player->num_frames_dead >= 180) {
+				player->health = PLAYER_MAX_HEALTH;
+				player->num_frames_dead = 0;
 
 			}
 

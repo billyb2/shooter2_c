@@ -33,6 +33,30 @@ const KeyBindings DEFAULT_KEY_BINDINGS = {
 };
 
 int main(const int argc, const char** argv) {
+	#define MAX_IPv4_STR_LEN 15
+	char ip_str[15] = { 0 };
+
+	bool hosting;
+
+	if (argc == 2) {
+		if (strcmp(argv[1], "true") == 0) {
+			printf("Hosting server\n");
+			hosting = true;
+
+		} else {
+			printf("Server IP: ");
+			scanf("%s", ip_str);
+			printf("Connecting to %s\n", ip_str);
+			hosting = false;
+
+		}
+
+	} else {
+		printf("Usage: ./main [hosting]\n");
+		exit(-1);
+	
+	}
+
 	init_fast_rand();
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "shooter2");
 
@@ -54,31 +78,8 @@ int main(const int argc, const char** argv) {
 
 	SetTargetFPS(60);
 
-	bool hosting;
+	NetworkInfo network_info = init_networking(hosting, ip_str, &players[0]);
 
-	if (argc == 2) {
-		if (strcmp(argv[1], "true") == 0) {
-			printf("Hosting server\n");
-			hosting = true;
-
-		} else if (strcmp(argv[1], "false") == 0) {
-			printf("Connecting to server\n");
-			hosting = false;
-
-		} else {
-			fprintf(stderr, "Invalid value given for [hosting]\n");
-			printf("Usage: ./main [hosting]\n");
-			exit(-1);
-
-		}
-
-	} else {
-		printf("Usage: ./main [hosting]\n");
-		exit(-1);
-	
-	}
-
-	NetworkInfo network_info = init_networking(hosting, "192.168.1.70");
 
 	// Display the window until ESC is pressed
 	while (!WindowShouldClose()) {
@@ -89,13 +90,9 @@ int main(const int argc, const char** argv) {
 		update_projectiles(&projectiles, &num_projectiles, players, num_players, &map);
 		move_camera(&camera, &map, players[0].pos_x, players[0].pos_y);
 
-		if (network_info.is_server) {
-			handle_server_networking(&network_info, 0, players, num_players);
-
-		} else {
-			handle_client_networking(&network_info, &players[0], &players[1]);
-
-		}
+		handle_networking(&network_info, players, num_players);
+		respawn_players(players, num_players);
+		
 
 		render(camera, players, num_players, projectiles, num_projectiles, &map);
 
