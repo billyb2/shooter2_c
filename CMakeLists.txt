@@ -9,7 +9,7 @@ endif()
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 	message("Debug build")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Og -gdwarf-4")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Og")
 endif()
 
 if (DEFINED CMAKE_SYSTEM_NAME)

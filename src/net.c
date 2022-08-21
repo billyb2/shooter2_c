@@ -107,7 +107,7 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player
 
 }
 
-void process_net_packets(char* buffer, int bytes_read, Player* players, uint8_t num_players, NetworkInfo* network_info) {
+void process_net_packets(char* buffer, Player* players, uint8_t num_players) {
 	MinimalPlayerInfo* minimal_player_info = (MinimalPlayerInfo*)buffer;
 
 	Player* net_player = NULL;
@@ -178,7 +178,7 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 	}
 
 	if (bytes_read > 0) {
-		process_net_packets(buffer, bytes_read, players, num_players, network_info);
+		process_net_packets(buffer, players, num_players);
 
 	}
 

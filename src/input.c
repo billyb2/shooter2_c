@@ -15,7 +15,7 @@
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 
-void keyboard_input(Player* player, const Camera2D* camera, const KeyBindings* key_bindings, Projectile** projectiles, uint16_t* num_projectiles, const Map* map) {
+void keyboard_input(Player* player, const KeyBindings* key_bindings, const Map* map) {
 	Vector2 mouse_pos = GetMousePosition();
 
 	// Ability input
@@ -177,12 +177,12 @@ void controller_input(Player* player, const Map* map, int gamepad_id) {
 
 }
 
-void player_input(Player* player, const Camera2D* camera, const KeyBindings* key_bindings, Projectile** projectiles, uint16_t* num_projectiles, const Map* map, bool using_keyboard) {
+void player_input(Player* player, const KeyBindings* key_bindings, const Map* map, bool using_keyboard) {
 	if (using_keyboard) {
-		keyboard_input(player, camera, key_bindings, projectiles, num_projectiles, map);
+		keyboard_input(player, key_bindings, map);
 
 	} else {
-		controller_input(player, camera, projectiles, num_projectiles, map, 0);
+		controller_input(player, map, 0);
 
 
 	}

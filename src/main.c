@@ -85,7 +85,7 @@ int main(const int argc, const char** argv) {
 	while (!WindowShouldClose()) {
 		update_player_cooldowns(players, num_players);
 
-		player_input(&players[0], &camera, &DEFAULT_KEY_BINDINGS, &projectiles, &num_projectiles, &map, true);
+		player_input(&players[0], &DEFAULT_KEY_BINDINGS, &map, true);
 		use_weapons(players, num_players, &projectiles, &num_projectiles);
 		update_projectiles(&projectiles, &num_projectiles, players, num_players, &map);
 		move_camera(&camera, &map, players[0].pos_x, players[0].pos_y);
