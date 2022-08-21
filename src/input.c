@@ -103,13 +103,18 @@ void keyboard_input(Player* player, const Camera2D* camera, const KeyBindings* k
 		
 	}
 
+	if (IsKeyDown(KEY_R)) {
+		reload(player);
+
+	}
+
 	player->shooting = shooting_input;
 
 
 
 }
 
-void controller_input(Player* player, const Camera2D* camera, Projectile** projectiles, uint16_t* num_projectiles, const Map* map, int gamepad_id) {
+void controller_input(Player* player, const Map* map, int gamepad_id) {
 	PlayerMovementInfo movement_info = {
 		.x_axis = NoneX,
 		.y_axis = NoneY,
@@ -166,7 +171,7 @@ void controller_input(Player* player, const Camera2D* camera, Projectile** proje
 	}
 
 	if (IsGamepadButtonDown(gamepad_id, GAMEPAD_BUTTON_RIGHT_TRIGGER_2)) {
-		shoot(projectiles, num_projectiles, player, player->direction, Primary, 0.0);
+		player->shooting = true;
 
 	}
 

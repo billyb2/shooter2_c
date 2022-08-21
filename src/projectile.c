@@ -158,10 +158,12 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 
 	// Use primary weapon
 	if (weapon_index == Primary)  {
-		if (player->remaining_shooting_cooldown_frames > 0) {
+		if (player->remaining_shooting_cooldown_frames > 0 || player->ammo == 0 || player->reloading) {
 			return;
 
 		}
+
+		player->ammo -= 1;
 
 		switch (player->weapon) {
 			case AssaultRifle:
@@ -253,7 +255,7 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 ProjectileType get_projectile_for_weapon(Weapon weapon) {
 	ProjectileType projectile_type = StandardBullet;
 
-	switch(weapon) {
+	switch (weapon) {
 		case AssaultRifle:
 			projectile_type = StandardBullet;
 			break;
@@ -272,6 +274,32 @@ ProjectileType get_projectile_for_weapon(Weapon weapon) {
 	};
 
 	return projectile_type;
+
+}
+
+uint8_t get_ammo_count(Weapon weapon) {
+	uint8_t ammo_count;
+
+	switch (weapon) {
+		case AssaultRifle:
+			ammo_count = 30;
+			break;
+
+		case Pistol:
+			ammo_count = 12;
+			break;
+
+		case Shotgun:
+			ammo_count = 8;
+			break;
+
+		case None:
+			ammo_count = 0;
+			break;
+
+	};
+
+	return ammo_count;
 
 }
 

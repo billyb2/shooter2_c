@@ -29,4 +29,5 @@ typedef struct Projectile {
 
 void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Player* players, uint8_t num_players, const Map* map);
 void use_weapons(Player* players, uint8_t num_players, Projectile** projectiles, uint16_t* num_projectiles);
+uint8_t get_ammo_count(Weapon weapon);
 #endif

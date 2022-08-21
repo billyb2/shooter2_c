@@ -8,6 +8,7 @@
 #include "map.h"
 #include "math.h"
 #include "player.h"
+#include "projectile.h"
 #include "rand.h"
 #include "weapon.h"
 
@@ -45,6 +46,7 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 	const MapObject* spawn_point = spawn_points[rand_range_u64(0, num_spawn_points)];
 
 	srand(time(NULL));
+
 	Player player = {
 		.id = rand(),
 		.assigned_id = false,
@@ -64,6 +66,9 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 		.shooting = false,
 		.equipped_weapon = Primary,
 		.throw_ratio = 0.5,
+		.reloading = false,
+		.ammo = get_ammo_count(weapon),
+		.remaining_reload_frames = 0,
 	};
 
 	free(spawn_points);
@@ -118,6 +123,42 @@ void use_ability(Player* player, const Map* map) {
 		}
 
 	};
+
+}
+
+void reload(Player* player) {
+	if (player->reloading) {
+		return;
+
+	}
+
+	uint16_t reload_frames;
+
+	switch (player->weapon) {
+		case AssaultRifle:
+			// 2.5 seconds
+			reload_frames = 60 * 2 + 30;
+			break;
+
+		
+		case Pistol:
+			// 2 seconds
+			reload_frames = 60 * 2;
+			break;
+
+		case Shotgun:
+			// 3 seconds
+			reload_frames = 60 * 3;
+			break;
+
+		case None:
+			reload_frames = 0;
+			break;
+
+	}
+
+	player->remaining_reload_frames = reload_frames;
+	player->reloading = true;
 
 }
 
@@ -177,6 +218,11 @@ void update_player_cooldowns(Player* players, uint8_t num_players) {
 		player->remaining_shooting_cooldown_frames = saturating_sub(player->remaining_shooting_cooldown_frames, 1);
 		player->remaining_throwable_cooldown_frames = saturating_sub(player->remaining_throwable_cooldown_frames, 1);
 
+		if (player->reloading) {
+			player->remaining_reload_frames = saturating_sub(player->remaining_reload_frames, 1);
+
+		}
+
 		if (player->remaining_ability_cooldown_frames == 0) {
 			player->using_ability = false;
 
@@ -187,6 +233,12 @@ void update_player_cooldowns(Player* players, uint8_t num_players) {
 
 		}
 
+
+		if (player->reloading && player->remaining_reload_frames == 0) {
+			player->ammo = get_ammo_count(player->weapon);
+			player->reloading = false;
+
+		}
 	}
 
 }

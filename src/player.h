@@ -41,6 +41,11 @@ typedef struct Player {
 	float speed;
 	Ability ability;
 	Weapon weapon;
+
+	uint8_t ammo;
+	bool reloading;
+	uint16_t remaining_reload_frames;
+
 	uint8_t num_throwables;
 	Throwable throwable;
 	float direction;
@@ -63,7 +68,9 @@ typedef struct Player {
 Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map);
 MinimalPlayerInfo get_minimal_player_info(const Player* player);
 void use_ability(Player* player, const Map* map);
+void reload(Player* player);
 void update_player_cooldowns(Player* players, uint8_t num_players);
 void move_player(Player* player, PlayerMovementInfo movement_info, const Map* map);
 void respawn_players(Player* players, uint8_t num_players);
+
 #endif

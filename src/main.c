@@ -34,7 +34,7 @@ const KeyBindings DEFAULT_KEY_BINDINGS = {
 
 int main(const int argc, const char** argv) {
 	#define MAX_IPv4_STR_LEN 15
-	char ip_str[15] = { 0 };
+	char ip_str[16] = { 0 };
 
 	bool hosting;
 
