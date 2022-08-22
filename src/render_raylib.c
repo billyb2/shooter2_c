@@ -20,7 +20,10 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 		for (uint8_t i = 0; i < num_players; i += 1) {
 			const Player* player = &players[i];
 
-			DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE, RED);
+			if (player->health > 0) {
+				DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE, RED);
+
+			}
 
 		}
 
@@ -45,19 +48,6 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 		// Start drawing the UI
 		
 		// First, draw the health bar
-		Color health_color;
-
-		if (players[0].health > ((float)PLAYER_MAX_HEALTH * 2.0 / 3.0)) {
-			health_color = GREEN;
-
-		} else if (players[0].health > PLAYER_MAX_HEALTH / 3.0) {
-			health_color = YELLOW;
-
-		} else {
-			health_color = RED;
-
-		}
-
 		const Color health_bar_color =  {
 			.r = PURPLE.r,
 			.g = PURPLE.g,
@@ -97,7 +87,7 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 
 		}
 
-		DrawText(ammo_count_text, SCREEN_WIDTH - 125, 50, 20, health_bar_outline_color);
+		DrawText(ammo_count_text, SCREEN_WIDTH - 11 * strlen(ammo_count_text), 50, 20, health_bar_outline_color);
 
 	EndDrawing();
 
