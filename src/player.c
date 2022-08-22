@@ -137,28 +137,11 @@ void reload(Player* player) {
 
 	}
 
-	uint16_t reload_frames;
+	uint16_t reload_frames = get_num_reload_frames(player->weapon);	
 
-	switch (player->weapon) {
-		case AssaultRifle:
-			// 2.5 seconds
-			reload_frames = 60 * 2 + 30;
-			break;
-
-		
-		case Pistol:
-			// 2 seconds
-			reload_frames = 60 * 2;
-			break;
-
-		case Shotgun:
-			// 3 seconds
-			reload_frames = 60 * 3;
-			break;
-
-		case None:
-			reload_frames = 0;
-			break;
+	// If your mag isn't empty, decrease reload time
+	if (player->ammo > 0) {
+		reload_frames -= reload_frames / 4;
 
 	}
 

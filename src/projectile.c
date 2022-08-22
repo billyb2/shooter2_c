@@ -173,14 +173,18 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 
 		player->ammo -= 1;
 
+		float proj_speed = get_projectile_speed(player->weapon);
+		float proj_damage = get_projectile_damage(player->weapon);
+		uint16_t cooldown_frames = get_cooldown_frames(player->weapon);
+
 		switch (player->weapon) {
 			case AssaultRifle:
 				*num_projectiles += 1;
 				*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
 
-				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, 8.0, 60);
+				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, proj_speed, proj_damage);
 
-				player->remaining_shooting_cooldown_frames = 5;
+				player->remaining_shooting_cooldown_frames = cooldown_frames;
 
 				break;
 			
@@ -188,15 +192,15 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 				*num_projectiles += 1;
 				*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
 
-				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, 10.0, 200);
+				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, proj_speed, proj_damage);
 
-				player->remaining_shooting_cooldown_frames = 5;
+				player->remaining_shooting_cooldown_frames = cooldown_frames;
 
 				break;
 
 			case Shotgun:
 				#define NUM_SHOTGUN_PROJECTILES 8
-				#define RECOIL_ANGLE_AMT 0.085
+				#define RECOIL_ANGLE_AMT 0.070
 
 				*num_projectiles += NUM_SHOTGUN_PROJECTILES;
 				*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
@@ -215,11 +219,11 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 
 					}
 
-					*projectile = new_projectile(player->pos_x, player->pos_y, recoil_angle, StandardBullet, 11.0, 110);
+					*projectile = new_projectile(player->pos_x, player->pos_y, recoil_angle, StandardBullet, proj_speed, proj_damage);
 
 				}
 
-				player->remaining_shooting_cooldown_frames = 45;
+				player->remaining_shooting_cooldown_frames = cooldown_frames;
 				break;
 
 
@@ -260,77 +264,17 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 
 }
 
-ProjectileType get_projectile_for_weapon(Weapon weapon) {
-	ProjectileType projectile_type = StandardBullet;
-
-	switch (weapon) {
-		case AssaultRifle:
-			projectile_type = StandardBullet;
-			break;
-
-		case Pistol:
-			projectile_type = StandardBullet;
-			break;
-
-		case Shotgun:
-			projectile_type = StandardBullet;
-			break;
-
-		case None:
-			//projectile_type = Melee;
-			break;
-	};
-
-	return projectile_type;
-
-}
-
-uint8_t get_ammo_count(Weapon weapon) {
-	uint8_t ammo_count;
-
-	switch (weapon) {
-		case AssaultRifle:
-			ammo_count = 30;
-			break;
-
-		case Pistol:
-			ammo_count = 12;
-			break;
-
-		case Shotgun:
-			ammo_count = 8;
-			break;
-
-		case None:
-			ammo_count = 0;
-			break;
-
-	};
-
-	return ammo_count;
-
-}
 
 void use_weapons(Player* players, uint8_t num_players, Projectile** projectiles, uint16_t* num_projectiles) {
 	for (uint8_t i = 0; i < num_players; i += 1) { 
 		Player* player = &players[i];
 
 		if (player->shooting) {
-			switch (player->equipped_weapon) {
-				case Primary: 
-					shoot(projectiles, num_projectiles, player, player->direction, Primary, 0.0);
-					break;
+			shoot(projectiles, num_projectiles, player, player->direction, player->equipped_weapon, player->throw_ratio);
 
-				case Tertiary: {
-					shoot(projectiles, num_projectiles, player, player->direction, Tertiary, player->throw_ratio);
-					break;
-
-				}
-
-
-			}
 
 		}
 
 	}
+
 }

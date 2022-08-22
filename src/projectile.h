@@ -5,11 +5,7 @@
 #include "player.h"
 #include "weapon.h"
 
-typedef enum ProjectileType {
-	StandardBullet,
-	GrenadeProj,
 
-} ProjectileType;
 
 typedef struct Projectile {
 	float pos_x;

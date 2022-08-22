@@ -73,7 +73,7 @@ int main(const int argc, const char** argv) {
 	uint16_t num_projectiles = 0;
 	Projectile* projectiles = NULL;
 
-	players[0] = new_player(Stim, AssaultRifle, Grenade, &map);
+	players[0] = new_player(Warp, Shotgun, Grenade, &map);
 	players[1] = new_player(Warp, Shotgun, Grenade, &map);
 
 	SetTargetFPS(60);
