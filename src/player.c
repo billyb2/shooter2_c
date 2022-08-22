@@ -69,6 +69,8 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 		.reloading = false,
 		.ammo = get_ammo_count(weapon),
 		.remaining_reload_frames = 0,
+		.is_net_player = false,
+
 	};
 
 	free(spawn_points);
@@ -82,7 +84,10 @@ MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 		.pos_x = player->pos_x,
 		.pos_y = player->pos_y,
 		.health = player->health,
+		.ability = player->ability,
+		.weapon = player->weapon,
 		.direction = player->direction,
+		.ammo = player->ammo,
 	};
 
 	return minimal_player;

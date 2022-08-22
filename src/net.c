@@ -140,10 +140,14 @@ void process_net_packets(char* buffer, Player* players, uint8_t num_players) {
 
 	}
 
+	net_player->is_net_player = true;
+	net_player->ammo = minimal_player_info->ammo;
 	net_player->pos_x = minimal_player_info->pos_x;
 	net_player->pos_y = minimal_player_info->pos_y;
 	net_player->health = minimal_player_info->health;
 	net_player->direction = minimal_player_info->direction;
+	net_player->weapon = minimal_player_info->weapon;
+	net_player->ability = minimal_player_info->ability;
 
 	memcpy(&net_player->shooting, buffer + sizeof(MinimalPlayerInfo), sizeof(bool));
 

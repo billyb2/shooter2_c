@@ -3,17 +3,12 @@
 
 #include <stdint.h>
 #include "map.h"
+#include "player_ability.h"
 #include "minimal_state_info.h"
 #include "weapon.h"
 
 #define PLAYER_SIZE 10
 #define PLAYER_MAX_HEALTH 500
-
-typedef enum Ability {
-	Warp,
-	Stim,
-
-} Ability;
 
 typedef enum XAxisMovement {
 	Left = 0,
@@ -50,6 +45,7 @@ typedef struct Player {
 	Throwable throwable;
 	float direction;
 	uint16_t health;
+
 	uint16_t remaining_ability_cooldown_frames;
 	uint16_t remaining_shooting_cooldown_frames;
 	uint16_t remaining_throwable_cooldown_frames;
@@ -62,6 +58,8 @@ typedef struct Player {
 	bool using_ability;
 	WeaponIndex equipped_weapon;
 	float throw_ratio;
+
+	bool is_net_player;
 
 } Player;
 

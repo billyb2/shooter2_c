@@ -131,8 +131,8 @@ Projectile new_projectile(float pos_x, float pos_y, float angle, ProjectileType 
 
 	};
 
-	pos_x += cosf(angle) * speed;
-	pos_y += sinf(angle) * speed;
+	pos_x += cosf(angle) * PLAYER_SIZE * 1.5;
+	pos_y += sinf(angle) * PLAYER_SIZE * 1.5;
 
 	Projectile new_projectile = {
 		.pos_x = pos_x,
@@ -158,9 +158,17 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 
 	// Use primary weapon
 	if (weapon_index == Primary)  {
-		if (player->remaining_shooting_cooldown_frames > 0 || player->ammo == 0 || player->reloading) {
-			return;
+		// Only perform specific checks on net players
+		if (player->is_net_player) {
+			if (player->remaining_shooting_cooldown_frames > 0 || player->ammo == 0) {
+				return;
 
+			}
+		} else {
+			if (player->remaining_shooting_cooldown_frames > 0 || player->ammo == 0 || player->reloading) {
+				return;
+
+			}
 		}
 
 		player->ammo -= 1;
