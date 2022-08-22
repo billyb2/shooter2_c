@@ -57,22 +57,22 @@ void keyboard_input(Player* player, const KeyBindings* key_bindings, const Map* 
 	if (player->pos_x < SCREEN_WIDTH / 2.0) {
 		angle_target_x = player->pos_x;
 	
-	} else if (player->pos_x > map->size_x - SCREEN_WIDTH / 2.0) {
-		angle_target_x = player->pos_x - map->size_x + (float)SCREEN_WIDTH;
+	} else if (player->pos_x > SCREEN_WIDTH / 2.0 && player->pos_x < map->size_x - SCREEN_WIDTH / 2.0) {
+		angle_target_x = SCREEN_WIDTH / 2.0;
 
 	} else {
-		angle_target_x = (float)SCREEN_WIDTH / 2.0;
+		angle_target_x = player->pos_x + SCREEN_WIDTH - map->size_x;
 
 	}
 
 	if (player->pos_y < SCREEN_HEIGHT / 2.0) {
 		angle_target_y = player->pos_y;
 	
-	} else if (player->pos_y > map->size_x - SCREEN_HEIGHT / 2.0) {
-		angle_target_y = player->pos_y - map->size_y + (float)SCREEN_HEIGHT;
+	} else if (player->pos_y > SCREEN_HEIGHT / 2.0 && player->pos_y < map->size_y - SCREEN_HEIGHT / 2.0) {
+		angle_target_y = SCREEN_HEIGHT / 2.0;
 
 	} else {
-		angle_target_y = (float)SCREEN_HEIGHT / 2.0;
+		angle_target_y = player->pos_y + SCREEN_HEIGHT - map->size_y;
 
 	}
 
