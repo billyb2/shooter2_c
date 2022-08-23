@@ -44,8 +44,8 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
 	include(FetchContent)
 		FetchContent_Declare(
 		raylib
-		URL https://github.com/raysan5/raylib/archive/refs/tags/4.0.0.tar.gz
-		URL_HASH SHA256=11f6087dc7bedf9efb3f69c0c872f637e421d914e5ecea99bbe7781f173dc38c
+		URL https://github.com/raysan5/raylib/archive/refs/tags/4.2.0.tar.gz
+		URL_HASH SHA256=676217604a5830cb4aa31e0ede0e4233c942e2fc5c206691bded58ebcd82a590
 	)
 	FetchContent_GetProperties(raylib)
   if (NOT raylib_POPULATED) # Have we downloaded raylib yet?

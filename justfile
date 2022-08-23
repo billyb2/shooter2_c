@@ -34,6 +34,10 @@ run_release_server: build_release
 run_release_client: build_release
 	build/release/main false
 
+package: build_release
+	cp build/release/main ./shooter2
+	tar cvfJ shooter2_c.tar.xz shooter2 maps/ sprites/
+
 run_windows_client: build_windows
 	wine build/debug_win/main.exe false
 
@@ -45,6 +49,10 @@ run_windows_release_server: build_windows_release
 
 run_windows_release_client: build_windows_release
 	wine build/release_win/main.exe false
+
+package_windows: build_release
+	cp build/release_win/main.exe ./shooter2.exe
+	7z a shooter2_c.zip shooter2.exe maps/ sprites/
 
 clean: 
 	rm -r build/
