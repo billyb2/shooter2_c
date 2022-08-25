@@ -34,7 +34,8 @@ const KeyBindings DEFAULT_KEY_BINDINGS = {
 
 int main(const int argc, const char** argv) {
 	#define MAX_IPv4_STR_LEN 15
-	char ip_str[16] = { 0 };
+	char ip_str[MAX_IPv4_STR_LEN + 1] = { 0 };
+	size_t ip_str_len = 0;
 
 	bool hosting;
 
@@ -45,7 +46,32 @@ int main(const int argc, const char** argv) {
 
 		} else {
 			printf("Server IP: ");
-			scanf("%s", ip_str);
+			char* ip_char = ip_str;
+
+			while (true) {
+				*ip_char = fgetc(stdin);
+
+				if (*ip_char == '\n') {
+					break;
+
+				}
+
+				ip_char += 1;
+				ip_str_len += 1;
+
+				if (ip_str_len >= MAX_IPv4_STR_LEN) {
+					fprintf(stderr, "Invalid IP given\n");
+					exit(-1);
+
+				}
+
+			}
+
+			if (ip_str_len == 0) {
+				memcpy(ip_str, "127.0.0.1", 9);
+
+			}
+
 			printf("Connecting to %s\n", ip_str);
 			hosting = false;
 
