@@ -16,8 +16,10 @@ if (DEFINED CMAKE_SYSTEM_NAME)
 	if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 		# Use mold on Linux
 		message("Using mold linker")
-		set(CMAKE_C_COMPILER clang)
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-ld=mold -fcolor-diagnostics")
+		set(CMAKE_C_COMPILER gcc)
+
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-ld=mold -fdiagnostics-color")
+
 	endif()
 
 	if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

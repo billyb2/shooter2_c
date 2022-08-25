@@ -1,5 +1,6 @@
 #ifndef NET_H
 #define NET_H
+#include "minimal_state_info.h"
 #ifdef __unix__
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
@@ -9,10 +10,9 @@
 
 #endif
 
-
-
 #include <stdint.h>
 #include "player.h"
+#include "hashset.h"
 
 #ifdef __WIN32__
 #define socklen_t int
@@ -23,11 +23,25 @@
 #endif
 #endif
 
+typedef struct NetPlayer {
+	MinimalPlayerInfo minimal_player_info;
+	bool shooting;
+	uint32_t _padding;
+
+} NetPlayer;
+
+static_assert(sizeof(NetPlayer) == 40, "NetPlayer is the wrong size");
+
+typedef struct Addr {
+	struct sockaddr_in sockaddr;
+	socklen_t addr_len;
+
+} Addr;
+
 typedef struct NetworkInfo {
 	bool is_server;
 	int socket;
-	struct sockaddr_in* socks_to_send_to;
-	socklen_t addr_len;
+	HashSet addrs_to_send_to;
 
 } NetworkInfo;
 

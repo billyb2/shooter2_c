@@ -93,14 +93,16 @@ int main(const int argc, const char** argv) {
 
 	Map map = new_map("maps/untitled.custom"); 
 
-	uint8_t num_players = 2;
+	uint8_t num_players = 4;
 	Player* players = malloc(num_players * sizeof(Player));
 	
 	uint16_t num_projectiles = 0;
 	Projectile* projectiles = NULL;
 
-	players[0] = new_player(Warp, Shotgun, Grenade, &map);
-	players[1] = new_player(Warp, Shotgun, Grenade, &map);
+	for (uint8_t i = 0; i < num_players; i += 1) {
+		players[i] = new_player(Warp, Shotgun, Grenade, &map);
+
+	}
 
 	SetTargetFPS(60);
 
@@ -112,11 +114,11 @@ int main(const int argc, const char** argv) {
 		update_player_cooldowns(players, num_players);
 
 		player_input(&players[0], &DEFAULT_KEY_BINDINGS, &map, true);
+		handle_networking(&network_info, players, num_players);
 		use_weapons(players, num_players, &projectiles, &num_projectiles);
 		update_projectiles(&projectiles, &num_projectiles, players, num_players, &map);
 		move_camera(&camera, &map, players[0].pos_x, players[0].pos_y);
 
-		handle_networking(&network_info, players, num_players);
 		respawn_players(players, num_players);
 		
 

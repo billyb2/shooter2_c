@@ -81,6 +81,7 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 
 MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 	MinimalPlayerInfo minimal_player = {
+		.id = player->id,
 		.pos_x = player->pos_x,
 		.pos_y = player->pos_y,
 		.health = player->health,
