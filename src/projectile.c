@@ -165,7 +165,13 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 
 			}
 		} else {
-			if (player->remaining_shooting_cooldown_frames > 0 || player->ammo == 0 || player->reloading) {
+			if (player->remaining_shooting_cooldown_frames > 0 || player->reloading) {
+				return;
+
+			}
+
+			if (player->ammo == 0) {
+				reload(player);
 				return;
 
 			}
