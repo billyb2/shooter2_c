@@ -15,6 +15,35 @@
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 
+void add_kill(Player* players, uint8_t num_players, Player* player_who_died) {
+	Player* killer = NULL;
+
+	for (uint8_t j = 0; j < num_players; j += 1) {
+		Player* potential_killer = &players[j];
+
+		if (potential_killer->id == player_who_died->last_hurt_by) {
+			killer = potential_killer;
+			break;
+
+		}
+
+	}
+
+	if (killer == NULL) {
+		fprintf(stderr, "Couldn't find killer player\n");
+		exit(-1);
+
+	}
+
+	killer->num_kills += 1;
+	killer->kills = realloc(killer->kills, killer->num_kills * sizeof(PlayerKill));
+
+	killer->kills[killer->num_kills - 1].player_id_killed = player_who_died->id;
+
+	printf("Player %s has %d kills\n", killer->username, killer->num_kills);
+
+}
+
 // A cheap and lazy way of doing this, but it's simple
 void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Player* players, uint8_t num_players, const Map* map) {
 	Projectile* buff_projectile_list = malloc(*num_projectiles * sizeof(Projectile));
@@ -48,8 +77,14 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 						bool player_collision = aabb_collision(player->pos_x - PLAYER_SIZE / 2.0, player->pos_y - PLAYER_SIZE / 2.0, PLAYER_SIZE, PLAYER_SIZE, projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size, projectile->size);
 						bool collided_with_map = map_collision(projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size, projectile->size, map);
 
-						if (player_collision) {
+						if (player_collision && !player->is_net_player) {
 							player->health = saturating_sub(player->health, projectile->damage);
+							player->last_hurt_by = projectile->shot_by;
+
+							if (player->health == 0) {
+								add_kill(players, num_players, player);
+
+							}
 
 						}
 
@@ -88,6 +123,16 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 						float damage_ratio = powf(1.0 - (distance_to_player / MAX_GRENADE_DAMAGE_DISTANCE), 1.2);
 						player->health = saturating_sub(player->health, projectile->damage * damage_ratio);
 
+						if (damage_ratio > 0.0) {
+							player->last_hurt_by = projectile->shot_by;
+
+						}
+
+						if (player->health == 0) {
+							add_kill(players, num_players, player);
+
+						}
+
 					}
 
 					projectile_should_be_copied = !collided_with_map && !should_explode;
@@ -117,7 +162,7 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 
 }
 
-Projectile new_projectile(float pos_x, float pos_y, float angle, ProjectileType projectile_type, float speed, uint16_t damage) {
+Projectile new_projectile(float pos_x, float pos_y, float angle, ProjectileType projectile_type, float speed, uint16_t damage, uint64_t shot_by) {
 	uint8_t size;
 
 	switch (projectile_type) {
@@ -143,6 +188,7 @@ Projectile new_projectile(float pos_x, float pos_y, float angle, ProjectileType 
 		.size = size,
 		.damage = damage,
 		.num_frames_existed = 0,
+		.shot_by = shot_by,
 
 	};
 
@@ -188,7 +234,7 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 				*num_projectiles += 1;
 				*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
 
-				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, proj_speed, proj_damage);
+				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, proj_speed, proj_damage, player->id);
 
 				player->remaining_shooting_cooldown_frames = cooldown_frames;
 
@@ -198,7 +244,7 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 				*num_projectiles += 1;
 				*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
 
-				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, proj_speed, proj_damage);
+				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, StandardBullet, proj_speed, proj_damage, player->id);
 
 				player->remaining_shooting_cooldown_frames = cooldown_frames;
 
@@ -225,7 +271,7 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 
 					}
 
-					*projectile = new_projectile(player->pos_x, player->pos_y, recoil_angle, StandardBullet, proj_speed, proj_damage);
+					*projectile = new_projectile(player->pos_x, player->pos_y, recoil_angle, StandardBullet, proj_speed, proj_damage, player->id);
 
 				}
 
@@ -257,7 +303,7 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 				*num_projectiles += 1;
 				*projectiles = realloc(*projectiles, *num_projectiles * sizeof(Projectile));
 
-				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, GrenadeProj, 15.0 * throw_distance, 450);
+				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, GrenadeProj, 15.0 * throw_distance, 450, player->id);
 
 				player->remaining_throwable_cooldown_frames = 80;
 

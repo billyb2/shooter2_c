@@ -50,6 +50,7 @@ int main(const int argc, const char** argv) {
 		*username_char = fgetc(stdin);
 
 		if (*username_char == '\n') {
+			*username_char = 0;
 			break;	
 
 		}
@@ -77,6 +78,7 @@ int main(const int argc, const char** argv) {
 				*ip_char = fgetc(stdin);
 
 				if (*ip_char == '\n') {
+					*ip_char = 0;
 					break;
 
 				}
@@ -132,7 +134,6 @@ int main(const int argc, const char** argv) {
 
 		} 
 
-
 		players[i] = new_player(Warp, Shotgun, Grenade, &map, new_player_username);
 
 	}
@@ -154,7 +155,6 @@ int main(const int argc, const char** argv) {
 
 		respawn_players(players, num_players);
 		
-
 		render(camera, players, num_players, projectiles, num_projectiles, &map);
 
 	}

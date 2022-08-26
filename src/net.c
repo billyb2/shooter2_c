@@ -1,5 +1,6 @@
 #include "hashset.h"
 #include "weapon.h"
+#include "projectile.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -110,6 +111,7 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player
 	#endif
 
 	my_player->assigned_id = true;
+	my_player->health = PLAYER_MAX_HEALTH;
 
 	Addr addr = {
 		.sockaddr = sock_to_send_to,
@@ -184,15 +186,25 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 
 	}
 
+	net_player->last_hurt_by = buffer->last_hurt_by;
 	net_player->is_net_player = true;
 	net_player->ammo = minimal_player_info->ammo;
 	net_player->pos_x = minimal_player_info->pos_x;
 	net_player->pos_y = minimal_player_info->pos_y;
-	net_player->health = minimal_player_info->health;
 	net_player->direction = minimal_player_info->direction;
 	net_player->weapon = minimal_player_info->weapon;
 	net_player->ability = minimal_player_info->ability;
 	net_player->shooting = shooting;
+
+	if (minimal_player_info->health == 0 && net_player->health > 0) {
+		add_kill(players, num_players, net_player);
+		net_player->health = 0;
+
+	} else {
+		net_player->health = minimal_player_info->health;
+
+	}
+
 
 	if (net_player->username == NULL) {
 		net_player->username = calloc(1, 20);
@@ -217,6 +229,7 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 			memcpy(buffer[0].username, my_player->username, strlen(my_player->username) + 1);
 			buffer[i].minimal_player_info = get_minimal_player_info(&players[i]);
 			buffer[i].shooting = players[i].shooting;
+			buffer[i].last_hurt_by = players[i].last_hurt_by;
 
 		}
 
@@ -231,6 +244,7 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 		memcpy(buffer[0].username, my_player->username, strlen(my_player->username) + 1);
 		buffer[0].minimal_player_info = get_minimal_player_info(my_player);
 		buffer[0].shooting = my_player->shooting;
+		buffer[0].last_hurt_by = my_player->last_hurt_by;
 
 		send(network_info->socket, buffer, sizeof(NetPlayer), 0);
 

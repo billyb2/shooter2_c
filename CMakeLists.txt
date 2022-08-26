@@ -9,7 +9,7 @@ endif()
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 	message("Debug build")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Og")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
 endif()
 
 if (DEFINED CMAKE_SYSTEM_NAME)

@@ -67,6 +67,7 @@ typedef struct Player {
 	bool is_net_player;
 
 	char* username;
+	uint64_t last_hurt_by;
 
 	PlayerKill* kills;
 	uint16_t num_kills;

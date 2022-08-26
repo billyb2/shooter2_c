@@ -20,7 +20,7 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 		for (uint8_t i = 0; i < num_players; i += 1) {
 			const Player* player = &players[i];
 
-			if (player->health > 0) {
+			if (player->health > 0 && player->assigned_id) {
 				if (player->username != NULL) {
 					DrawText(player->username, player->pos_x - (float)strlen(player->username) * 1.5 , player->pos_y - 22, 12, BLACK);
 

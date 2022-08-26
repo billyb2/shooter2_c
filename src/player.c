@@ -59,7 +59,7 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 		.num_throwables = num_throwables,
 		.throwable = throwable,
 		.direction = 0.0,
-		.health = PLAYER_MAX_HEALTH,
+		.health = 0,
 		.remaining_ability_cooldown_frames = 0,
 		.remaining_shooting_cooldown_frames = 0,
 		.num_frames_dead = 0,
@@ -71,6 +71,8 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 		.ammo = get_ammo_count(weapon),
 		.remaining_reload_frames = 0,
 		.is_net_player = false,
+		.kills = NULL,
+		.num_kills = 0,
 
 	};
 
@@ -237,7 +239,7 @@ void respawn_players(Player* players, uint8_t num_players) {
 	for (uint8_t i = 0; i < num_players; i += 1) {
 		Player* player = &players[i];
 
-		if (player->health == 0) {
+		if (player->health == 0 && !player->is_net_player && player->assigned_id) {
 			player->num_frames_dead += 1;
 
 			if (player->num_frames_dead >= 180) {
