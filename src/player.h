@@ -30,6 +30,11 @@ typedef struct PlayerMovementInfo {
 	
 } PlayerMovementInfo;
 
+typedef struct PlayerKill {
+	uint64_t player_id_killed;
+
+} PlayerKill;
+
 typedef struct Player {
 	float pos_x;
 	float pos_y;
@@ -61,9 +66,14 @@ typedef struct Player {
 
 	bool is_net_player;
 
+	char* username;
+
+	PlayerKill* kills;
+	uint16_t num_kills;
+
 } Player;
 
-Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map);
+Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map, char* player_name);
 MinimalPlayerInfo get_minimal_player_info(const Player* player);
 void use_ability(Player* player, const Map* map);
 void reload(Player* player);

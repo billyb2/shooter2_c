@@ -21,6 +21,11 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 			const Player* player = &players[i];
 
 			if (player->health > 0) {
+				if (player->username != NULL) {
+					DrawText(player->username, player->pos_x - (float)strlen(player->username) * 1.5 , player->pos_y - 22, 12, BLACK);
+
+				}
+
 				DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE, RED);
 
 			}

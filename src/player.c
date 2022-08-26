@@ -15,7 +15,7 @@
 #define DEFAULT_PLAYER_SPEED 5.0
 #define TELEPORATION_SPEED 250.0
 
-Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map) {
+Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map, char* player_name) {
 	uint8_t num_throwables;
 
 	switch (throwable) {
@@ -49,6 +49,7 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 
 	Player player = {
 		.id = rand(),
+		.username = player_name,
 		.assigned_id = false,
 		.pos_x = spawn_point->pos_x + 25.0,
 		.pos_y = spawn_point->pos_y + 25.0,

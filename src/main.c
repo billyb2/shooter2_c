@@ -39,6 +39,31 @@ int main(const int argc, const char** argv) {
 
 	bool hosting;
 
+	uint8_t username_capacity = 20;
+	uint8_t username_len = 0;
+	char* username = calloc(1, username_capacity);
+
+	printf("Username: ");
+
+	while (true) {
+		char* username_char = username + username_len;
+		*username_char = fgetc(stdin);
+
+		if (*username_char == '\n') {
+			break;	
+
+		}
+
+		username_len += 1;
+
+		if (username_len >= 20) {
+			fprintf(stderr, "Username too long\n");
+			exit(-1);
+
+		}
+
+	}
+
 	if (argc == 2) {
 		if (strcmp(argv[1], "true") == 0) {
 			printf("Hosting server\n");
@@ -93,14 +118,22 @@ int main(const int argc, const char** argv) {
 
 	Map map = new_map("maps/untitled.custom"); 
 
-	uint8_t num_players = 4;
+	uint8_t num_players = 2;
 	Player* players = malloc(num_players * sizeof(Player));
 	
 	uint16_t num_projectiles = 0;
 	Projectile* projectiles = NULL;
 
 	for (uint8_t i = 0; i < num_players; i += 1) {
-		players[i] = new_player(Warp, Shotgun, Grenade, &map);
+		char* new_player_username = NULL;
+
+		if (i == 0) {
+			new_player_username = username;
+
+		} 
+
+
+		players[i] = new_player(Warp, Shotgun, Grenade, &map, new_player_username);
 
 	}
 

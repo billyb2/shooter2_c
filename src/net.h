@@ -24,13 +24,14 @@
 #endif
 
 typedef struct NetPlayer {
+	char username[20];
 	MinimalPlayerInfo minimal_player_info;
 	bool shooting;
 	uint32_t _padding;
 
 } NetPlayer;
 
-static_assert(sizeof(NetPlayer) == 40, "NetPlayer is the wrong size");
+static_assert(sizeof(NetPlayer) == 64, "NetPlayer is the wrong size");
 
 typedef struct Addr {
 	struct sockaddr_in sockaddr;

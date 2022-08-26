@@ -194,6 +194,14 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 	net_player->ability = minimal_player_info->ability;
 	net_player->shooting = shooting;
 
+	if (net_player->username == NULL) {
+		net_player->username = calloc(1, 20);
+		
+		memcpy(net_player->username, buffer->username, strlen(buffer->username));
+
+	}
+
+
 }
 
 int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_players) {
@@ -206,6 +214,7 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 		const Addr* addrs_to_send_to = network_info->addrs_to_send_to.item_list;
 
 		for (uint8_t i = 0; i < num_players; i += 1) {
+			memcpy(buffer[0].username, my_player->username, strlen(my_player->username) + 1);
 			buffer[i].minimal_player_info = get_minimal_player_info(&players[i]);
 			buffer[i].shooting = players[i].shooting;
 
@@ -219,6 +228,7 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 		}
 
 	} else {
+		memcpy(buffer[0].username, my_player->username, strlen(my_player->username) + 1);
 		buffer[0].minimal_player_info = get_minimal_player_info(my_player);
 		buffer[0].shooting = my_player->shooting;
 
