@@ -135,8 +135,8 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player
 
 }
 
-void process_net_packets(NetPlayer* buffer, Player* players, uint8_t num_players) {
-	MinimalPlayerInfo* minimal_player_info = &buffer->minimal_player_info;
+void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_players) {
+	const MinimalPlayerInfo* minimal_player_info = &buffer->minimal_player_info;
 	bool shooting = buffer->shooting;
 
 	if (players[0].id == minimal_player_info->id) {
@@ -179,13 +179,13 @@ void process_net_packets(NetPlayer* buffer, Player* players, uint8_t num_players
 
 	if (net_player == NULL) {
 		fprintf(stderr, "Error finding an available player!\n");
-		exit(-1);
+		//exit(-1);
 		return;
 
 	}
 
 	net_player->is_net_player = true;
-	net_player->ammo = net_player->ammo;
+	net_player->ammo = minimal_player_info->ammo;
 	net_player->pos_x = minimal_player_info->pos_x;
 	net_player->pos_y = minimal_player_info->pos_y;
 	net_player->health = minimal_player_info->health;
@@ -250,15 +250,25 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 		}
 
 	} else {
-		total_bytes_read = recv(network_info->socket, buffer, buffer_len * num_players, 0); 
+		int bytes_read = recv(network_info->socket, buffer, buffer_len, 0); 
+		int buffer_index = 0;
 
+		while (bytes_read > 0) {
+			buffer_index += 1;
+			total_bytes_read += bytes_read;
+			
+			buffer = realloc(buffer, (buffer_index + 2) * sizeof(NetPlayer));
+			
+			bytes_read = recv(network_info->socket, &buffer[buffer_index], buffer_len, 0); 
+		}
+		
 	}
 
 
 	if (total_bytes_read > 0) {
-		uint8_t num_net_players = total_bytes_read / (sizeof(NetPlayer) - 1);
+		uint64_t num_net_players = total_bytes_read / (sizeof(NetPlayer) - 1);
 
-		for (uint8_t i = 0; i < num_net_players; i += 1) {
+		for (uint64_t i = 0; i < num_net_players; i += 1) {
 			process_net_packets(&buffer[i], players, num_players);
 			
 
