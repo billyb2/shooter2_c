@@ -14,20 +14,19 @@
 #include "weapon.h"
 
 #define DEFAULT_PLAYER_SPEED 5.0
-#define TELEPORATION_SPEED 250.0
 
 uint16_t get_max_ability_charge(Ability ability) {
 	uint16_t max_ability_charge = 0;
 
 	switch (ability) {
 		case Warp:
-			// 2 seconds to recharge
-			max_ability_charge = 120;
+			// 6 seconds to recharge
+			max_ability_charge = 6 * 60;
 			break;
 
 		case Stim:
 			// 3 seconds to recharge
-			max_ability_charge = 180;
+			max_ability_charge = 3 * 60;
 			break;
 	};
 
@@ -40,8 +39,8 @@ uint16_t get_max_ability_use_frames(Ability ability) {
 
 	switch (ability) {
 		case Warp:
-			// Use is instance
-			max_frames_in_use = 0;
+			// Use is a quarter of a second
+			max_frames_in_use = 15;
 			break;
 
 		case Stim:
@@ -139,7 +138,7 @@ MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 }
 
 void use_ability(Player* player, const Map* map) {
-	if (player->health == 0) {
+	if (player->health == 0 || player->using_ability) {
 		return;
 
 	}
@@ -147,7 +146,11 @@ void use_ability(Player* player, const Map* map) {
 
 	switch (player->ability) {
 		case Warp: {
-			if (player->ability_charge < get_max_ability_charge(player->ability)) {
+			#define TELEPORATION_SPEED 175.0
+
+			uint16_t half_max_ability_charge = get_max_ability_charge(player->ability) / 2;
+
+			if (player->ability_charge < half_max_ability_charge) {
 				return;
 
 			}
@@ -160,7 +163,7 @@ void use_ability(Player* player, const Map* map) {
 				player->pos_y = potential_y;
 
 				player->using_ability = true;
-				player->ability_charge = 0;
+				player->ability_charge = saturating_sub(player->ability_charge, half_max_ability_charge);
 
 			}
 
@@ -275,8 +278,6 @@ void update_player_cooldowns(Player* players, uint8_t num_players) {
 			if (player->num_frames_ability_in_use >= get_max_ability_use_frames(player->ability)) {
 				player->using_ability = false;
 				player->num_frames_ability_in_use = 0;
-
-				player->ability_charge = 0;
 
 				if (player->ability == Stim) {
 					player->speed /= 1.75;
