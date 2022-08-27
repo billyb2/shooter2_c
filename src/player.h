@@ -51,7 +51,9 @@ typedef struct Player {
 	float direction;
 	uint16_t health;
 
-	uint16_t remaining_ability_cooldown_frames;
+	uint16_t num_frames_ability_in_use;
+	uint16_t ability_charge;
+
 	uint16_t remaining_shooting_cooldown_frames;
 	uint16_t remaining_throwable_cooldown_frames;
 	uint16_t num_frames_dead;
@@ -81,5 +83,6 @@ void reload(Player* player);
 void update_player_cooldowns(Player* players, uint8_t num_players);
 void move_player(Player* player, PlayerMovementInfo movement_info, const Map* map);
 void respawn_players(Player* players, uint8_t num_players);
+uint16_t get_max_ability_charge(Ability ability);
 
 #endif

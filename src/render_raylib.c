@@ -94,6 +94,26 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 
 		DrawText(ammo_count_text, SCREEN_WIDTH - 11 * strlen(ammo_count_text), 50, 20, health_bar_outline_color);
 
+		// Draw the ability charge
+		const Color ability_charge_color = {
+			.r = GREEN.r,
+			.g = GREEN.g,
+			.b = GREEN.b,
+			.a = 128,
+
+		};
+
+		DrawText("Charge", SCREEN_WIDTH - 100, 80, 20, health_bar_outline_color);
+		Rectangle ability_charge_rect = {
+			.x = SCREEN_WIDTH - 120,
+			.y = 105.0,
+			.width = 125.0 * ((float)players[0].ability_charge / (float)get_max_ability_charge(players[0].ability)),
+			.height = 20.0,
+
+		};
+		DrawRectangleRec(ability_charge_rect, ability_charge_color);
+		DrawRectangleLinesEx(ability_charge_rect, 3.5, health_bar_outline_color);
+
 	EndDrawing();
 
 }

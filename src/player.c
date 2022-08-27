@@ -8,12 +8,51 @@
 #include "map.h"
 #include "math.h"
 #include "player.h"
+#include "player_ability.h"
 #include "projectile.h"
 #include "rand.h"
 #include "weapon.h"
 
 #define DEFAULT_PLAYER_SPEED 5.0
 #define TELEPORATION_SPEED 250.0
+
+uint16_t get_max_ability_charge(Ability ability) {
+	uint16_t max_ability_charge = 0;
+
+	switch (ability) {
+		case Warp:
+			// 2 seconds to recharge
+			max_ability_charge = 120;
+			break;
+
+		case Stim:
+			// 3 seconds to recharge
+			max_ability_charge = 180;
+			break;
+	};
+
+	return max_ability_charge;
+
+}
+
+uint16_t get_max_ability_use_frames(Ability ability) {
+	uint16_t max_frames_in_use = 0;
+
+	switch (ability) {
+		case Warp:
+			// Use is instance
+			max_frames_in_use = 0;
+			break;
+
+		case Stim:
+			// 3 seconds of use
+			max_frames_in_use = 180;
+			break;
+	};
+
+	return max_frames_in_use;
+
+}
 
 Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map, char* player_name) {
 	uint8_t num_throwables;
@@ -60,7 +99,8 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 		.throwable = throwable,
 		.direction = 0.0,
 		.health = 0,
-		.remaining_ability_cooldown_frames = 0,
+		.ability_charge = get_max_ability_charge(ability),
+		.num_frames_ability_in_use = 0,
 		.remaining_shooting_cooldown_frames = 0,
 		.num_frames_dead = 0,
 		.using_ability = false,
@@ -99,7 +139,7 @@ MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 }
 
 void use_ability(Player* player, const Map* map) {
-	if (player->health == 0 || player->remaining_ability_cooldown_frames > 0) {
+	if (player->health == 0) {
 		return;
 
 	}
@@ -107,6 +147,11 @@ void use_ability(Player* player, const Map* map) {
 
 	switch (player->ability) {
 		case Warp: {
+			if (player->ability_charge < get_max_ability_charge(player->ability)) {
+				return;
+
+			}
+
 			float potential_x = player->pos_x + cosf(player->direction) * TELEPORATION_SPEED;
 			float potential_y = player->pos_y + sinf(player->direction) * TELEPORATION_SPEED;
 
@@ -115,7 +160,7 @@ void use_ability(Player* player, const Map* map) {
 				player->pos_y = potential_y;
 
 				player->using_ability = true;
-				player->remaining_ability_cooldown_frames = 4 * 60;
+				player->ability_charge = 0;
 
 			}
 
@@ -123,10 +168,15 @@ void use_ability(Player* player, const Map* map) {
 		}
 
 		case Stim: {
+			if (player->ability_charge < get_max_ability_charge(player->ability)) {
+				return;
+
+			}
+
 			player->speed *= 1.75;
 
 			player->using_ability = true;
-			player->remaining_ability_cooldown_frames = 5 * 60;
+			player->ability_charge = 0;
 
 			break;
 		}
@@ -206,7 +256,11 @@ void update_player_cooldowns(Player* players, uint8_t num_players) {
 	for (uint8_t i = 0; i < num_players; i += 1) {
 		Player* player = &players[i];
 
-		player->remaining_ability_cooldown_frames = saturating_sub(player->remaining_ability_cooldown_frames, 1);
+		if (player->ability_charge < get_max_ability_charge(player->ability) && !player->using_ability) {
+			player->ability_charge += 1;
+
+		}
+
 		player->remaining_shooting_cooldown_frames = saturating_sub(player->remaining_shooting_cooldown_frames, 1);
 		player->remaining_throwable_cooldown_frames = saturating_sub(player->remaining_throwable_cooldown_frames, 1);
 
@@ -215,16 +269,23 @@ void update_player_cooldowns(Player* players, uint8_t num_players) {
 
 		}
 
-		if (player->remaining_ability_cooldown_frames == 0) {
-			player->using_ability = false;
+		if (player->using_ability) {
+			player->num_frames_ability_in_use += 1;
 
-			if (player->ability == Stim) {
-				player->speed = DEFAULT_PLAYER_SPEED;
+			if (player->num_frames_ability_in_use >= get_max_ability_use_frames(player->ability)) {
+				player->using_ability = false;
+				player->num_frames_ability_in_use = 0;
+
+				player->ability_charge = 0;
+
+				if (player->ability == Stim) {
+					player->speed /= 1.75;
+
+				}
 
 			}
 
 		}
-
 
 		if (player->reloading && player->remaining_reload_frames == 0) {
 			player->ammo = get_ammo_count(player->weapon);
