@@ -46,17 +46,19 @@ bool sockaddrs_are_eq(struct sockaddr_in* addr1, struct sockaddr_in* addr2) {
 
 }
 
+
+
 NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player) {
 	#ifdef __WIN32__
 	WSADATA wsadata;
-	if (WSAStartup(MAKEWORD(1,1), &wsadata) == SOCKET_ERROR) {
+	if (WSAStartup(MAKEWORD(2,2), &wsadata) != 0) {
 		printf("Error creating socket.");
 		exit(-1);
 	}
 	#endif
 
 
-	int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	int sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	struct sockaddr_in servaddr = { 0 };
 
 	if (sockfd == -1) {
@@ -74,7 +76,7 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player
 	if (hosting) {
 		servaddr.sin_port = htons(SERVER_HOST_PORT);
 
-		if (bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1) {
+		if (bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) == INVALID_SOCKET) {
 			fprintf(stderr, "Failed to bind to ipaddr\n");
 			exit(-1);
 
@@ -97,7 +99,7 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player
 
 	// Set the socket to be non blocking
 	#ifdef __WIN32__
-		u_long mode = 1;
+		unsigned long mode = 1;
 		int result = ioctlsocket(sockfd, FIONBIO, &mode);
 
 		if (result != NO_ERROR) {
@@ -217,7 +219,7 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 }
 
 int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_players) {
-	const int buffer_len = sizeof(NetPlayer);
+	int buffer_len = sizeof(NetPlayer);
 	NetPlayer* buffer = malloc(buffer_len * num_players);
 
 	Player* my_player = &players[0];
@@ -274,9 +276,42 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 		}
 
 	} else {
+		#ifdef __WIN32__
+		int bytes_read = recv(network_info->socket, buffer, buffer_len, MSG_PEEK); 
+		#endif
+		#ifdef __unix__
 		int bytes_read = recv(network_info->socket, buffer, buffer_len, 0); 
+		#endif
 		int buffer_index = 0;
 
+		#ifdef __WIN32__
+			while (bytes_read == SOCKET_ERROR) {
+				int err = WSAGetLastError();
+
+				if (err == WSAEMSGSIZE) {
+					buffer_len += sizeof(NetPlayer);
+
+				} else if (err == WSAEWOULDBLOCK) {
+					break;
+
+				} else {
+					fprintf("Error on recv, %d\n", err);
+
+				}
+
+				bytes_read = recv(network_info->socket, buffer, buffer_len, MSG_PEEK); 
+
+			}
+
+			// Read the message for real, no peeking
+			bytes_read = recv(network_info->socket, buffer, buffer_len, 0); 
+			// Keep trying to read the message until the buffer is the correct size
+
+			total_bytes_read += bytes_read;
+
+		#endif
+
+		#ifdef __unix__
 		while (bytes_read > 0) {
 			buffer_index += 1;
 			total_bytes_read += bytes_read;
@@ -285,6 +320,7 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 			
 			bytes_read = recv(network_info->socket, &buffer[buffer_index], buffer_len, 0); 
 		}
+		#endif
 		
 	}
 

@@ -14,13 +14,13 @@
 #include "player.h"
 #include "hashset.h"
 
+#define INVALID_SOCKET -1
+
 #ifdef __WIN32__
 #define socklen_t int
 
-#ifndef MAIN_C
 // winsock2.h conflicts with raylib, so I pull some defs insead
-#include <winsock2.h>
-#endif
+#include "winsock.h"
 #endif
 
 typedef struct NetPlayer {
