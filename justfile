@@ -22,33 +22,21 @@ build_windows:
 build_windows_release:
 	ninja -Cbuild/release_win -j4
 
-run_server: build 
-	build/debug/main true
+run: build 
+	build/debug/main 
 
-run_client: build
-	build/debug/main false
-
-run_release_server: build_release 
-	build/release/main true
-
-run_release_client: build_release
-	build/release/main false
+run_release: build_release 
+	build/release/main 
 
 package: build_release
 	cp build/release/main ./shooter2
 	tar cvfJ shooter2_c.tar.xz shooter2 maps/ sprites/
 
-run_windows_client: build_windows
-	wine build/debug_win/main.exe false
+run_windows: build_windows
+	wine build/debug_win/main.exe 
 
-run_windows_server: build_windows
-	wine build/debug_win/main.exe true
-
-run_windows_release_server: build_windows_release
-	wine build/release_win/main.exe true
-
-run_windows_release_client: build_windows_release
-	wine build/release_win/main.exe false
+run_windows_release: build_windows_release
+	wine build/release_win/main.exe 
 
 package_windows: build_release
 	cp build/release_win/main.exe ./shooter2.exe

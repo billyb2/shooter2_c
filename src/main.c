@@ -5,164 +5,31 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "camera.h"
-#include "map.h"
-#include "math.h"
-#include "net_info.h"
-#include "player.h"
-#include "input.h"
-#include "render.h"
-#include "projectile.h"
-#include "net.h"
-#include "weapon.h"
 #include "rand.h"
-
+#include "game_state.h"
 #include "include/raylib.h"
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 450;
 
-
-const KeyBindings DEFAULT_KEY_BINDINGS = {
-	.up = KEY_W,
-	.down = KEY_S,
-	.left = KEY_A,
-	.right = KEY_D,
-	.ability = KEY_Q,
-
-};
-
-int main(const int argc, const char** argv) {
-	#define MAX_IPv4_STR_LEN 15
-	char ip_str[MAX_IPv4_STR_LEN + 1] = { 0 };
-	size_t ip_str_len = 0;
-
-	bool hosting;
-
-	uint8_t username_capacity = 20;
-	uint8_t username_len = 0;
-	char* username = calloc(1, username_capacity);
-
-	printf("Username: ");
-
-	while (true) {
-		char* username_char = username + username_len;
-		*username_char = fgetc(stdin);
-
-		if (*username_char == '\n') {
-			*username_char = 0;
-			break;	
-
-		}
-
-		username_len += 1;
-
-		if (username_len >= 20) {
-			fprintf(stderr, "Username too long\n");
-			exit(-1);
-
-		}
-
-	}
-
-	if (argc == 2) {
-		if (strcmp(argv[1], "true") == 0) {
-			printf("Hosting server\n");
-			hosting = true;
-
-		} else {
-			printf("Server IP: ");
-			char* ip_char = ip_str;
-
-			while (true) {
-				*ip_char = fgetc(stdin);
-
-				if (*ip_char == '\n') {
-					*ip_char = 0;
-					break;
-
-				}
-
-				ip_char += 1;
-				ip_str_len += 1;
-
-				if (ip_str_len >= MAX_IPv4_STR_LEN) {
-					fprintf(stderr, "Invalid IP given\n");
-					exit(-1);
-
-				}
-
-			}
-
-			if (ip_str_len == 0) {
-				memcpy(ip_str, "127.0.0.1", 9);
-
-			}
-
-			printf("Connecting to %s\n", ip_str);
-			hosting = false;
-
-		}
-
-	} else {
-		printf("Usage: ./main [hosting]\n");
-		exit(-1);
-	
-	}
-
+int main() {
 	init_fast_rand();
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "shooter2");
 
-	Camera2D camera = { 0 };
-	camera.offset = (Vector2){ (float)SCREEN_WIDTH / 2.0, (float)SCREEN_HEIGHT / 2.0 };
-	camera.rotation = 0.0;
-	camera.zoom = 1.0;
-
-	Map map = new_map("maps/untitled.custom"); 
-
-	uint8_t num_players = 2;
-	Player* players = malloc(num_players * sizeof(Player));
-	
-	uint16_t num_projectiles = 0;
-	Projectile* projectiles = NULL;
-
-	for (uint8_t i = 0; i < num_players; i += 1) {
-		char* new_player_username = NULL;
-
-		if (i == 0) {
-			new_player_username = username;
-
-		} 
-
-		players[i] = new_player(Warp, Shotgun, Grenade, &map, new_player_username);
-
-	}
-
 	SetTargetFPS(60);
 
-	NetworkInfo network_info = init_networking(hosting, ip_str, &players[0]);
+	GameState game_state;
+	GamePage game_page = MainMenu;
 
+	enter_state(&game_page, &game_state, MainMenu);
 
 	// Display the window until ESC is pressed
 	while (!WindowShouldClose()) {
-		update_player_cooldowns(players, num_players);
-
-		player_input(&players[0], &DEFAULT_KEY_BINDINGS, &map, true);
-		handle_networking(&network_info, players, num_players);
-		use_weapons(players, num_players, &projectiles, &num_projectiles);
-		update_projectiles(&projectiles, &num_projectiles, players, num_players, &map);
-		move_camera(&camera, &map, players[0].pos_x, players[0].pos_y);
-
-		respawn_players(players, num_players);
-		
-		render(camera, players, num_players, projectiles, num_projectiles, &map);
+		run_state(&game_page, &game_state);
 
 	}
 
     CloseWindow();
-
-	free(players);
-	free(projectiles);
 
     return 0;
 }
