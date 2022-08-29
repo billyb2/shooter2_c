@@ -305,9 +305,13 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 
 			// Read the message for real, no peeking
 			bytes_read = recv(network_info->socket, buffer, buffer_len, 0); 
-			// Keep trying to read the message until the buffer is the correct size
 
-			total_bytes_read += bytes_read;
+			if (bytes_read != SOCKET_ERROR) {
+				// Keep trying to read the message until the buffer is the correct size
+
+				total_bytes_read += bytes_read;
+
+			}
 
 		#endif
 

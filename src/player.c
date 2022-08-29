@@ -13,8 +13,6 @@
 #include "rand.h"
 #include "weapon.h"
 
-#define DEFAULT_PLAYER_SPEED 5.0
-
 uint16_t get_max_ability_charge(Ability ability) {
 	uint16_t max_ability_charge = 0;
 
@@ -146,7 +144,7 @@ void use_ability(Player* player, const Map* map) {
 
 	switch (player->ability) {
 		case Warp: {
-			#define TELEPORATION_SPEED 175.0
+			#define TELEPORATION_SPEED 350.0
 
 			uint16_t half_max_ability_charge = get_max_ability_charge(player->ability) / 2;
 
@@ -189,7 +187,7 @@ void use_ability(Player* player, const Map* map) {
 }
 
 void reload(Player* player) {
-	if (player->reloading) {
+	if (player->reloading || player->ammo >= get_ammo_count(player->weapon)) {
 		return;
 
 	}
