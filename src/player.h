@@ -7,7 +7,8 @@
 #include "minimal_state_info.h"
 #include "weapon.h"
 
-#define PLAYER_SIZE 10
+#define DEFAULT_PLAYER_SPEED 4.2
+#define PLAYER_SIZE 26
 #define PLAYER_MAX_HEALTH 500
 
 typedef enum XAxisMovement {

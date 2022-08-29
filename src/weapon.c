@@ -17,8 +17,8 @@ ProjectileType get_projectile_for_weapon(Weapon weapon) {
 			projectile_type = StandardBullet;
 			break;
 
-		case None:
-			//projectile_type = Melee;
+		case Sniper:
+			projectile_type = SniperBullet;
 			break;
 	};
 
@@ -42,7 +42,7 @@ uint8_t get_ammo_count(Weapon weapon) {
 			ammo_count = 8;
 			break;
 
-		case None:
+		case Sniper:
 			break;
 
 	};
@@ -71,7 +71,7 @@ uint16_t get_num_reload_frames(Weapon weapon) {
 			reload_frames = 60 * 3;
 			break;
 
-		case None:
+		case Sniper:
 			break;
 
 	};
@@ -96,7 +96,7 @@ float get_projectile_speed(Weapon weapon) {
 			proj_speed = 11.0;
 			break;
 
-		case None:
+		case Sniper:
 			break;
 
 	};
@@ -105,8 +105,8 @@ float get_projectile_speed(Weapon weapon) {
 
 }
 
-uint8_t get_projectile_damage(Weapon weapon) {
-	uint8_t damage;
+uint16_t get_projectile_damage(Weapon weapon) {
+	uint16_t damage;
 
 	switch (weapon) {
 		case AssaultRifle:
@@ -121,7 +121,7 @@ uint8_t get_projectile_damage(Weapon weapon) {
 			damage = 80;
 			break;
 
-		case None:
+		case Sniper:
 			break;
 
 	};
@@ -147,7 +147,7 @@ uint16_t get_cooldown_frames(Weapon weapon) {
 			cooldown_frames = 30;
 			break;
 
-		case None:
+		case Sniper:
 			break;
 
 	};

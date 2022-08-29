@@ -3,15 +3,18 @@
 #include <string.h>
 
 #include "include/raylib.h"
+#include "math.h"
 #include "map.h"
 #include "projectile.h"
 #include "player.h"
 #include "render.h"
+#include "weapon.h"
 
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 
 void render(Camera2D camera, const Player* players, uint8_t num_players, const Projectile* projectiles, uint16_t num_projectiles, const Map* map) {
+	camera.zoom = 0.85;
 	BeginDrawing();
 		ClearBackground(RAYWHITE);
 
@@ -26,7 +29,28 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 
 				}
 
-				DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE, RED);
+				DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE / 2.0, RED);
+
+				if (player->weapon == Sniper) {
+					Rectangle laser = {
+						.x = player->pos_x,
+						.y = player->pos_y,
+						.width = 500.0,
+						.height = 3.0,
+
+					};
+
+					Color LIGHT_RED = {
+						.r = 255,
+						.g = 0,
+						.b = 0,
+						.a = 70,
+
+					};
+
+					DrawRectanglePro(laser, (Vector2){ 0.0, 0.0 }, player->direction * (180.0 / PI), LIGHT_RED);
+
+				}
 
 			}
 
@@ -34,7 +58,7 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 
 		for (uint16_t i = 0; i < num_projectiles; i += 1) {
 			const Projectile* projectile = &projectiles[i];
-			DrawCircle(projectile->pos_x, projectile->pos_y, projectile->size, BLACK);
+			DrawCircle(projectile->pos_x, projectile->pos_y, projectile->size / 2.0, BLACK);
 
 		}
 

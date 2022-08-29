@@ -15,6 +15,8 @@ typedef struct MapObject {
 	Texture2D* texture;
 	bool spawn_point;
 
+	bool collidable;
+
 } MapObject;
 
 typedef struct Map {

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "include/raylib.h"
 #include "math.h"
@@ -129,6 +130,7 @@ Map new_map(const char* file_name) {
 		memcpy(&map.objects[i].pos_y, &map_bin[i * MAP_OBJ_SIZE + 3 + sizeof(float)], sizeof(float));
 
 		map.objects[i].spawn_point = spawn;
+		map.objects[i].collidable = !spawn;
 
 		map.objects[i].pos_x *= tile_width;
 		map.objects[i].pos_y *= tile_height;
@@ -144,11 +146,17 @@ Map new_map(const char* file_name) {
 
 }
 
+bool map_oob(float pos_x, float pos_y, float size_x, float size_y, const Map* map) {
+	return (pos_x < 0.0 || pos_x + size_x > map->size_x || pos_y < 0.0 || pos_y + size_y > map->size_y);
+
+}
+
 bool map_collision(float pos_x, float pos_y, float size_x, float size_y, const Map* map) {
-	if (pos_x < 0.0 || pos_x + size_x > map->size_x || pos_y < 0.0 || pos_y + size_y > map->size_y) {
+	if (map_oob(pos_x, pos_y, size_x, size_y, map)) {
 		return true;
 
 	}
+	
 
 	for (uint16_t i = 0; i < map->num_objects; i += 1) {
 		const MapObject* map_obj = &map->objects[i];

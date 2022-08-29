@@ -5,8 +5,6 @@
 #include "player.h"
 #include "weapon.h"
 
-
-
 typedef struct Projectile {
 	float pos_x;
 	float pos_y;

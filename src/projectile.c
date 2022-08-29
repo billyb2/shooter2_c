@@ -55,15 +55,16 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 
 		bool projectile_should_be_copied = true;
 
-		projectile->pos_x += projectile->speed * cosf(projectile->angle);
-		projectile->pos_y += projectile->speed * sinf(projectile->angle);
 
 		switch (projectile->projectile_type) {
 			case StandardBullet: {
-				if (projectile->pos_x > map->size_x || projectile->pos_x < 0.0 || projectile->pos_y < 0.0 || projectile->pos_y > map->size_y) {
-					projectile_should_be_copied = false;
-					
-				} else if (projectile_should_be_copied) {
+				projectile->pos_x += projectile->speed * cosf(projectile->angle);
+				projectile->pos_y += projectile->speed * sinf(projectile->angle);
+
+				bool collided_with_map = map_collision(projectile->pos_x, projectile->pos_y, projectile->size, projectile->size, map);
+				bool player_collision = false;
+
+				if (!collided_with_map) {
 					for(uint8_t i = 0; i < num_players; i += 1) {
 						Player* player = &players[i];
 
@@ -72,12 +73,33 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 
 						}
 
-						float half_proj_size = projectile->size / 2.0;
+						player_collision = aabb_collision(player->pos_x, player->pos_y, PLAYER_SIZE, PLAYER_SIZE, projectile->pos_x, projectile->pos_y, projectile->size, projectile->size);
 
-						bool player_collision = aabb_collision(player->pos_x - PLAYER_SIZE / 2.0, player->pos_y - PLAYER_SIZE / 2.0, PLAYER_SIZE, PLAYER_SIZE, projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size, projectile->size);
-						bool collided_with_map = map_collision(projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size, projectile->size, map);
+						if (player_collision) {
+							if (!player->is_net_player) {
+								player->health = saturating_sub(player->health, projectile->damage);
+								player->last_hurt_by = projectile->shot_by;
 
-						if (player_collision && !player->is_net_player) {
+								if (player->health == 0) {
+									add_kill(players, num_players, player);
+
+								}
+
+							}
+
+							break;
+
+						}
+
+					}
+
+				}
+
+				projectile_should_be_copied = !player_collision && !collided_with_map;
+
+				break;
+			}
+
 							player->health = saturating_sub(player->health, projectile->damage);
 							player->last_hurt_by = projectile->shot_by;
 
@@ -98,6 +120,8 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 			}
 
 			case GrenadeProj: {
+				projectile->pos_x += projectile->speed * cosf(projectile->angle);
+				projectile->pos_y += projectile->speed * sinf(projectile->angle);
 				// 2.5 seconds
 				#define FRAMES_TILL_EXPLOSION 3 * 30
 				projectile->speed = saturating_sub(projectile->speed, 0.15);
@@ -108,7 +132,7 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 					bool should_explode = projectile->num_frames_existed >= FRAMES_TILL_EXPLOSION;
 
 					float half_proj_size = projectile->size / 2.0;
-					bool collided_with_map = map_collision(projectile->pos_x - half_proj_size, projectile->pos_y - half_proj_size, projectile->size, projectile->size, map);
+					bool collided_with_map = map_collision(projectile->pos_x, projectile->pos_y, projectile->size, projectile->size, map);
 
 					if (should_explode) {
 						#define MAX_GRENADE_DAMAGE_DISTANCE 200.0
@@ -167,10 +191,13 @@ Projectile new_projectile(float pos_x, float pos_y, float angle, ProjectileType 
 
 	switch (projectile_type) {
 		case StandardBullet:
-			size = 2;
+			size = 5;
 			break;
 
 		case GrenadeProj:
+			size = 1;
+			break;
+
 			size = 5;
 			break;
 
@@ -279,7 +306,6 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 				break;
 
 
-			case None:
 				break;
 
 		};
