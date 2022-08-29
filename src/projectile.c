@@ -100,28 +100,57 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 				break;
 			}
 
-							player->health = saturating_sub(player->health, projectile->damage);
-							player->last_hurt_by = projectile->shot_by;
+			case SniperBullet: {
+				bool player_collision = false;
+				bool collided_with_map = map_collision_w_movement(projectile->pos_x, projectile->pos_y, (float)projectile->size, (float)projectile->size, projectile->speed, projectile->angle, map);
 
-							if (player->health == 0) {
-								add_kill(players, num_players, player);
+				if (!collided_with_map) {
+					for (uint8_t i = 0; i < num_players; i += 1) {
+						Player* player = &players[i];
 
-							}
+						if (player->health == 0) {
+							continue;
 
 						}
 
-						projectile_should_be_copied = !player_collision && !collided_with_map;
+						player_collision = aabb_collision_w_movement(projectile->pos_x, projectile->pos_y, (float)projectile->size, (float)projectile->size, player->pos_x, player->pos_y, (float)PLAYER_SIZE, (float)PLAYER_SIZE, projectile->speed, projectile->angle);
+
+						if (player_collision) {
+							if (!player->is_net_player) {
+								player->health = saturating_sub(player->health, projectile->damage);
+								player->last_hurt_by = projectile->shot_by;
+
+								if (player->health == 0) {
+									add_kill(players, num_players, player);
+
+								}
+
+							}
+
+							break;
+
+						}
 
 					}
 
 				}
 
+				projectile_should_be_copied = !player_collision && !collided_with_map;
+
+				if (projectile_should_be_copied) {
+					projectile->pos_x += projectile->speed * cosf(projectile->angle);
+					projectile->pos_y += projectile->speed * sinf(projectile->angle);
+
+				}
+
 				break;
+
 			}
 
 			case GrenadeProj: {
 				projectile->pos_x += projectile->speed * cosf(projectile->angle);
 				projectile->pos_y += projectile->speed * sinf(projectile->angle);
+
 				// 2.5 seconds
 				#define FRAMES_TILL_EXPLOSION 3 * 30
 				projectile->speed = saturating_sub(projectile->speed, 0.15);
@@ -198,6 +227,7 @@ Projectile new_projectile(float pos_x, float pos_y, float angle, ProjectileType 
 			size = 1;
 			break;
 
+		case SniperBullet:
 			size = 5;
 			break;
 
@@ -305,6 +335,13 @@ void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player,
 				player->remaining_shooting_cooldown_frames = cooldown_frames;
 				break;
 
+			case Sniper:
+				*num_projectiles += 1;
+				*projectiles = realloc(*projectiles, *num_projectiles* sizeof(Projectile));
+
+				(*projectiles)[*num_projectiles - 1] = new_projectile(player->pos_x, player->pos_y, angle, SniperBullet, proj_speed, proj_damage, player->id);
+
+				player->remaining_shooting_cooldown_frames = cooldown_frames;
 
 				break;
 

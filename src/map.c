@@ -176,3 +176,28 @@ bool map_collision(float pos_x, float pos_y, float size_x, float size_y, const M
 	return false;
 
 }
+
+bool map_collision_w_movement(float pos_x, float pos_y, float size_x, float size_y, float distance, float angle, const Map* map) {
+	if (map_oob(pos_x + (cosf(angle) * distance), pos_y + (sinf(angle) * distance), size_x, size_y, map)) {
+		return true;
+
+	}
+
+	for (uint16_t i = 0; i < map->num_objects; i += 1) {
+		const MapObject* map_obj = &map->objects[i];
+
+		if (!map_obj->collidable) {
+			continue;
+
+		}
+
+		if (aabb_collision_w_movement(pos_x, pos_y, size_x, size_y, map_obj->pos_x, map_obj->pos_y, map_obj->size_x, map_obj->size_y, distance, angle)) {
+			return true;
+
+		}
+
+	}
+
+	return false;
+
+}

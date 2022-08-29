@@ -20,6 +20,7 @@ ProjectileType get_projectile_for_weapon(Weapon weapon) {
 		case Sniper:
 			projectile_type = SniperBullet;
 			break;
+
 	};
 
 	return projectile_type;
@@ -43,6 +44,7 @@ uint8_t get_ammo_count(Weapon weapon) {
 			break;
 
 		case Sniper:
+			ammo_count = 3;
 			break;
 
 	};
@@ -72,7 +74,8 @@ uint16_t get_num_reload_frames(Weapon weapon) {
 			break;
 
 		case Sniper:
-			break;
+			// 5 seconds
+			reload_frames = 60 * 5;
 
 	};
 
@@ -97,6 +100,7 @@ float get_projectile_speed(Weapon weapon) {
 			break;
 
 		case Sniper:
+			proj_speed = 90.0;
 			break;
 
 	};
@@ -122,6 +126,7 @@ uint16_t get_projectile_damage(Weapon weapon) {
 			break;
 
 		case Sniper:
+			damage = 1000;
 			break;
 
 	};
@@ -148,6 +153,7 @@ uint16_t get_cooldown_frames(Weapon weapon) {
 			break;
 
 		case Sniper:
+			cooldown_frames = 90;
 			break;
 
 	};
