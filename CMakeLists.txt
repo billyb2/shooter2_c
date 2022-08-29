@@ -53,7 +53,20 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
   if (NOT raylib_POPULATED) # Have we downloaded raylib yet?
     set(FETCHCONTENT_QUIET NO)
     FetchContent_Populate(raylib)
+	set(CUSTOMIZE_BUILD ON CACHE BOOL "" FORCE)
     set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # don't build the supplied examples
+	set(USE_AUDIO OFF CACHE BOOL "" FORCE) 
+	set(SUPPORT_GESTURES_SYSTEM OFF CACHE BOOL "" FORCE) 
+	set(SUPPORT_MOUSE_GESTURES OFF CACHE BOOL "" FORCE) 
+	set(SUPPORT_VR_SIMULATOR OFF CACHE BOOL "" FORCE) 
+	set(SUPPORT_DISTORTION_SHADER OFF CACHE BOOL "" FORCE) 
+	set(USE_WAYLAND ON CACHE BOOL "" FORCE) 
+
+	if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+		# set(USE_EXTERNAL_GLFW ON CACHE BOOL "" FORCE) 
+
+	endif()
+
     add_subdirectory(${raylib_SOURCE_DIR} ${raylib_BINARY_DIR})
   endif()
 endif()
