@@ -5,6 +5,8 @@
 
 #include "camera.h"
 #include "input.h"
+#include "player.h"
+#include "player_ability.h"
 #include "render.h"
 #include "game_state.h"
 #include "rand.h"
@@ -100,6 +102,19 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 
 	}
 
+	// If we just came from the main menu
+	KeyBindings key_bindings = DEFAULT_KEY_BINDINGS;
+
+	if (game_page == MainMenu) {
+		MainMenuState* main_menu_state = &game_state->main_menu_state;
+
+		if (main_menu_state->key_bindings != NULL) {
+			key_bindings = *main_menu_state->key_bindings;
+
+		}
+
+	}
+
 
 	Camera2D camera = { 0 };
 	camera.offset = (Vector2){ (float)SCREEN_WIDTH / 2.0, (float)SCREEN_HEIGHT / 2.0 };
@@ -122,26 +137,15 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 
 		} 
 
-		players[i] = new_player(Warp, Sniper, Grenade, &map, new_player_username);
+		players[i] = new_player(game_state->main_menu_state.ability, game_state->main_menu_state.weapon, Grenade, &map, new_player_username);
 
 	}
 
 	NetworkInfo network_info = init_networking(hosting, ip_str, &players[0]);
 
-	// If we just came from the main menu
-	KeyBindings key_bindings = DEFAULT_KEY_BINDINGS;
-
-	if (game_page == MainMenu) {
-		MainMenuState* main_menu_state = &game_state->main_menu_state;
-
-		if (main_menu_state->key_bindings != NULL) {
-			key_bindings = *main_menu_state->key_bindings;
-
-		}
-
-	}
-
 	InGameState new_game_state = {
+		.default_ability = game_state->main_menu_state.ability,
+		.default_weapon = game_state->main_menu_state.weapon,
 		.players = players,
 		.num_players = num_players,
 

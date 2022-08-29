@@ -15,8 +15,7 @@ typedef enum WeaponIndex {
 
 } WeaponIndex;
 
-
-#define NUM_WEAPON_TYPES 3
+#define NUM_WEAPONS 4
 
 typedef enum Weapon {
 	AssaultRifle,
@@ -37,4 +36,5 @@ uint16_t get_num_reload_frames(Weapon weapon);
 float get_projectile_speed(Weapon weapon);
 uint16_t get_projectile_damage(Weapon weapon);
 uint16_t get_cooldown_frames(Weapon weapon);
+int weapon_to_text(Weapon ability, char* text_buffer);
 #endif

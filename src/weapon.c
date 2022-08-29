@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 #include "weapon.h"
 
 ProjectileType get_projectile_for_weapon(Weapon weapon) {
@@ -160,3 +161,27 @@ uint16_t get_cooldown_frames(Weapon weapon) {
 
 	return cooldown_frames;
 }
+
+int weapon_to_text(Weapon weapon, char* text_buffer) {
+	switch (weapon) {
+		case AssaultRifle:
+			memcpy(text_buffer, "Assault Rifle", 14);
+			return 13;
+			
+		case Pistol:
+			memcpy(text_buffer, "Pistol", 7);
+			return 6;
+
+		case Shotgun:
+			memcpy(text_buffer, "Shotgun", 8);
+			return 8;
+
+		case Sniper:
+			memcpy(text_buffer, "Sniper", 7);
+			return 6;
+
+	};
+
+}
+
+

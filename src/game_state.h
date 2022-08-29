@@ -17,6 +17,8 @@ typedef enum GamePage {
 
 typedef struct InGameState {
 	Player* players;
+	Ability default_ability;
+	Weapon default_weapon;
 	uint8_t num_players;
 
 	Projectile* projectiles;
@@ -34,13 +36,10 @@ typedef struct InGameState {
 
 typedef struct MainMenuState {
 	KeyBindings* key_bindings;
+	Ability ability;
+	Weapon weapon;
 
 } MainMenuState;
-
-typedef struct SettingsState {
-	KeyBindings* key_bindings;
-
-} SettingsState;
 
 typedef union GameState {
 	InGameState in_game_state;
