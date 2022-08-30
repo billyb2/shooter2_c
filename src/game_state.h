@@ -36,8 +36,11 @@ typedef struct InGameState {
 
 typedef struct MainMenuState {
 	KeyBindings* key_bindings;
+	char* username;
 	Ability ability;
 	Weapon weapon;
+	bool hosting;
+	char* ip_addr;
 
 } MainMenuState;
 

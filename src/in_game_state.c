@@ -24,94 +24,35 @@ const KeyBindings DEFAULT_KEY_BINDINGS = {
 };
 
 void enter_in_game(GamePage* game_page, GameState* game_state) {
-	uint8_t username_capacity = 20;
-	uint8_t username_len = 0;
-	char* username = calloc(1, username_capacity);
-
-	printf("Username: ");
-
-	while (true) {
-		char* username_char = username + username_len;
-		*username_char = fgetc(stdin);
-
-		if (*username_char == '\n') {
-			*username_char = 0;
-			break;	
-
-		}
-
-		username_len += 1;
-
-		if (username_len >= 20) {
-			fprintf(stderr, "Username too long\n");
-			exit(-1);
-
-		}
-
-	}
-
-	bool hosting;
-
-	printf("Hosting: ");
-	char hosting_char = tolower(fgetc(stdin));
-
-	if (hosting_char == 'y') {
-		hosting = true;
-
-	} else {
-		hosting = false;
-
-	}
-
-
-	#define MAX_IPv4_STR_LEN 15
-	char ip_str[MAX_IPv4_STR_LEN + 1] = { 0 };
-	size_t ip_str_len = 0;
-
-
-	if (!hosting) {
-		printf("Server IP: ");
-		char* ip_char = ip_str;
-
-		while (true) {
-			*ip_char = fgetc(stdin);
-
-			if (*ip_char == '\n') {
-				*ip_char = 0;
-				break;
-
-			}
-
-			ip_char += 1;
-			ip_str_len += 1;
-
-			if (ip_str_len >= MAX_IPv4_STR_LEN) {
-				fprintf(stderr, "Invalid IP given\n");
-				exit(-1);
-
-			}
-
-		}
-
-		if (ip_str_len == 0) {
-			memcpy(ip_str, "127.0.0.1", 9);
-
-		}
-
-		printf("Connecting to %s\n", ip_str);
-
-	}
-
 	// If we just came from the main menu
 	KeyBindings key_bindings = DEFAULT_KEY_BINDINGS;
+	char* username = NULL;
+	char* ip_addr = NULL;
+	bool hosting = false;
 
-	if (game_page == MainMenu) {
+	if (*game_page == MainMenu) {
 		MainMenuState* main_menu_state = &game_state->main_menu_state;
 
 		if (main_menu_state->key_bindings != NULL) {
 			key_bindings = *main_menu_state->key_bindings;
 
 		}
+
+		hosting = main_menu_state->hosting;
+		username = main_menu_state->username;
+		ip_addr = main_menu_state->ip_addr;
+
+	}
+
+	if (username == NULL) {
+		username = malloc(20);
+		memcpy(username, "shooter2_c player", 18);
+
+	}
+
+	if (ip_addr == NULL) {
+		ip_addr = malloc(16);
+		memcpy(ip_addr, "127.0.0.1", 10);
 
 	}
 
@@ -141,7 +82,7 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 
 	}
 
-	NetworkInfo network_info = init_networking(hosting, ip_str, &players[0]);
+	NetworkInfo network_info = init_networking(hosting, game_state->main_menu_state.ip_addr, &players[0]);
 
 	InGameState new_game_state = {
 		.default_ability = game_state->main_menu_state.ability,
