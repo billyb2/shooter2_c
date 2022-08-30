@@ -35,6 +35,11 @@ void add_kill(Player* players, uint8_t num_players, Player* player_who_died) {
 
 	}
 
+	if (killer == player_who_died) {
+		return;
+
+	}
+
 	killer->num_kills += 1;
 	killer->kills = realloc(killer->kills, killer->num_kills * sizeof(PlayerKill));
 
@@ -254,7 +259,7 @@ Projectile new_projectile(float pos_x, float pos_y, float angle, ProjectileType 
 }
 
 void shoot(Projectile ** projectiles, uint16_t* num_projectiles, Player* player, float angle, WeaponIndex weapon_index, float throw_distance) { 
-	if (player->health == 0) {
+	if (player->health == 0 || player->weapon_switch_cooldown > 0) {
 		return;
 
 	}

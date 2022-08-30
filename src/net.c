@@ -196,6 +196,7 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 	net_player->direction = minimal_player_info->direction;
 	net_player->weapon = minimal_player_info->weapon;
 	net_player->ability = minimal_player_info->ability;
+	net_player->cloaking = minimal_player_info->cloaking;
 	net_player->shooting = shooting;
 
 	if (minimal_player_info->health == 0 && net_player->health > 0) {

@@ -72,8 +72,12 @@ typedef struct Player {
 	char* username;
 	uint64_t last_hurt_by;
 
+	bool cloaking;
+
 	PlayerKill* kills;
 	uint16_t num_kills;
+
+	uint16_t weapon_switch_cooldown;
 
 } Player;
 

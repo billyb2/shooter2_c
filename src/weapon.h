@@ -36,5 +36,5 @@ uint16_t get_num_reload_frames(Weapon weapon);
 float get_projectile_speed(Weapon weapon);
 uint16_t get_projectile_damage(Weapon weapon);
 uint16_t get_cooldown_frames(Weapon weapon);
-int weapon_to_text(Weapon ability, char* text_buffer);
+int weapon_to_text(Weapon weapon, char* text_buffer);
 #endif

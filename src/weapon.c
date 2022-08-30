@@ -115,7 +115,7 @@ uint16_t get_projectile_damage(Weapon weapon) {
 
 	switch (weapon) {
 		case AssaultRifle:
-			damage = 35;
+			damage = 50;
 			break;
 
 		case Pistol:

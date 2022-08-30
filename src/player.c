@@ -26,6 +26,11 @@ uint16_t get_max_ability_charge(Ability ability) {
 			// 3 seconds to recharge
 			max_ability_charge = 3 * 60;
 			break;
+
+		case Cloak:
+			// 8 seconds to recharge
+			max_ability_charge = 8 * 60;
+			break;
 	};
 
 	return max_ability_charge;
@@ -44,6 +49,11 @@ uint16_t get_max_ability_use_frames(Ability ability) {
 		case Stim:
 			// 3 seconds of use
 			max_frames_in_use = 180;
+			break;
+
+		case Cloak:
+			// 3 seconds of use
+			max_frames_in_use = 300;
 			break;
 	};
 
@@ -110,6 +120,8 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 		.is_net_player = false,
 		.kills = NULL,
 		.num_kills = 0,
+		.cloaking = false,
+		.weapon_switch_cooldown = 0,
 
 	};
 
@@ -129,6 +141,7 @@ MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 		.weapon = player->weapon,
 		.direction = player->direction,
 		.ammo = player->ammo,
+		.cloaking = player->cloaking,
 	};
 
 	return minimal_player;
@@ -182,12 +195,27 @@ void use_ability(Player* player, const Map* map) {
 			break;
 		}
 
+		case Cloak: {
+			if (player->ability_charge < get_max_ability_charge(player->ability)) {
+				return;
+
+			}
+
+			player->cloaking = true;
+			player->using_ability = true;
+			player->ability_charge = 0;
+
+
+			break;
+		}
+
+
 	};
 
 }
 
 void reload(Player* player) {
-	if (player->reloading || player->ammo >= get_ammo_count(player->weapon)) {
+	if (player->reloading || player->ammo >= get_ammo_count(player->weapon) || player->weapon_switch_cooldown > 0) {
 		return;
 
 	}
@@ -279,6 +307,9 @@ void update_player_cooldowns(Player* players, uint8_t num_players) {
 
 				if (player->ability == Stim) {
 					player->speed /= 1.75;
+
+				} else if (player->ability == Cloak) {
+					player->cloaking = false;
 
 				}
 

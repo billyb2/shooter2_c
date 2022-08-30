@@ -12,6 +12,10 @@ int ability_to_text(Ability ability, char* text_buffer) {
 			memcpy(text_buffer, "Stim", 5);
 			return 4;
 
+		case Cloak:
+			memcpy(text_buffer, "Cloak", 6);
+			return 5;
+
 	};
 
 }

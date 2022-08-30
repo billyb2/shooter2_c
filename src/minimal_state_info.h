@@ -1,14 +1,16 @@
 #ifndef MINIMAL_PLAYER_INFO_H
 #define MINIMAL_PLAYER_INFO_H
+#include <stdint.h>
+#include <stdbool.h>
+#include <assert.h>
+
 #include "weapon.h"
 #include "player_ability.h"
-
-#include <stdint.h>
-#include <assert.h>
 
 typedef struct MinimalPlayerInfo {
 	uint64_t id;
 	uint16_t health;
+	bool cloaking;
 	uint8_t ammo;
 	Weapon weapon;
 	Ability ability;
