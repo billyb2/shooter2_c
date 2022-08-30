@@ -108,6 +108,12 @@ void keyboard_input(Player* player, const KeyBindings* key_bindings, const Map* 
 
 	}
 
+	if (IsKeyDown(KEY_TAB)) {
+		// Half a second
+		player->weapon_switch_cooldown = 30;
+
+	}
+
 	player->shooting = shooting_input;
 
 

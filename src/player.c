@@ -322,6 +322,26 @@ void update_player_cooldowns(Player* players, uint8_t num_players) {
 			player->reloading = false;
 
 		}
+
+		if (player->weapon_switch_cooldown > 0) {
+			player->weapon_switch_cooldown = saturating_sub(player->weapon_switch_cooldown, 1);
+
+			// Swap weapons
+			if (player->weapon_switch_cooldown == 0) {
+				if (player->weapon == NUM_WEAPONS - 1) {
+					player->weapon = 0;
+
+				} else {
+					player->weapon += 1;
+
+				}
+
+				player->ammo = 0;
+
+			}
+
+		}
+
 	}
 
 }
