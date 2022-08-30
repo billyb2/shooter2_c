@@ -45,7 +45,11 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 				};
 
 				if (player->cloaking) {
-					DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE / 2.0, LIGHT_RED);
+					// Only draw "our" player if we're cloaking
+					if (i == 0) {
+						DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE / 2.0, LIGHT_RED);
+
+					}
 
 				} else {
 					DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE / 2.0, RED);
