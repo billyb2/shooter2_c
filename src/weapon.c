@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 #include "weapon.h"
@@ -172,16 +173,48 @@ int weapon_to_text(Weapon weapon, char* text_buffer) {
 			memcpy(text_buffer, "Pistol", 7);
 			return 6;
 
-		case Shotgun:
-			memcpy(text_buffer, "Shotgun", 8);
-			return 8;
-
 		case Sniper:
 			memcpy(text_buffer, "Sniper", 7);
 			return 6;
+
+		case Shotgun:
+			memcpy(text_buffer, "Shotgun", 8);
+			return 7;
+
 
 	};
 
 }
 
+bool text_to_weapon(const char* weapon_text, const int weapon_text_len, Weapon* weapon) {
+	if (weapon_text_len == 13) {
+		if (memcmp(weapon_text, "Assault Rifle", 13) == 0) {
+			*weapon = AssaultRifle;
+			return true;
 
+		}
+
+	} else if (weapon_text_len == 6) {
+		if (memcmp(weapon_text, "Pistol", 6) == 0) {
+			*weapon = Pistol;
+			return true;
+
+		} else if (memcmp(weapon_text, "Sniper", 6) == 0) {
+			*weapon = Sniper;
+			return true;
+
+		}
+
+	} else if (weapon_text_len == 8) {
+		if (memcmp(weapon_text, "Shotgun", 7) == 0) {
+			*weapon = Shotgun;
+			return true;
+
+		}
+
+	}
+
+
+	return false;
+	
+}

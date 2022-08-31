@@ -10,4 +10,7 @@ typedef enum Ability {
 } Ability;
 
 int ability_to_text(Ability ability, char* text_buffer);
+/* Returns whether or not the ability_text was valid */
+bool text_to_ability(const char* ability_text, const int ability_text_len, Ability* ability);
 #endif
+

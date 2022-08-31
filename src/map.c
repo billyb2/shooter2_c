@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include "include/raylib.h"
+#include "file_ext.h"
 #include "math.h"
 #include "map.h"
 #include "include/raylib.h"
@@ -18,7 +19,6 @@ Map new_map(const char* file_name) {
 	};
 
 	FILE* map_file_ptr = fopen(file_name, "rb");
-	size_t map_file_size = 0;
 
 	if (map_file_ptr == NULL) {
 		printf("Opening map file failed\n");
@@ -26,9 +26,7 @@ Map new_map(const char* file_name) {
 
 	}
 
-	fseek(map_file_ptr, 0, SEEK_END);
-	map_file_size = ftell(map_file_ptr);
-	rewind(map_file_ptr);
+	size_t map_file_size = get_file_size(map_file_ptr);
 
 	uint8_t* map_bin = malloc(map_file_size);
 

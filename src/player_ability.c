@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <string.h>
 #include "player_ability.h"
 
@@ -20,4 +21,27 @@ int ability_to_text(Ability ability, char* text_buffer) {
 
 }
 
+bool text_to_ability(const char* ability_text, const int ability_text_len, Ability* ability) {
+	if (ability_text_len == 4) {
+		if (memcmp(ability_text, "Stim", ability_text_len) == 0) {
+			*ability = Stim;
+			return true;
 
+		} else if (memcmp(ability_text, "Warp", ability_text_len) == 0) {
+			*ability = Warp;
+			return true;
+
+		}
+
+	} else if (ability_text_len == 5) {
+		if (memcmp(ability_text, "Cloak", ability_text_len) == 0) {
+			*ability = Cloak;
+			return true;
+
+		}
+
+	}
+
+	return false;
+	
+}

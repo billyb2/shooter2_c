@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "config.h"
 #include "game_state.h"
 #include "main_menu_state.h"
 #include "include/raylib.h"
@@ -37,12 +38,6 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 
 	}
 
-	if (*game_page != Settings) {
-		game_state->main_menu_state.ability = ability;
-		game_state->main_menu_state.weapon = weapon;
-
-	}
-
 	if (username == NULL) {
 		username = malloc(20);
 		memcpy(username, "shooter2_c player", 18);
@@ -52,8 +47,39 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 	char* ip_addr = malloc(16);
 	memcpy(ip_addr, "127.0.0.1", 10);
 
+	MainMenuState* main_menu_state = &game_state->main_menu_state;
+
 	if (*game_page != Settings) {
-		MainMenuState* main_menu_state = &game_state->main_menu_state;
+		char* ability_option = get_config_option("ability");
+		char* weapon_option = get_config_option("weapon");
+		char* username_option = get_config_option("username");
+		char* hosting_option = get_config_option("hosting");
+		char* ip_addr_option = get_config_option("ip_addr");
+
+		if (ability_option != NULL) {
+			text_to_ability(ability_option, strlen(ability_option), &ability);
+
+		}
+
+		if (weapon_option != NULL) {
+			text_to_weapon(weapon_option, strlen(weapon_option), &weapon);
+
+		}
+
+		if (username_option != NULL) {
+			memcpy(username, username_option, strlen(username_option) + 1);
+
+		}
+
+		if (hosting_option != NULL) {
+			hosting = memcmp(hosting_option, "true", 4) == 0;
+
+		}
+
+		if (ip_addr_option != NULL) {
+			memcpy(ip_addr, ip_addr_option, strlen(ip_addr_option) + 1);
+
+		}
 
 		main_menu_state->ability = ability;
 		main_menu_state->weapon = weapon;
@@ -61,7 +87,39 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 		main_menu_state->hosting = hosting;
 		main_menu_state->ip_addr = ip_addr;
 
+		free(ability_option);
+		free(weapon_option);
+		free(username_option);
+		free(hosting_option);
+		free(ip_addr_option);
+
+	} else {
+		ability = main_menu_state->ability;
+		weapon = main_menu_state->weapon;
+		username = main_menu_state->username;
+		hosting = main_menu_state->hosting;
+		ip_addr = main_menu_state->ip_addr;
+
 	}
+
+	char txt_buffer[256] = { 0 };
+
+	ability_to_text(ability, txt_buffer);
+	set_config_option("ability", txt_buffer);
+
+	weapon_to_text(weapon, txt_buffer);
+	set_config_option("weapon", txt_buffer);
+
+	if (hosting) {
+		set_config_option("hosting", "true");
+
+	} else {
+		set_config_option("hosting", "false");
+
+	}
+
+	set_config_option("username", username);
+	set_config_option("ip_addr", ip_addr);
 
 	*game_page = MainMenu;
 
