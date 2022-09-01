@@ -64,7 +64,7 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 
 	Map map = new_map("maps/untitled.custom"); 
 
-	uint8_t num_players = 2;
+	uint8_t num_players = 255;
 	Player* players = malloc(num_players * sizeof(Player));
 	
 	uint16_t num_projectiles = 0;

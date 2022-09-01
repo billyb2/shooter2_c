@@ -86,6 +86,7 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 		main_menu_state->username = username;
 		main_menu_state->hosting = hosting;
 		main_menu_state->ip_addr = ip_addr;
+		main_menu_state->key_bindings = NULL;
 
 		free(ability_option);
 		free(weapon_option);

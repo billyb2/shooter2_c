@@ -220,26 +220,38 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 }
 
 int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_players) {
-	int buffer_len = sizeof(NetPlayer);
+	const int buffer_len = sizeof(NetPlayer);
 	NetPlayer* buffer = malloc(buffer_len * num_players);
 
 	Player* my_player = &players[0];
 
 	if (network_info->is_server) {
-		const Addr* addrs_to_send_to = network_info->addrs_to_send_to.item_list;
+		if (network_info->addrs_to_send_to.num_items > 0) {
+			const Addr* addrs_to_send_to = network_info->addrs_to_send_to.item_list;
+			uint8_t num_players_to_send = 0;
 
-		for (uint8_t i = 0; i < num_players; i += 1) {
-			memcpy(buffer[0].username, my_player->username, strlen(my_player->username) + 1);
-			buffer[i].minimal_player_info = get_minimal_player_info(&players[i]);
-			buffer[i].shooting = players[i].shooting;
-			buffer[i].last_hurt_by = players[i].last_hurt_by;
+			for (uint8_t i = 0; i < num_players; i += 1) {
+				Player* player = &players[i];
 
-		}
+				if (player->username != NULL) {
+					memcpy(buffer[num_players_to_send].username, player->username, strlen(player->username) + 1);
 
-		for (uint64_t i = 0; i < network_info->addrs_to_send_to.num_items; i += 1) {
-			const Addr* addr_to_send_to = &addrs_to_send_to[i];
+					buffer[num_players_to_send].minimal_player_info = get_minimal_player_info(player);
+					buffer[num_players_to_send].shooting = players[i].shooting;
+					buffer[num_players_to_send].last_hurt_by = players[i].last_hurt_by;
 
-			sendto(network_info->socket, buffer, buffer_len * num_players, 0, (struct sockaddr*)&addr_to_send_to->sockaddr, addr_to_send_to->addr_len);
+					num_players_to_send += 1;
+
+				}
+
+			}
+
+			for (uint64_t i = 0; i < network_info->addrs_to_send_to.num_items; i += 1) {
+				const Addr* addr_to_send_to = &addrs_to_send_to[i];
+
+				int bytes_sent = sendto(network_info->socket, buffer, buffer_len * num_players_to_send, 0, (struct sockaddr*)&addr_to_send_to->sockaddr, addr_to_send_to->addr_len);
+
+			}
 
 		}
 
@@ -255,80 +267,26 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 
 	int total_bytes_read = 0;
 
-	if (network_info->is_server) {
-		Addr addr = {
-			.addr_len = sizeof(addr.sockaddr),
+	Addr addr = {
+		.addr_len = sizeof(addr.sockaddr),
 
-		};
+	};
 
-		int bytes_read = recvfrom(network_info->socket, buffer, sizeof(NetPlayer), 0, (struct sockaddr*)&addr.sockaddr, &addr.addr_len);
 
-		int buffer_index = 0;
+	int bytes_read = recvfrom(network_info->socket, buffer, sizeof(NetPlayer) * num_players, 0, (struct sockaddr*)&addr.sockaddr, &addr.addr_len);
 
-		while (bytes_read > 0) {
-			hashset_insert(&addr, sizeof(addr), &network_info->addrs_to_send_to);
-			total_bytes_read += bytes_read;
+	int buffer_index = 0;
 
-			buffer_index += 1;
-			buffer = realloc(buffer, (buffer_index + 2) * sizeof(NetPlayer));
+	while (bytes_read > 0) {
+		hashset_insert(&addr, sizeof(addr), &network_info->addrs_to_send_to);
+		total_bytes_read += bytes_read;
 
-			bytes_read = recvfrom(network_info->socket, &buffer[buffer_index], sizeof(NetPlayer), 0, (struct sockaddr*)&addr.sockaddr, &addr.addr_len);
+		buffer_index += total_bytes_read / (sizeof(NetPlayer) - 1);
+		buffer = realloc(buffer, (buffer_index + 2) * (buffer_len * num_players));
 
-		}
+		bytes_read = recvfrom(network_info->socket, &buffer[buffer_index], buffer_len * num_players, 0, (struct sockaddr*)&addr.sockaddr, &addr.addr_len);
 
-	} else {
-		#ifdef __WIN32__
-		int bytes_read = recv(network_info->socket, buffer, buffer_len, MSG_PEEK); 
-		#endif
-		#ifdef __unix__
-		int bytes_read = recv(network_info->socket, buffer, buffer_len, 0); 
-		#endif
-		int buffer_index = 0;
-
-		#ifdef __WIN32__
-			while (bytes_read == SOCKET_ERROR) {
-				int err = WSAGetLastError();
-
-				if (err == WSAEMSGSIZE) {
-					buffer_len += sizeof(NetPlayer);
-
-				} else if (err == WSAEWOULDBLOCK) {
-					break;
-
-				} else {
-					fprintf("Error on recv, %d\n", err);
-
-				}
-
-				bytes_read = recv(network_info->socket, buffer, buffer_len, MSG_PEEK); 
-
-			}
-
-			// Read the message for real, no peeking
-			bytes_read = recv(network_info->socket, buffer, buffer_len, 0); 
-
-			if (bytes_read != SOCKET_ERROR) {
-				// Keep trying to read the message until the buffer is the correct size
-
-				total_bytes_read += bytes_read;
-
-			}
-
-		#endif
-
-		#ifdef __unix__
-		while (bytes_read > 0) {
-			buffer_index += 1;
-			total_bytes_read += bytes_read;
-			
-			buffer = realloc(buffer, (buffer_index + 2) * sizeof(NetPlayer));
-			
-			bytes_read = recv(network_info->socket, &buffer[buffer_index], buffer_len, 0); 
-		}
-		#endif
-		
 	}
-
 
 	if (total_bytes_read > 0) {
 		uint64_t num_net_players = total_bytes_read / (sizeof(NetPlayer) - 1);
