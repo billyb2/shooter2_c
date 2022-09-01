@@ -88,7 +88,7 @@ void keyboard_input(Player* player, const KeyBindings* key_bindings, const Map* 
 	if (IsKeyDown(KEY_G)) {
 		player->equipped_weapon = Tertiary;
 		shooting_input = true;
-		float throw_distance = distance(player->pos_x, player->pos_y, mouse_pos.x, mouse_pos.y);
+		float throw_distance = distance(mouse_pos.x, mouse_pos.y, angle_target_x, angle_target_y);
 
 		if (throw_distance > 350.0) {
 			throw_distance = 350.0;

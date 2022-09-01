@@ -78,6 +78,20 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const P
 			const Projectile* projectile = &projectiles[i];
 			DrawCircle(projectile->pos_x, projectile->pos_y, projectile->size / 2.0, BLACK);
 
+			if (projectile->projectile_type == GrenadeProj) {
+				// Draw the grenade's radius
+				const Color VERY_LIGHT_RED = {
+					.r = 255,
+					.g = 0,
+					.b = 0,
+					.a = 25
+
+				};
+
+				DrawCircle(projectile->pos_x, projectile->pos_y, MAX_GRENADE_DAMAGE_DISTANCE, VERY_LIGHT_RED);
+
+			}
+
 		}
 
 		for (uint16_t i = 0; i < map->num_objects; i += 1) {

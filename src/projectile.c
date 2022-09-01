@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "include/raylib.h"
 #include "rand.h"
 #include "map.h"
 #include "player.h"
@@ -49,6 +48,22 @@ void add_kill(Player* players, uint8_t num_players, Player* player_who_died) {
 
 }
 
+void damage_player(Player* players, uint8_t num_players, Player* player_who_took_damage, uint64_t attacking_player_id, uint16_t damage) {
+	if (player_who_took_damage->health == 0 || player_who_took_damage->is_net_player || !player_who_took_damage->assigned_id || damage == 0) {
+		return;
+
+	}
+
+	player_who_took_damage->last_hurt_by = attacking_player_id;
+	player_who_took_damage->health = saturating_sub(player_who_took_damage->health, damage);
+
+	if (player_who_took_damage->health == 0) {
+		add_kill(players, num_players, player_who_took_damage);
+
+	}
+
+}
+
 // A cheap and lazy way of doing this, but it's simple
 void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Player* players, uint8_t num_players, const Map* map) {
 	Projectile* buff_projectile_list = malloc(*num_projectiles * sizeof(Projectile));
@@ -73,7 +88,7 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 					for(uint8_t i = 0; i < num_players; i += 1) {
 						Player* player = &players[i];
 
-						if (player->health == 0) {
+						if (player->health == 0 || !player->assigned_id) {
 							continue;
 
 						}
@@ -81,17 +96,7 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 						player_collision = aabb_collision(player->pos_x, player->pos_y, PLAYER_SIZE, PLAYER_SIZE, projectile->pos_x, projectile->pos_y, projectile->size, projectile->size);
 
 						if (player_collision) {
-							if (!player->is_net_player) {
-								player->health = saturating_sub(player->health, projectile->damage);
-								player->last_hurt_by = projectile->shot_by;
-
-								if (player->health == 0) {
-									add_kill(players, num_players, player);
-
-								}
-
-							}
-
+							damage_player(players, num_players, player, projectile->shot_by, projectile->damage);
 							break;
 
 						}
@@ -121,16 +126,7 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 						player_collision = aabb_collision_w_movement(projectile->pos_x, projectile->pos_y, (float)projectile->size, (float)projectile->size, player->pos_x, player->pos_y, (float)PLAYER_SIZE, (float)PLAYER_SIZE, projectile->speed, projectile->angle);
 
 						if (player_collision) {
-							if (!player->is_net_player) {
-								player->health = saturating_sub(player->health, projectile->damage);
-								player->last_hurt_by = projectile->shot_by;
-
-								if (player->health == 0) {
-									add_kill(players, num_players, player);
-
-								}
-
-							}
+							damage_player(players, num_players, player, projectile->shot_by, projectile->damage);
 
 							break;
 
@@ -165,12 +161,9 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 
 					bool should_explode = projectile->num_frames_existed >= FRAMES_TILL_EXPLOSION;
 
-					float half_proj_size = projectile->size / 2.0;
 					bool collided_with_map = map_collision(projectile->pos_x, projectile->pos_y, projectile->size, projectile->size, map);
 
 					if (should_explode) {
-						#define MAX_GRENADE_DAMAGE_DISTANCE 200.0
-
 						float distance_to_player = distance(player->pos_x, player->pos_y, projectile->pos_x, projectile->pos_y);
 						
 						if (distance_to_player >= MAX_GRENADE_DAMAGE_DISTANCE) {
@@ -178,22 +171,17 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 
 						}
 
-						float damage_ratio = powf(1.0 - (distance_to_player / MAX_GRENADE_DAMAGE_DISTANCE), 1.2);
-						player->health = saturating_sub(player->health, projectile->damage * damage_ratio);
+						float damage_ratio = (1.0 - (distance_to_player / MAX_GRENADE_DAMAGE_DISTANCE)) * 1.8;
+						float damage = projectile->damage * damage_ratio;
+						damage_player(players, num_players, player, projectile->shot_by, damage);
+						
 
-						if (damage_ratio > 0.0) {
-							player->last_hurt_by = projectile->shot_by;
-
-						}
-
-						if (player->health == 0) {
-							add_kill(players, num_players, player);
-
-						}
+					} else if (collided_with_map) {
+						projectile->angle += F32_PI / 2.0;
 
 					}
 
-					projectile_should_be_copied = !collided_with_map && !should_explode;
+					projectile_should_be_copied = !should_explode;
 
 				}
 
@@ -229,7 +217,7 @@ Projectile new_projectile(float pos_x, float pos_y, float angle, ProjectileType 
 			break;
 
 		case GrenadeProj:
-			size = 1;
+			size = 7;
 			break;
 
 		case SniperBullet:

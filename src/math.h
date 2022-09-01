@@ -2,7 +2,12 @@
 #define MATH_H
 #include <stdbool.h>
 
-float saturating_sub(float x, float y);
+#define F32_PI 3.14159265358979323846264338327950288
+#define F32_EPSILON 1.1920929E-7
+
+// Generic math babyyyy
+#define saturating_sub(x, y) ( (x < y) ? 0 : (x - y) );
+
 float get_angle(float cx, float cy, float ex, float ey);
 float distance(float x1, float y1, float x2, float y2);
 float distance2(float x1, float y1, float x2, float y2);

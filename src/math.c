@@ -1,20 +1,7 @@
 #include <stdint.h>
 #include <math.h>
+#include <xmmintrin.h>
 #include "math.h"
-
-#define F32_PI 3.14159265358979323846264338327950288
-#define F32_EPSILON 1.1920929E-7
-
-float saturating_sub(float x, float y) {
-	if (y > x) {
-		return 0;
-
-	} else {
-		return x - y;
-
-	}
-
-}
 
 float get_angle(float cx, float cy, float ex, float ey) {
 	float dy = ey - cy;
