@@ -205,7 +205,7 @@ bool text_to_weapon(const char* weapon_text, const int weapon_text_len, Weapon* 
 
 		}
 
-	} else if (weapon_text_len == 8) {
+	} else if (weapon_text_len == 7) {
 		if (memcmp(weapon_text, "Shotgun", 7) == 0) {
 			*weapon = Shotgun;
 			return true;
