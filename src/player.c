@@ -350,6 +350,11 @@ void respawn_players(Player* players, uint8_t num_players) {
 	for (uint8_t i = 0; i < num_players; i += 1) {
 		Player* player = &players[i];
 
+		if (player->is_net_player) {
+			continue;
+
+		}
+
 		if (player->health == 0 && !player->is_net_player && player->assigned_id) {
 			player->num_frames_dead += 1;
 

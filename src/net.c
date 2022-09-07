@@ -210,9 +210,9 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 
 
 	if (net_player->username == NULL) {
-		net_player->username = calloc(1, 20);
+		net_player->username = malloc(30);
 		
-		memcpy(net_player->username, buffer->username, strlen(buffer->username));
+		memcpy(net_player->username, buffer->username, strlen(buffer->username) + 1);
 
 	}
 
