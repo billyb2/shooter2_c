@@ -4,6 +4,7 @@
 #include <ctype.h>
 
 #include "camera.h"
+#include "game_mode.h"
 #include "input.h"
 #include "player.h"
 #include "player_ability.h"
@@ -84,14 +85,19 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 
 	NetworkInfo network_info = init_networking(hosting, game_state->main_menu_state.ip_addr, &players[0]);
 
+	GameModeData game_mode_data = init_gamemode_data(); 
+
 	InGameState new_game_state = {
 		.default_ability = game_state->main_menu_state.ability,
 		.default_weapon = game_state->main_menu_state.weapon,
 		.players = players,
 		.num_players = num_players,
+		.winning_player = NULL,
 
 		.projectiles = projectiles,
 		.num_projectiles = num_projectiles,
+
+		.game_mode_data = game_mode_data,
 
 		.camera = camera,
 		
@@ -118,6 +124,16 @@ void run_in_game_state(GamePage* game_page, GameState* game_state) {
 	move_camera(&in_game_state->camera, &in_game_state->map, in_game_state->players[0].pos_x, in_game_state->players[0].pos_y);
 
 	respawn_players(in_game_state->players, in_game_state->num_players);
+
+	if (in_game_state->winning_player == NULL) {
+		bool player_won = calculate_scores(in_game_state->players, in_game_state->num_players, &in_game_state->winning_player, &in_game_state->game_mode_data);
+
+		if (player_won) {
+			printf("%s WINS!!!!!!\n", in_game_state->winning_player->username);
+
+		}
+
+	} 
 	
 	render(in_game_state->camera, in_game_state->players, in_game_state->num_players, in_game_state->projectiles, in_game_state->num_projectiles, &in_game_state->map);
 

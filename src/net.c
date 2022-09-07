@@ -278,7 +278,11 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 	int buffer_index = 0;
 
 	while (bytes_read > 0) {
-		hashset_insert(&addr, sizeof(addr), &network_info->addrs_to_send_to);
+		if (network_info->is_server) {
+			hashset_insert(&addr, sizeof(addr), &network_info->addrs_to_send_to);
+
+		}
+
 		total_bytes_read += bytes_read;
 
 		buffer_index += total_bytes_read / (sizeof(NetPlayer) - 1);

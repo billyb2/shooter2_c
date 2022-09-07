@@ -15,7 +15,7 @@ HashSet new_hashset() {
 }
 
 /// Returns whether the hash_set contains the value
-bool hashset_contains(const void* item, uint64_t item_size, HashSet* hash_set) {
+bool hashset_contains(const void* item, uint64_t item_size, const HashSet* hash_set) {
 	for (uint64_t i = 0; i < hash_set->num_items; i += 1) {
 		void* hashset_item = hash_set->item_list + (item_size * i);
 		
@@ -48,7 +48,7 @@ bool hashset_insert(const void* item, uint64_t item_size, HashSet* hash_set) {
 
 
 /// TODO
-bool remove(const void* item, uint64_t item_size, HashSet* hash_set) {
+bool hashset_remove(const void* item, uint64_t item_size, HashSet* hash_set) {
 	exit(-1);
 
 }

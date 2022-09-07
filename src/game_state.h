@@ -1,5 +1,6 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
+#include "game_mode.h"
 #include "include/raylib.h"
 #include "net.h"
 #include "player.h"
@@ -23,6 +24,10 @@ typedef struct InGameState {
 
 	Projectile* projectiles;
 	uint16_t num_projectiles;
+
+	const Player* winning_player;
+
+	GameModeData game_mode_data;
 
 	Camera2D camera;
 

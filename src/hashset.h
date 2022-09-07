@@ -11,6 +11,6 @@ typedef struct HashSet {
 
 HashSet new_hashset();
 bool hashset_insert(const void* item, uint64_t item_size, HashSet* hash_set);
-bool hashset_contains(const void* item, uint64_t item_size, HashSet* hash_set); 
+bool hashset_contains(const void* item, uint64_t item_size, const HashSet* hash_set); 
 
 #endif
