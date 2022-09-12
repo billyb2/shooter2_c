@@ -36,6 +36,8 @@ typedef struct InGameState {
 
 	KeyBindings key_bindings;
 
+	uint16_t countdown_frames_to_main_menu;
+
 
 } InGameState;
 

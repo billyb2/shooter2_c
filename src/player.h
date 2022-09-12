@@ -87,7 +87,7 @@ void use_ability(Player* player, const Map* map);
 void reload(Player* player);
 void update_player_cooldowns(Player* players, uint8_t num_players);
 void move_player(Player* player, PlayerMovementInfo movement_info, const Map* map);
-void respawn_players(Player* players, uint8_t num_players);
+void respawn_players(Player* players, uint8_t num_players, const Map* map);
 uint16_t get_max_ability_charge(Ability ability);
 
 #endif

@@ -10,6 +10,7 @@ endif()
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 	message("Debug build")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
+
 endif()
 
 if (DEFINED CMAKE_SYSTEM_NAME)
@@ -25,6 +26,13 @@ if (DEFINED CMAKE_SYSTEM_NAME)
 	if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fdiagnostics-color")
 		set(WINDOWS_LIBS "-lws2_32 -luserenv -lbcrypt")
+
+		# Debug windows builds boot too slowly in Wine, so I increase the
+		# optimization level
+		if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O1")
+
+		endif()
 	endif()
 
 

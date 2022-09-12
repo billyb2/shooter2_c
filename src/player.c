@@ -62,6 +62,8 @@ uint16_t get_max_ability_use_frames(Ability ability) {
 }
 
 Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map, char* player_name) {
+
+
 	uint8_t num_throwables;
 
 	switch (throwable) {
@@ -91,7 +93,6 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 
 	const MapObject* spawn_point = spawn_points[rand_range_u64(0, num_spawn_points)];
 
-	srand(time(NULL));
 
 	Player player = {
 		.id = rand(),
@@ -346,7 +347,7 @@ void update_player_cooldowns(Player* players, uint8_t num_players) {
 
 }
 
-void respawn_players(Player* players, uint8_t num_players) {
+void respawn_players(Player* players, uint8_t num_players, const Map* map) {
 	for (uint8_t i = 0; i < num_players; i += 1) {
 		Player* player = &players[i];
 
@@ -360,6 +361,32 @@ void respawn_players(Player* players, uint8_t num_players) {
 
 			if (player->num_frames_dead >= 180) {
 				player->health = PLAYER_MAX_HEALTH;
+
+				uint16_t num_spawn_points = 0;
+				const MapObject** spawn_points = malloc(sizeof(MapObject*) * map->num_objects);
+
+				for (uint16_t i = 0; i < map->num_objects; i += 1) {
+					MapObject* map_obj = &map->objects[i];
+					
+					if (map_obj->spawn_point) {
+						spawn_points[num_spawn_points] = map_obj;
+						num_spawn_points += 1;
+					}
+
+				}
+
+				if (num_spawn_points == 0) {
+					fprintf(stderr, "Failed to find any spawn points\n");
+					exit(-1);
+
+				}
+
+				const MapObject* spawn_point = spawn_points[rand_range_u64(0, num_spawn_points)];
+
+				player->pos_x = spawn_point->pos_x + 25.0;
+				player->pos_y = spawn_point->pos_y + 25.0;
+
+
 				player->num_frames_dead = 0;
 
 			}

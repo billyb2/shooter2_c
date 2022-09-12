@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "rand.h"
 #include "game_state.h"
@@ -13,6 +14,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 450;
 
 int main() {
+	srand(time(NULL));
 	init_fast_rand();
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "shooter2");
 

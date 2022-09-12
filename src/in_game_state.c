@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <errno.h>
 #include <ctype.h>
 
 #include "camera.h"
@@ -9,6 +11,7 @@
 #include "player.h"
 #include "player_ability.h"
 #include "render.h"
+#include "net.h"
 #include "game_state.h"
 #include "rand.h"
 #include "in_game_state.h"
@@ -112,6 +115,36 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 
 }
 
+
+void exit_in_game(GameState* game_state, GamePage* game_page, GamePage new_game_page) {
+	InGameState* in_game_state = &game_state->in_game_state;	
+
+	free(in_game_state->map.objects);
+	free(in_game_state->projectiles);
+	free(in_game_state->players);
+	free(in_game_state->game_mode_data.score.item_list);
+	free(in_game_state->network_info.addrs_to_send_to.item_list);
+
+	#ifdef __unix__
+	if (close(in_game_state->network_info.socket) != 0) {
+		fprintf(stderr, "Failed to shutdown socket\n");
+		printf("errno: %d\n", errno);
+
+	}
+	#endif
+
+	#ifdef __WIN32__
+	if (closesocket(in_game_state->network_info.socket) != 0) {
+		fprintf(stderr, "Failed to shutdown socket\n");
+		printf("errno: %d\n", errno);
+
+	}
+	#endif
+
+	enter_state(game_page, game_state, new_game_page);
+
+}
+
 void run_in_game_state(GamePage* game_page, GameState* game_state) {
 	InGameState* in_game_state = &game_state->in_game_state;
 
@@ -123,18 +156,27 @@ void run_in_game_state(GamePage* game_page, GameState* game_state) {
 	update_projectiles(&in_game_state->projectiles, &in_game_state->num_projectiles, in_game_state->players, in_game_state->num_players, &in_game_state->map);
 	move_camera(&in_game_state->camera, &in_game_state->map, in_game_state->players[0].pos_x, in_game_state->players[0].pos_y);
 
-	respawn_players(in_game_state->players, in_game_state->num_players);
+	respawn_players(in_game_state->players, in_game_state->num_players, &in_game_state->map);
 
 	if (in_game_state->winning_player == NULL) {
 		bool player_won = calculate_scores(in_game_state->players, in_game_state->num_players, &in_game_state->winning_player, &in_game_state->game_mode_data);
 
 		if (player_won) {
-			printf("%s WINS!!!!!!\n", in_game_state->winning_player->username);
+			in_game_state->countdown_frames_to_main_menu = 5 * 60;
 
 		}
 
-	} 
+	} else {
+		in_game_state->countdown_frames_to_main_menu -= 1;
+
+	}
 	
-	render(in_game_state->camera, in_game_state->players, in_game_state->num_players, in_game_state->projectiles, in_game_state->num_projectiles, &in_game_state->map);
+	render(in_game_state->camera, in_game_state->players, in_game_state->num_players, in_game_state->projectiles, in_game_state->num_projectiles, &in_game_state->map, in_game_state->winning_player);
+
+	if (in_game_state->winning_player != NULL && in_game_state->countdown_frames_to_main_menu == 0) {
+		exit_in_game(game_state, game_page, MainMenu);
+
+	}
 
 }
+

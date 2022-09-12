@@ -17,6 +17,8 @@
 #define s_lh	S_un.S_un_b.s_b3
 #define SOCKET_ERROR (-1)
 
+#define SHUT_RDWR 2
+
 typedef struct WSAData {
         WORD            wVersion;
         WORD            wHighVersion;

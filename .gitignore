@@ -5,3 +5,4 @@ deps/wasmer/*
 wasmer.dll
 **/target*/
 **/target_web/
+.config/
