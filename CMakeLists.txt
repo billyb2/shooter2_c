@@ -49,47 +49,21 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(OpenGL_GL_PREFERENCE GLVND)
 
-include(FetchContent)
-	FetchContent_Declare(
-	raylib
-	URL https://github.com/raysan5/raylib/archive/refs/tags/4.2.0.tar.gz
-	URL_HASH SHA256=676217604a5830cb4aa31e0ede0e4233c942e2fc5c206691bded58ebcd82a590
-)
-FetchContent_GetProperties(raylib)
-if (NOT raylib_POPULATED) # Have we downloaded raylib yet?
-	set(FETCHCONTENT_QUIET NO)
-	FetchContent_Populate(raylib)
-	set(CUSTOMIZE_BUILD ON CACHE BOOL "" FORCE)
-	set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # don't build the supplied examples
-	set(USE_AUDIO OFF CACHE BOOL "" FORCE) 
-	set(SUPPORT_GESTURES_SYSTEM OFF CACHE BOOL "" FORCE) 
-	set(SUPPORT_MOUSE_GESTURES OFF CACHE BOOL "" FORCE) 
-	set(SUPPORT_VR_SIMULATOR OFF CACHE BOOL "" FORCE) 
-	set(SUPPORT_DISTORTION_SHADER OFF CACHE BOOL "" FORCE) 
+set(CUSTOMIZE_BUILD ON CACHE BOOL "" FORCE)
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # don't build the supplied examples
+set(USE_AUDIO OFF CACHE BOOL "" FORCE) 
+set(SUPPORT_GESTURES_SYSTEM OFF CACHE BOOL "" FORCE) 
+set(SUPPORT_MOUSE_GESTURES OFF CACHE BOOL "" FORCE) 
+set(SUPPORT_VR_SIMULATOR OFF CACHE BOOL "" FORCE) 
+set(SUPPORT_DISTORTION_SHADER OFF CACHE BOOL "" FORCE) 
+add_subdirectory(deps/raylib)
 
-endif()
+set(BUILD_STATIC_LIBS ON CACHE BOOL "" FORCE)
+set(DISABLE_WERROR ON CACHE BOOL "" FORCE)
+set(ENABLE_RDRAND ON CACHE BOOL "" FORCE)
+add_subdirectory(deps/json-c)
 
-add_subdirectory(${raylib_SOURCE_DIR} ${raylib_BINARY_DIR})
-
-include(FetchContent)
-	FetchContent_Declare(
-	json-c
-	URL https://github.com/json-c/json-c/archive/refs/tags/json-c-0.16-20220414.tar.gz
-	URL_HASH SHA256=3ecaeedffd99a60b1262819f9e60d7d983844073abc74e495cb822b251904185
-)
-FetchContent_GetProperties(raylib)
-if (NOT json-c_POPULATED) # Have we downloaded raylib yet?
-	set(FETCHCONTENT_QUIET NO)
-	FetchContent_Populate(json-c)
-
-	set(BUILD_STATIC_LIBS ON CACHE BOOL "" FORCE)
-	set(DISABLE_WERROR ON CACHE BOOL "" FORCE)
-	set(ENABLE_RDRAND ON CACHE BOOL "" FORCE)
-endif()
-
-add_subdirectory(${json-c_SOURCE_DIR} ${json-c_BINARY_DIR})
-
-file(GLOB SRC_FILES src/*.c)
+file(GLOB SRC_FILES src/*.c deps/wasm3/source/*.c)
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} raylib json-c ${WINDOWS_LIBS})
