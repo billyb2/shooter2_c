@@ -9,6 +9,7 @@
 
 typedef struct MinimalPlayerInfo {
 	uint64_t id;
+	uint64_t team_id;
 	uint16_t health;
 	bool cloaking;
 	uint8_t ammo;
@@ -21,7 +22,7 @@ typedef struct MinimalPlayerInfo {
 } MinimalPlayerInfo;
 
 
-static_assert((sizeof(MinimalPlayerInfo) == 32), "MinimalPlayerInfo is the wrong size, add padding");
+static_assert((sizeof(MinimalPlayerInfo) == 40), "MinimalPlayerInfo is the wrong size, add padding");
 
 typedef struct MinimalProjectileInfo {
 	float pos_x;

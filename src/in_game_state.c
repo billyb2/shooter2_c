@@ -86,16 +86,17 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 
 	}
 
-	NetworkInfo network_info = init_networking(hosting, game_state->main_menu_state.ip_addr, &players[0]);
 
-	GameModeData game_mode_data = init_gamemode_data(); 
+	GameModeData game_mode_data = init_gamemode_data(TeamDeathmatch, num_players); 
+	NetworkInfo network_info = init_networking(hosting, game_state->main_menu_state.ip_addr, &players[0], &game_mode_data);
+
 
 	InGameState new_game_state = {
 		.default_ability = game_state->main_menu_state.ability,
 		.default_weapon = game_state->main_menu_state.weapon,
 		.players = players,
 		.num_players = num_players,
-		.winning_player = NULL,
+		.winning_team = NULL,
 
 		.projectiles = projectiles,
 		.num_projectiles = num_projectiles,
@@ -122,8 +123,15 @@ void exit_in_game(GameState* game_state, GamePage* game_page, GamePage new_game_
 	free(in_game_state->map.objects);
 	free(in_game_state->projectiles);
 	free(in_game_state->players);
-	free(in_game_state->game_mode_data.score.item_list);
+
 	free(in_game_state->network_info.addrs_to_send_to.item_list);
+
+	for (uint8_t i = 0; i < in_game_state->game_mode_data.num_teams; i += 1) {
+		free(in_game_state->game_mode_data.teams->players);
+
+	}
+
+	free(in_game_state->game_mode_data.teams);
 
 	#ifdef __unix__
 	if (close(in_game_state->network_info.socket) != 0) {
@@ -151,15 +159,15 @@ void run_in_game_state(GamePage* game_page, GameState* game_state) {
 	update_player_cooldowns(in_game_state->players, in_game_state->num_players);
 
 	player_input(&in_game_state->players[0], &in_game_state->key_bindings, &in_game_state->map, true);
-	handle_networking(&in_game_state->network_info, in_game_state->players, in_game_state->num_players);
+	handle_networking(&in_game_state->network_info, in_game_state->players, in_game_state->num_players, &in_game_state->game_mode_data);
 	use_weapons(in_game_state->players, in_game_state->num_players, &in_game_state->projectiles, &in_game_state->num_projectiles);
 	update_projectiles(&in_game_state->projectiles, &in_game_state->num_projectiles, in_game_state->players, in_game_state->num_players, &in_game_state->map);
 	move_camera(&in_game_state->camera, &in_game_state->map, in_game_state->players[0].pos_x, in_game_state->players[0].pos_y);
 
 	respawn_players(in_game_state->players, in_game_state->num_players, &in_game_state->map);
 
-	if (in_game_state->winning_player == NULL) {
-		bool player_won = calculate_scores(in_game_state->players, in_game_state->num_players, &in_game_state->winning_player, &in_game_state->game_mode_data);
+	if (in_game_state->winning_team == NULL) {
+		bool player_won = calculate_scores(&in_game_state->winning_team, &in_game_state->game_mode_data);
 
 		if (player_won) {
 			in_game_state->countdown_frames_to_main_menu = 5 * 60;
@@ -170,10 +178,10 @@ void run_in_game_state(GamePage* game_page, GameState* game_state) {
 		in_game_state->countdown_frames_to_main_menu -= 1;
 
 	}
-	
-	render(in_game_state->camera, in_game_state->players, in_game_state->num_players, in_game_state->projectiles, in_game_state->num_projectiles, &in_game_state->map, in_game_state->winning_player);
 
-	if (in_game_state->winning_player != NULL && in_game_state->countdown_frames_to_main_menu == 0) {
+	render(in_game_state->camera, in_game_state->players, in_game_state->num_players, in_game_state->game_mode_data.teams, in_game_state->game_mode_data.num_teams, in_game_state->projectiles, in_game_state->num_projectiles, &in_game_state->map, in_game_state->winning_team);	
+
+	if (in_game_state->winning_team != NULL && in_game_state->countdown_frames_to_main_menu == 0) {
 		exit_in_game(game_state, game_page, MainMenu);
 
 	}

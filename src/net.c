@@ -1,3 +1,4 @@
+#include "game_mode.h"
 #include "hashset.h"
 #include "weapon.h"
 #include "projectile.h"
@@ -48,7 +49,7 @@ bool sockaddrs_are_eq(struct sockaddr_in* addr1, struct sockaddr_in* addr2) {
 
 
 
-NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player) {
+NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player, GameModeData* game_mode_data) {
 	#ifdef __WIN32__
 	WSADATA wsadata;
 	if (WSAStartup(MAKEWORD(2,2), &wsadata) != 0) {
@@ -115,6 +116,13 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player
 	my_player->assigned_id = true;
 	my_player->health = PLAYER_MAX_HEALTH;
 
+	
+	if (hosting) {
+		add_player_to_team(my_player, game_mode_data);
+		my_player->assigned_team_id = true;
+
+	}
+
 	Addr addr = {
 		.sockaddr = sock_to_send_to,
 		.addr_len = addr_len,
@@ -139,14 +147,9 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player
 
 }
 
-void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_players) {
+void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_players, GameModeData* game_mode_data, bool hosting) {
 	const MinimalPlayerInfo* minimal_player_info = &buffer->minimal_player_info;
 	bool shooting = buffer->shooting;
-
-	if (players[0].id == minimal_player_info->id) {
-		return;
-
-	}
 
 	Player* net_player = NULL;
 
@@ -188,6 +191,28 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 
 	}
 
+	// Always copy the team id, since the server can set the teams of other players at any time
+	if (!hosting) {
+		net_player->assigned_team_id = buffer->assigned_team_id;
+		net_player->team_id = buffer->minimal_player_info.team_id;
+
+	}
+
+	// Don't copy most data if it's my ID
+	if (players[0].id == minimal_player_info->id) {
+		return;
+
+	}
+
+	if (hosting) {
+		if (!net_player->assigned_team_id) {
+			printf("Adding player to team\n");
+			add_player_to_team(net_player, game_mode_data);
+			net_player->assigned_team_id = true;
+
+		}
+	}
+
 	net_player->last_hurt_by = buffer->last_hurt_by;
 	net_player->is_net_player = true;
 	net_player->ammo = minimal_player_info->ammo;
@@ -219,26 +244,39 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 
 }
 
-int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_players) {
-	const int buffer_len = sizeof(NetPlayer);
-	NetPlayer* buffer = malloc(buffer_len * num_players);
-
-	Player* my_player = &players[0];
+int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_players, GameModeData* game_mode_data) {	
+	#define BUFFER_LEN 1 + (num_players * sizeof(TeamScore)) + (sizeof(NetPlayer) * num_players)
+	char* buffer = malloc(BUFFER_LEN);
 
 	if (network_info->is_server) {
 		if (network_info->addrs_to_send_to.num_items > 0) {
-			const Addr* addrs_to_send_to = network_info->addrs_to_send_to.item_list;
+			// First, copy the team data info
+			buffer[0] = game_mode_data->num_teams;
+
+			TeamScore* current_team_score = (TeamScore*)&buffer[1];
+
+			for (uint8_t i = 0; i < game_mode_data->num_teams; i += 1) {
+				current_team_score->score = game_mode_data->teams[i].score;
+				current_team_score->id = game_mode_data->teams[i].id;
+
+				current_team_score += 1;
+
+			}
+
+			NetPlayer* net_players = (NetPlayer*)(buffer + 1 + (game_mode_data->num_teams * sizeof(TeamScore)));
 			uint8_t num_players_to_send = 0;
 
 			for (uint8_t i = 0; i < num_players; i += 1) {
 				Player* player = &players[i];
 
-				if (player->username != NULL) {
-					memcpy(buffer[num_players_to_send].username, player->username, strlen(player->username) + 1);
+				// TODO: Do real serialization not this 
+				if (player->assigned_id) {
+					memcpy(net_players[num_players_to_send].username, player->username, strlen(player->username) + 1);
 
-					buffer[num_players_to_send].minimal_player_info = get_minimal_player_info(player);
-					buffer[num_players_to_send].shooting = players[i].shooting;
-					buffer[num_players_to_send].last_hurt_by = players[i].last_hurt_by;
+					net_players[num_players_to_send].minimal_player_info = get_minimal_player_info(player);
+					net_players[num_players_to_send].shooting = players[i].shooting;
+					net_players[num_players_to_send].assigned_team_id = players[i].assigned_team_id;
+					net_players[num_players_to_send].last_hurt_by = players[i].last_hurt_by;
 
 					num_players_to_send += 1;
 
@@ -246,22 +284,38 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 
 			}
 
+			const Addr* addrs_to_send_to = network_info->addrs_to_send_to.item_list;
+
+			// Send state info to each player we've received a message from
 			for (uint64_t i = 0; i < network_info->addrs_to_send_to.num_items; i += 1) {
 				const Addr* addr_to_send_to = &addrs_to_send_to[i];
 
-				int bytes_sent = sendto(network_info->socket, buffer, buffer_len * num_players_to_send, 0, (struct sockaddr*)&addr_to_send_to->sockaddr, addr_to_send_to->addr_len);
+				int bytes_sent = sendto(network_info->socket, buffer, 1 + (game_mode_data->num_teams * sizeof(TeamScore)) + (sizeof(NetPlayer) * num_players_to_send) , 0, (struct sockaddr*)&addr_to_send_to->sockaddr, addr_to_send_to->addr_len);
 
 			}
 
 		}
 
 	} else {
-		memcpy(buffer[0].username, my_player->username, strlen(my_player->username) + 1);
-		buffer[0].minimal_player_info = get_minimal_player_info(my_player);
-		buffer[0].shooting = my_player->shooting;
-		buffer[0].last_hurt_by = my_player->last_hurt_by;
+		NetPlayer* net_player = (NetPlayer*)buffer;
+		const Player* my_player = &players[0];
 
-		send(network_info->socket, buffer, sizeof(NetPlayer), 0);
+		memcpy(net_player[0].username, my_player->username, strlen(my_player->username) + 1);
+		net_player[0].minimal_player_info = get_minimal_player_info(my_player);
+		net_player[0].shooting = my_player->shooting;
+		net_player[0].last_hurt_by = my_player->last_hurt_by;
+
+		// Don't send a message if nothing's changed
+		if (network_info->prev_msg == NULL || memcmp(net_player, network_info->prev_msg, network_info->prev_msg_len) != 0) {
+			network_info->prev_msg = realloc(network_info->prev_msg, sizeof(NetPlayer));
+			
+			network_info->prev_msg_len = sizeof(NetPlayer);
+			memcpy(network_info->prev_msg, net_player, sizeof(NetPlayer));
+
+			send(network_info->socket, net_player, sizeof(NetPlayer), 0);
+
+		}
+
 
 	}
 
@@ -272,32 +326,126 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 
 	};
 
+	if (network_info->is_server) {
+		// Since servers just receive the NetPlayer struct, just ask for like all of those lol
+		int bytes_read = recvfrom(network_info->socket, buffer, sizeof(NetPlayer), 0, (struct sockaddr*)&addr.sockaddr, &addr.addr_len);
 
-	int bytes_read = recvfrom(network_info->socket, buffer, sizeof(NetPlayer) * num_players, 0, (struct sockaddr*)&addr.sockaddr, &addr.addr_len);
+		while (bytes_read > 0) {
+			if (bytes_read != sizeof(NetPlayer)) {
+				fprintf(stderr, "Bad read size\n");
+				continue;
 
-	int buffer_index = 0;
+			}
 
-	while (bytes_read > 0) {
-		if (network_info->is_server) {
 			hashset_insert(&addr, sizeof(addr), &network_info->addrs_to_send_to);
+			total_bytes_read += bytes_read;
+
+			bytes_read = recvfrom(network_info->socket, buffer + bytes_read, sizeof(NetPlayer), 0, (struct sockaddr*)&addr.sockaddr, &addr.addr_len);
 
 		}
 
-		total_bytes_read += bytes_read;
 
-		buffer_index += total_bytes_read / (sizeof(NetPlayer) - 1);
-		buffer = realloc(buffer, (buffer_index + 2) * (buffer_len * num_players));
+	} else {
+		// Clients on the other hand should just try to get the entire BUFFER_LEN, since that's what the server sends
+		int bytes_read = recvfrom(network_info->socket, buffer, BUFFER_LEN, 0, (struct sockaddr*)&addr.sockaddr, &addr.addr_len);
 
-		bytes_read = recvfrom(network_info->socket, &buffer[buffer_index], buffer_len * num_players, 0, (struct sockaddr*)&addr.sockaddr, &addr.addr_len);
+		if (bytes_read > 0) {
+			while (recvfrom(network_info->socket, buffer, BUFFER_LEN, MSG_PEEK, (struct sockaddr*)&addr.sockaddr, &addr.addr_len) > 0) {
+				bytes_read = recvfrom(network_info->socket, buffer, BUFFER_LEN, 0, (struct sockaddr*)&addr.sockaddr, &addr.addr_len);
+
+			}
+
+		}
+
+		total_bytes_read = bytes_read;
+
 
 	}
 
 	if (total_bytes_read > 0) {
-		uint64_t num_net_players = total_bytes_read / (sizeof(NetPlayer) - 1);
+		const NetPlayer* net_players;
+		uint64_t num_net_players;
 
+		if (!network_info->is_server) {
+			// Client messages include both team composition data as well as regular player data, so to calculate the net_player buffer we have to do some math
+			uint8_t num_teams = buffer[0];
+
+			if (game_mode_data->num_teams != num_teams) {
+				game_mode_data->teams = realloc(game_mode_data->teams, num_teams * sizeof(Team));
+				game_mode_data->num_teams = num_teams;
+
+			}
+
+
+			uint64_t start_of_net_player_buffer = 1 + (num_teams * sizeof(TeamScore));
+			uint64_t total_net_player_bytes = total_bytes_read - start_of_net_player_buffer;
+
+			num_net_players = total_net_player_bytes / (sizeof(NetPlayer) - 1);
+			net_players = (NetPlayer*)(buffer + start_of_net_player_buffer);
+
+		} else {
+			// Servers, on the other hand, just have a long list of NetPlayers
+			num_net_players = total_bytes_read / (sizeof(NetPlayer) - 1);
+			net_players = (NetPlayer*)buffer;
+
+			printf("Num net players: %ld\n", num_net_players);
+
+		}
+
+		// Run through each NetPlayer and synchronize the actual player list with their info
 		for (uint64_t i = 0; i < num_net_players; i += 1) {
-			process_net_packets(&buffer[i], players, num_players);
+			process_net_packets(&net_players[i], players, num_players, game_mode_data, network_info->is_server);
 			
+
+		}
+
+
+		// After running through all the players, have clients synchronize teams with the server
+		if (!network_info->is_server) {
+			const TeamScore* team_scores = (TeamScore*)(buffer + 1);
+
+			// First, properly set up teams and their IDs and scores
+			for (uint64_t i = 0; i < game_mode_data->num_teams; i += 1) {
+				const TeamScore* team_score = &team_scores[i];
+				Team* team = &game_mode_data->teams[i];
+
+				team->id = team_score->id;
+				team->score = team_score->score;
+				team->num_players = 0;
+
+			}
+
+			// Then, move players into their proper teams
+			for (uint64_t i = 0; i < num_net_players; i += 1) {
+				const NetPlayer* net_player = &net_players[i];
+				Team* team = find_team_of_id(net_player->minimal_player_info.team_id, game_mode_data);
+
+				if (team == NULL) {
+					fprintf(stderr, "Invalid team ID: %lu\n", net_player->minimal_player_info.team_id);
+					exit(-1);
+
+				} else {
+					team->num_players += 1;	
+
+					if (team->num_players > team->num_players_alloc) {
+						team->players = realloc(team->players, team->num_players * sizeof(Team));
+
+					}
+
+					Player* player = find_player_by_id(net_player->minimal_player_info.id, players, num_players);
+
+					if (player == NULL) {
+						fprintf(stderr, "Failed to find net_player's id\n");
+						exit(-1);
+
+					} else {
+						team->players[team->num_players - 1] = player;
+
+					}
+
+				}
+
+			}
 
 		}
 

@@ -62,8 +62,6 @@ uint16_t get_max_ability_use_frames(Ability ability) {
 }
 
 Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map, char* player_name) {
-
-
 	uint8_t num_throwables;
 
 	switch (throwable) {
@@ -93,13 +91,14 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 
 	const MapObject* spawn_point = spawn_points[rand_range_u64(0, num_spawn_points)];
 
-
 	Player player = {
 		.id = rand(),
+		.team_id = 0,
 		.username = player_name,
+		.assigned_team_id = false,
 		.assigned_id = false,
-		.pos_x = spawn_point->pos_x + 25.0,
-		.pos_y = spawn_point->pos_y + 25.0,
+		.pos_x = fmaf(spawn_point->size_x, 0.5, spawn_point->pos_x),
+		.pos_y = fmaf(spawn_point->size_y, 0.5, spawn_point->pos_y),
 		.speed = DEFAULT_PLAYER_SPEED,
 		.ability = ability,
 		.weapon = weapon,
@@ -135,6 +134,7 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 	MinimalPlayerInfo minimal_player = {
 		.id = player->id,
+		.team_id = player->team_id,
 		.pos_x = player->pos_x,
 		.pos_y = player->pos_y,
 		.health = player->health,
@@ -383,9 +383,8 @@ void respawn_players(Player* players, uint8_t num_players, const Map* map) {
 
 				const MapObject* spawn_point = spawn_points[rand_range_u64(0, num_spawn_points)];
 
-				player->pos_x = spawn_point->pos_x + 25.0;
-				player->pos_y = spawn_point->pos_y + 25.0;
-
+				player->pos_x = fmaf(spawn_point->size_x, 0.5, spawn_point->pos_x);
+				player->pos_y = fmaf(spawn_point->size_y, 0.5, spawn_point->pos_y);
 
 				player->num_frames_dead = 0;
 
@@ -394,5 +393,18 @@ void respawn_players(Player* players, uint8_t num_players, const Map* map) {
 		}
 
 	}
+
+}
+
+Player* find_player_by_id(uint64_t player_id, Player* players, uint8_t num_players) {
+	for (uint8_t i = 0; i < num_players; i += 1) {
+		if (player_id == players[i].id) {
+			return &players[i];
+
+		}
+
+	}
+
+	return NULL;
 
 }

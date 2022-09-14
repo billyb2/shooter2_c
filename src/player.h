@@ -60,7 +60,9 @@ typedef struct Player {
 	uint16_t num_frames_dead;
 
 	uint64_t id;
+	uint64_t team_id;
 	bool assigned_id;
+	bool assigned_team_id;
 
 	bool shooting;
 	bool using_ability;
@@ -89,5 +91,6 @@ void update_player_cooldowns(Player* players, uint8_t num_players);
 void move_player(Player* player, PlayerMovementInfo movement_info, const Map* map);
 void respawn_players(Player* players, uint8_t num_players, const Map* map);
 uint16_t get_max_ability_charge(Ability ability);
+Player* find_player_by_id(uint64_t player_id, Player* players, uint8_t num_players);
 
 #endif

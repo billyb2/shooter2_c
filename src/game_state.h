@@ -25,7 +25,7 @@ typedef struct InGameState {
 	Projectile* projectiles;
 	uint16_t num_projectiles;
 
-	const Player* winning_player;
+	const Team* winning_team;
 
 	GameModeData game_mode_data;
 
