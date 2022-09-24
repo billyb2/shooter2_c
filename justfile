@@ -10,16 +10,19 @@ configure_windows:
 configure_windows_release:
 	cmake -Bbuild/release_win -H. -GNinja -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=win.toolchain.cmake
 
-build:
+build_gamemodes:
+	just -f src/game_modes/justfile
+
+build: build_gamemodes
 	ninja -Cbuild/debug -j4
 
-build_release:
+build_release: build_gamemodes
 	ninja -Cbuild/release -j4
 
-build_windows:
+build_windows: build_gamemodes
 	ninja -Cbuild/debug_win -j4
 
-build_windows_release:
+build_windows_release: build_gamemodes
 	ninja -Cbuild/release_win -j4
 
 run: build 

@@ -118,7 +118,7 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player
 
 	
 	if (hosting) {
-		add_player_to_team(my_player, game_mode_data);
+		add_player_to_team(get_minimal_player_info(my_player), game_mode_data, &my_player->team_id);
 		my_player->assigned_team_id = true;
 
 	}
@@ -207,7 +207,7 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 	if (hosting) {
 		if (!net_player->assigned_team_id) {
 			printf("Adding player to team\n");
-			add_player_to_team(net_player, game_mode_data);
+			add_player_to_team(get_minimal_player_info(net_player), game_mode_data, &net_player->team_id);
 			net_player->assigned_team_id = true;
 
 		}
@@ -426,20 +426,14 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 
 				} else {
 					team->num_players += 1;	
-
-					if (team->num_players > team->num_players_alloc) {
-						team->players = realloc(team->players, team->num_players * sizeof(Team));
-
-					}
-
-					Player* player = find_player_by_id(net_player->minimal_player_info.id, players, num_players);
+					const Player* player = find_player_by_id(net_player->minimal_player_info.id, players, num_players);
 
 					if (player == NULL) {
 						fprintf(stderr, "Failed to find net_player's id\n");
 						exit(-1);
 
 					} else {
-						team->players[team->num_players - 1] = player;
+						team->players[team->num_players - 1] = get_minimal_player_info(player);
 
 					}
 

@@ -6,6 +6,7 @@
 #include "include/raylib.h"
 #include "math.h"
 #include "map.h"
+#include "minimal_state_info.h"
 #include "projectile.h"
 #include "player.h"
 #include "render.h"
@@ -81,11 +82,11 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const T
 
 			if (team->num_players > 1) {
 				for (uint8_t j = 0; j < team->num_players; j += 1) {
-					const Player* player = team->players[j];
+					const MinimalPlayerInfo* player = &team->players[j];
 
 					char team_text[50];
 					sprintf(team_text, "Team: %lu", player->team_id);
-					DrawText(team_text, player->pos_x - (float)strlen(player->username) * 1.5 , player->pos_y - 32, 12, BLACK);
+					//DrawText(team_text, player->pos_x - (float)strlen(player->username) * 1.5 , player->pos_y - 32, 12, BLACK);
 
 				}
 
@@ -204,8 +205,8 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const T
 
 		if (winning_team != NULL) {
 			if (winning_team->num_players == 1) {
-				sprintf(player_wins_buffer, "%s WINS!", winning_team->players[0]->username);
-
+				//sprintf(player_wins_buffer, "%s WINS!", winning_team->players[0]->username);
+				sprintf(player_wins_buffer, "A player won!");
 			} else {
 				sprintf(player_wins_buffer, "Team %lu WINS!", winning_team->id);
 

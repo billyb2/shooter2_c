@@ -87,7 +87,7 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 	}
 
 
-	GameModeData game_mode_data = init_gamemode_data(TeamDeathmatch, num_players); 
+	GameModeData game_mode_data = init_gamemode_data("game_modes/deathmatch.wasm"); 
 	NetworkInfo network_info = init_networking(hosting, game_state->main_menu_state.ip_addr, &players[0], &game_mode_data);
 
 
@@ -127,11 +127,11 @@ void exit_in_game(GameState* game_state, GamePage* game_page, GamePage new_game_
 	free(in_game_state->network_info.addrs_to_send_to.item_list);
 
 	for (uint8_t i = 0; i < in_game_state->game_mode_data.num_teams; i += 1) {
-		free(in_game_state->game_mode_data.teams->players);
+		//free(in_game_state->game_mode_data.teams->players);
 
 	}
 
-	free(in_game_state->game_mode_data.teams);
+	//free(in_game_state->game_mode_data.teams);
 
 	#ifdef __unix__
 	if (close(in_game_state->network_info.socket) != 0) {
@@ -165,6 +165,8 @@ void run_in_game_state(GamePage* game_page, GameState* game_state) {
 	move_camera(&in_game_state->camera, &in_game_state->map, in_game_state->players[0].pos_x, in_game_state->players[0].pos_y);
 
 	respawn_players(in_game_state->players, in_game_state->num_players, &in_game_state->map);
+
+	sync_players_to_teams(in_game_state->players, in_game_state->num_players, &in_game_state->game_mode_data);
 
 	if (in_game_state->winning_team == NULL) {
 		bool player_won = calculate_scores(&in_game_state->winning_team, &in_game_state->game_mode_data);

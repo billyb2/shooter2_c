@@ -1,0 +1,5 @@
+pack: build_deathmatch
+	cp *.wasm ../../game_modes/
+
+build_deathmatch:
+	clang -O3 -std=c11 -nostdlib --target=wasm32-unknown -Wl,--export-all,--no-entry deathmatch.c -o deathmatch.wasm

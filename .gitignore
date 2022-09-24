@@ -1,8 +1,6 @@
 build/
-bots/*.wasm
-bot_src/**/*.wasm
-deps/wasmer/*
-wasmer.dll
+src/game_modes/*.wasm
+game_modes/*.wasm
 **/target*/
 **/target_web/
 .config/

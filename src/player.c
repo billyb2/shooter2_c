@@ -143,6 +143,7 @@ MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 		.direction = player->direction,
 		.ammo = player->ammo,
 		.cloaking = player->cloaking,
+		.num_kills = player->num_kills,
 	};
 
 	return minimal_player;

@@ -39,7 +39,7 @@ typedef struct TeamScore {
 
 } TeamScore;
 
-static_assert(sizeof(NetPlayer) == 80, "NetPlayer is the wrong size");
+static_assert(sizeof(NetPlayer) == 88, "NetPlayer is the wrong size");
 
 typedef struct Addr {
 	struct sockaddr_in sockaddr;
