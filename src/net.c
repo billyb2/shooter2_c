@@ -306,7 +306,7 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 		net_player[0].last_hurt_by = my_player->last_hurt_by;
 
 		// Don't send a message if nothing's changed
-		if (network_info->prev_msg == NULL || memcmp(net_player, network_info->prev_msg, network_info->prev_msg_len) != 0) {
+		if (network_info->prev_msg == NULL || memcmp(net_player, network_info->prev_msg, network_info->prev_msg_len) != 0 || !net_player->assigned_team_id) {
 			network_info->prev_msg = realloc(network_info->prev_msg, sizeof(NetPlayer));
 			
 			network_info->prev_msg_len = sizeof(NetPlayer);
