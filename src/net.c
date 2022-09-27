@@ -348,12 +348,12 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 	} else {
 		// Clients on the other hand should just try to get the entire BUFFER_LEN, since that's what the server sends
 		int bytes_read = recvfrom(network_info->socket, buffer, BUFFER_LEN, 0, (struct sockaddr*)&addr.sockaddr, &addr.addr_len);
-
-		if (bytes_read > 0) {
-			while (recvfrom(network_info->socket, buffer, BUFFER_LEN, MSG_PEEK, (struct sockaddr*)&addr.sockaddr, &addr.addr_len) > 0) {
-				bytes_read = recvfrom(network_info->socket, buffer, BUFFER_LEN, 0, (struct sockaddr*)&addr.sockaddr, &addr.addr_len);
-
-			}
+		
+		// Discard the rest of any messages received
+		bool finished_discarding = recv(network_info->socket, NULL, 0, O_TRUNC) <= 0;
+		while (!finished_discarding) {
+			int true_size = recv(network_info->socket, NULL, 0, O_TRUNC) <= 0;
+			finished_discarding = true_size <= 0;
 
 		}
 
