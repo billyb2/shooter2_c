@@ -63,7 +63,7 @@ set(DISABLE_WERROR ON CACHE BOOL "" FORCE)
 set(ENABLE_RDRAND ON CACHE BOOL "" FORCE)
 add_subdirectory(deps/json-c)
 
-file(GLOB SRC_FILES src/*.c deps/wasm3/source/*.c)
+file(GLOB SRC_FILES src/*.c src/wasm3/*.c)
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} raylib json-c ${WINDOWS_LIBS})

@@ -455,6 +455,19 @@ void run_settings_state(GamePage* game_page, GameState* game_state) {
 
 		}
 
+		if (GuiButton((Rectangle){ game_mode_button_x - increment_button_width, game_mode_button_y, increment_button_width, BUTTON_HEIGHT }, "<-") ) {
+			if (main_menu_state->current_game_mode_index == 0) {
+				main_menu_state->current_game_mode_index = main_menu_state->num_game_modes - 1;
+
+			} else {
+				main_menu_state->current_game_mode_index -= 1;
+
+			}
+
+			memcpy(main_menu_state->game_mode_file_name, main_menu_state->uninit_game_modes[main_menu_state->current_game_mode_index].full_path, strlen(main_menu_state->uninit_game_modes[main_menu_state->current_game_mode_index].full_path) + 1);
+
+		}
+
 
 		char hosting_text[16] = { "Hosting: " };
 

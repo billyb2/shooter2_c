@@ -6,7 +6,3 @@
 	path = deps/json-c
 	url = https://github.com/json-c/json-c.git
 	branch = json-c-0.16-20220414
-[submodule "deps/wasm3"]
-	path = deps/wasm3
-	url = https://github.com/wasm3/wasm3
-	branch = v0.5.0

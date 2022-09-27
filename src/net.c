@@ -388,8 +388,6 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 			num_net_players = total_bytes_read / (sizeof(NetPlayer) - 1);
 			net_players = (NetPlayer*)buffer;
 
-			printf("Num net players: %ld\n", num_net_players);
-
 		}
 
 		// Run through each NetPlayer and synchronize the actual player list with their info
