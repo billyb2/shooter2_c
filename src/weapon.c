@@ -1,6 +1,10 @@
 #include <stdbool.h>
 #include <stdint.h>
+
+#ifndef WASM
 #include <string.h>
+#endif
+
 #include "weapon.h"
 
 ProjectileType get_projectile_for_weapon(Weapon weapon) {
@@ -163,6 +167,7 @@ uint16_t get_cooldown_frames(Weapon weapon) {
 	return cooldown_frames;
 }
 
+#ifndef WASM
 int weapon_to_text(Weapon weapon, char* text_buffer) {
 	switch (weapon) {
 		case AssaultRifle:
@@ -218,3 +223,4 @@ bool text_to_weapon(const char* weapon_text, const int weapon_text_len, Weapon* 
 	return false;
 	
 }
+#endif

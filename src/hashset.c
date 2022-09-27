@@ -3,7 +3,7 @@
 #include <string.h>
 #include "hashset.h"
 
-HashSet new_hashset() {
+HashSet new_hashset(void) {
 	HashSet hashset = { 
 		.num_items = 0,
 		.item_list = NULL,

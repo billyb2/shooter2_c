@@ -34,6 +34,10 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 	char* ip_addr = NULL;
 	bool hosting = false;
 
+	UninitGameMode* uninit_game_modes = NULL;
+	uint64_t num_game_modes;
+	uint64_t current_game_mode_index;
+
 	if (*game_page == MainMenu) {
 		MainMenuState* main_menu_state = &game_state->main_menu_state;
 
@@ -45,6 +49,10 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 		hosting = main_menu_state->hosting;
 		username = main_menu_state->username;
 		ip_addr = main_menu_state->ip_addr;
+		
+		uninit_game_modes = main_menu_state->uninit_game_modes;
+		num_game_modes = main_menu_state->num_game_modes;
+		current_game_mode_index = main_menu_state->current_game_mode_index;
 
 	}
 
@@ -87,7 +95,7 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 	}
 
 
-	GameModeData game_mode_data = init_gamemode_data("game_modes/deathmatch.wasm"); 
+	GameModeData game_mode_data = init_gamemode_data(uninit_game_modes[current_game_mode_index].rt); 
 	NetworkInfo network_info = init_networking(hosting, game_state->main_menu_state.ip_addr, &players[0], &game_mode_data);
 
 
@@ -108,6 +116,10 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 		.map = map,
 		.network_info = network_info,
 		.key_bindings = key_bindings,
+
+		.uninit_game_modes = uninit_game_modes,
+		.num_game_modes = num_game_modes,
+		.current_game_mode_index = current_game_mode_index,
 
 	};
 

@@ -5,6 +5,13 @@
 #include "player.h"
 #include "hashmap.h"
 
+typedef struct UninitGameMode {
+	const char* full_path;
+	IM3Runtime rt;
+	IM3Function name;
+
+} UninitGameMode;
+
 typedef struct PlayerScore {
 	uint64_t id;
 	uint64_t score;
@@ -26,10 +33,10 @@ typedef struct GameModeData {
 
 } GameModeData;
 
-GameModeData init_gamemode_data(const char* wasm_file_name);
+GameModeData init_gamemode_data(IM3Runtime rt);
 bool calculate_scores(const Team** winning_team, GameModeData* game_mode_data);
 bool add_player_to_team(MinimalPlayerInfo player, GameModeData* game_mode_data, uint64_t* team_id);
 Team* find_team_of_id(uint64_t team_id, GameModeData* game_mode_data);
-void sync_players_to_teams(const Player* players, uint8_t num_players, GameModeData* game_mode_data);
+void sync_players_to_teams(Player* players, uint8_t num_players, GameModeData* game_mode_data);
 
 #endif

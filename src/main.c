@@ -11,9 +11,9 @@
 #include "include/raylib.h"
 
 const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 450;
+const int SCREEN_HEIGHT = 600;
 
-int main() {
+int main(void) {
 	srand(time(NULL));
 	init_fast_rand();
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "shooter2");

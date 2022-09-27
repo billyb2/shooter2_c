@@ -40,31 +40,9 @@ MinimalTeamInfo* get_wasm_team_ptr(IM3Runtime rt) {
 
 }
 
-GameModeData init_gamemode_data(const char* wasm_file_name) {
+GameModeData init_gamemode_data(IM3Runtime rt) {
 	Team* teams;
 	uint8_t num_teams;
-
-	IM3Environment env = m3_NewEnvironment();
-	IM3Runtime rt = m3_NewRuntime(env, 500000, NULL); // 500 KB
-	IM3Module module = m3_NewModule(env);
-
-	FILE* wasm_file = fopen(wasm_file_name, "rb");
-
-	if (wasm_file == NULL) {
-		perror("Error opening wasm file: ");
-		exit(-1);
-
-	}
-
-	size_t wasm_file_size = get_file_size(wasm_file);
-
-	uint8_t* wasm_file_bytes = malloc(wasm_file_size);
-	fread(wasm_file_bytes, 1, wasm_file_size, wasm_file);
-
-	fclose(wasm_file);
-
-	m3_ParseModule(env, &module, wasm_file_bytes, wasm_file_size);
-	m3_LoadModule(rt, module);
 	
 	IM3Function init_gamemode;
 	m3_FindFunction(&init_gamemode, rt, "init_game_mode");
@@ -79,6 +57,13 @@ GameModeData init_gamemode_data(const char* wasm_file_name) {
 		.rt = rt,
 
 	};
+
+	IM3Function name_fn;
+	uint64_t name_ptr;
+	m3_FindFunction(&name_fn, rt, "name_ptr");
+	m3_CallV(name_fn);
+	m3_GetResultsV(name_fn, &name_ptr);
+	printf("Playing %s\n", (char*)&get_wasm_memory(rt)[name_ptr]);
 
 	return game_mode_data;
 
@@ -104,21 +89,28 @@ MinimalPlayerInfo* find_team_player_by_id(uint64_t id, GameModeData* game_mode_d
 
 }
 
-void sync_players_to_teams(const Player* players, uint8_t num_players, GameModeData* game_mode_data) {
+void sync_players_to_teams(Player* players, uint8_t num_players, GameModeData* game_mode_data) {
 	game_mode_data->num_teams = get_num_teams(game_mode_data->rt);
 
 	for (uint8_t i = 0; i < num_players; i += 1) {
-		const Player* player = &players[i];
+		Player* player = &players[i];
 
 		if (player->assigned_id || player->is_net_player) {
-			MinimalPlayerInfo* team_player = find_team_player_by_id(player->id, game_mode_data);
+			MinimalPlayerInfo* team_player = find_team_player_by_id(player->id, game_mode_data);	
 
-			if (team_player == NULL) {
-				fprintf(stderr, "Failed to find team player\n");
-				//exit(-1);
-
-			} else {
+			if (team_player != NULL) {
+				// Allows the game mode to set the player's weapons, abilities, etc.
 				*team_player = get_minimal_player_info(player);
+
+				IM3Function set_player_stats;
+				m3_FindFunction(&set_player_stats, game_mode_data->rt, "set_player_stats"); 
+				m3_CallV(set_player_stats);
+
+				player->weapon = team_player->weapon;
+				player->ability = team_player->ability;
+				player->ammo = team_player->ammo;
+				player->pos_x = team_player->pos_x;
+				player->pos_y = team_player->pos_y;
 
 			}
 

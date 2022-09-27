@@ -2,6 +2,7 @@
 #define GAME_STATE_H
 #include "game_mode.h"
 #include "include/raylib.h"
+#include "include/wasm3.h"
 #include "net.h"
 #include "player.h"
 #include "map.h"
@@ -38,6 +39,10 @@ typedef struct InGameState {
 
 	uint16_t countdown_frames_to_main_menu;
 
+	uint64_t current_game_mode_index;
+	uint64_t num_game_modes;
+	UninitGameMode* uninit_game_modes;
+
 
 } InGameState;
 
@@ -48,6 +53,12 @@ typedef struct MainMenuState {
 	Weapon weapon;
 	bool hosting;
 	char* ip_addr;
+
+	char* game_mode_file_name;
+
+	uint64_t current_game_mode_index;
+	uint64_t num_game_modes;
+	UninitGameMode* uninit_game_modes;
 
 } MainMenuState;
 

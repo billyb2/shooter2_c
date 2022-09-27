@@ -1,7 +1,7 @@
 #include "weapon.h"
 #include "minimal_state_info.h"
 
-const char GAME_MODE_NAME[256] = "Deathmatch";
+const char GAME_MODE_NAME[256] = "Gun Game";
 
 void* memset(void* s, int c, unsigned long n) {
 	char* sb = s;
@@ -74,6 +74,7 @@ uint32_t add_player_to_team(void) {
 			team->num_players = 1;
 			*team->players = PLAYER_TO_BE_ADDED;
 			PLAYER_TO_BE_ADDED.team_id = team->id;
+			PLAYER_TO_BE_ADDED.weapon = 0;
 			return true;
 
 		}
@@ -89,18 +90,17 @@ MinimalTeamInfo WINNING_TEAM;
 uint32_t calculate_scores(void) {
 	for (uint8_t i = 0; i < NUM_TEAMS; i += 1) {
 		MinimalTeamInfo* team = &TEAMS[i];
-		team->score = 0;
+		MinimalPlayerInfo* player = &team->players[0];
 
-		// Count up the number of kills of each team's player
-		for (uint8_t j = 0; j < team->num_players; j += 1) {
-			const MinimalPlayerInfo* player = &team->players[j];
-			team->score += player->num_kills;
 
-		}
-
-		if (team->score >= winning_score()) {
+		// When the player has gotten a kill withe very weapon, the game loops back around to using the first weapon (currently the AR), so if the player is using a pistol and their num_kills > 0, they've won
+		if (player->num_kills >= NUM_WEAPONS) {
+			team->score = NUM_WEAPONS;
 			WINNING_TEAM = *team;
 			return true;
+
+		} else {
+			team->score = player->weapon;
 
 		}
 
@@ -111,7 +111,24 @@ uint32_t calculate_scores(void) {
 }
 
 void set_player_stats(void) {
-	
+	for (uint8_t i = 0; i < NUM_TEAMS; i += 1) {
+		MinimalTeamInfo* team = &TEAMS[i];
+		MinimalPlayerInfo* player = &team->players[0];
+
+		if (player->num_kills < NUM_WEAPONS) {
+			if (player->weapon != player->num_kills) {
+				// When changing a player's weapon, make sure to set max ammo
+				player->weapon = player->num_kills;
+				player->ammo = get_ammo_count(player->weapon);
+
+			}
+
+		} else {
+			player->weapon = Pistol;
+
+		}
+
+	}
 }
 
 uint64_t player_to_be_added_ptr(void) {

@@ -3,7 +3,7 @@
 #include <string.h>
 #include "hashmap.h"
 
-HashMap new_hashmap() {
+HashMap new_hashmap(void) {
 	HashMap hashmap = { 
 		.num_items = 0,
 		.item_list = NULL,

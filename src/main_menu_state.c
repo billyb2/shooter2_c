@@ -1,12 +1,21 @@
+#include <stdint.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "file_ext.h"
 #include "config.h"
+#include "game_mode.h"
 #include "game_state.h"
+#include "include/wasm3.h"
 #include "main_menu_state.h"
 #include "include/raylib.h"
 #include "player_ability.h"
 #include "weapon.h"
+#include "include/wasm3_ext.h"
 
 #define RAYGUI_IMPLEMENTATION
 #include "include/raygui.h"
@@ -14,7 +23,7 @@
 
 #define BUTTON_WIDTH 150.0
 #define BUTTON_HEIGHT 40.0
-#define SPACE_BETWEEEN_BUTTONS 10.0
+#define SPACE_BETWEEEN_BUTTONS 7.5
 #define CENTER_BUTTON_X (float)SCREEN_WIDTH / 2.0 - BUTTON_WIDTH / 2.0
 
 
@@ -29,6 +38,16 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 	Weapon weapon = 0;
 	char* username = NULL;
 	bool hosting = false;
+	uint64_t num_game_modes;
+	uint64_t current_game_mode_index;
+	UninitGameMode* uninit_game_modes = NULL;
+
+	char* ip_addr = malloc(16);
+	memcpy(ip_addr, "127.0.0.1", 10);
+
+	MainMenuState* main_menu_state = &game_state->main_menu_state;
+
+	char* game_mode_file_name = NULL;
 
 	if (*game_page == InGame) {
 		username = game_state->in_game_state.players[0].username;
@@ -36,25 +55,32 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 		weapon = game_state->in_game_state.players[0].weapon;
 		hosting = game_state->in_game_state.network_info.is_server;
 
-	}
+		current_game_mode_index = game_state->in_game_state.current_game_mode_index;
+		num_game_modes = game_state->in_game_state.num_game_modes;
+		uninit_game_modes = game_state->in_game_state.uninit_game_modes;
 
-	if (username == NULL) {
-		username = malloc(20);
-		memcpy(username, "shooter2_c player", 18);
+	} else if (*game_page == Settings) {
+		ability = main_menu_state->ability;
+		weapon = main_menu_state->weapon;
+		username = main_menu_state->username;
+		hosting = main_menu_state->hosting;
+		free(ip_addr);
+		ip_addr = main_menu_state->ip_addr;
 
-	}
+		current_game_mode_index = main_menu_state->current_game_mode_index;
+		num_game_modes = main_menu_state->num_game_modes;
+		uninit_game_modes = main_menu_state->uninit_game_modes;
+		game_mode_file_name = main_menu_state->game_mode_file_name;
 
-	char* ip_addr = malloc(16);
-	memcpy(ip_addr, "127.0.0.1", 10);
 
-	MainMenuState* main_menu_state = &game_state->main_menu_state;
-
-	if (*game_page != Settings) {
+	// Usually means the game just started
+	} else {
 		char* ability_option = get_config_option("ability");
 		char* weapon_option = get_config_option("weapon");
 		char* username_option = get_config_option("username");
 		char* hosting_option = get_config_option("hosting");
 		char* ip_addr_option = get_config_option("ip_addr");
+		char* config_game_mode_file_name = get_config_option("game_mode_file_name");
 
 		if (ability_option != NULL) {
 			text_to_ability(ability_option, strlen(ability_option), &ability);
@@ -67,7 +93,9 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 		}
 
 		if (username_option != NULL) {
-			memcpy(username, username_option, strlen(username_option) + 1);
+			int username_len = strlen(username_option);
+			username = malloc(username_len + 1); 
+			memcpy(username, username_option, username_len + 1);
 
 		}
 
@@ -81,27 +109,41 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 
 		}
 
+		if (config_game_mode_file_name != NULL) {
+			game_mode_file_name = malloc(256 + 11);
+			memcpy(game_mode_file_name, config_game_mode_file_name, strlen(config_game_mode_file_name) + 1);
+
+		}
+
 		main_menu_state->ability = ability;
 		main_menu_state->weapon = weapon;
 		main_menu_state->username = username;
 		main_menu_state->hosting = hosting;
 		main_menu_state->ip_addr = ip_addr;
 		main_menu_state->key_bindings = NULL;
+		main_menu_state->game_mode_file_name = game_mode_file_name;
 
 		free(ability_option);
 		free(weapon_option);
 		free(username_option);
 		free(hosting_option);
 		free(ip_addr_option);
-
-	} else {
-		ability = main_menu_state->ability;
-		weapon = main_menu_state->weapon;
-		username = main_menu_state->username;
-		hosting = main_menu_state->hosting;
-		ip_addr = main_menu_state->ip_addr;
+		free(config_game_mode_file_name);
 
 	}
+
+	if (username == NULL) {
+		username = malloc(20);
+		memcpy(username, "shooter2_c player", 18);
+
+	}
+
+	if (game_mode_file_name == NULL) {
+		game_mode_file_name = malloc(11 + 256);
+		memcpy(game_mode_file_name, "game_modes/deathmatch.wasm", 27);
+
+	}
+
 
 	char txt_buffer[256] = { 0 };
 
@@ -110,17 +152,98 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 
 	weapon_to_text(weapon, txt_buffer);
 	set_config_option("weapon", txt_buffer);
+	set_config_option("hosting", hosting ? "true" : "false");
 
-	if (hosting) {
-		set_config_option("hosting", "true");
+	if (uninit_game_modes == NULL) {
+		// Loads all modes in the game_modes directory
+		struct dirent* dir_entry;
+		DIR* game_mode_dir = opendir("game_modes/");
 
-	} else {
-		set_config_option("hosting", "false");
+		if (game_mode_dir  == NULL) {
+			fprintf(stderr, "Couldn't open game_modes/\n");
+			exit(-1);
+
+		}
+
+		current_game_mode_index = 0;
+		uint64_t index = 0;
+		uninit_game_modes = malloc(256 * sizeof(UninitGameMode));
+
+		while ((dir_entry = readdir(game_mode_dir)) != NULL) {
+			char* full_path = malloc(256 + 11);
+			memcpy(full_path, "game_modes/", 11);
+
+			memcpy(full_path + 11, dir_entry->d_name, strlen(dir_entry->d_name) + 1);
+
+			struct stat stats;
+
+			if (stat(full_path, &stats) != 0) {
+				fprintf(stderr, "Err calling stat on %s: %d\n", full_path, errno);
+				exit(-1);
+
+			}
+
+			if (!S_ISREG(stats.st_mode)) {
+				continue;
+
+			}
+
+
+			if (strcmp(full_path, game_mode_file_name) == 0) {
+				current_game_mode_index = index;
+
+			}
+
+			IM3Environment env = m3_NewEnvironment();
+			IM3Runtime rt = m3_NewRuntime(env, 500000, NULL); // 500 KB
+			IM3Module module = m3_NewModule(env);
+
+			FILE* wasm_file = fopen(full_path, "rb");
+
+			if (wasm_file == NULL) {
+				fprintf(stderr, "Couldn't open %s\n", full_path);
+				perror("Error opening wasm file: ");
+				exit(-1);
+
+			}
+
+			size_t wasm_file_size = get_file_size(wasm_file);
+
+			uint8_t* wasm_file_bytes = malloc(wasm_file_size);
+			fread(wasm_file_bytes, 1, wasm_file_size, wasm_file);
+
+			fclose(wasm_file);
+
+			m3_ParseModule(env, &module, wasm_file_bytes, wasm_file_size);
+			m3_LoadModule(rt, module);
+
+			UninitGameMode uninit_game_mode = {
+				.full_path = full_path,
+				.rt = rt,
+			
+			};
+
+			m3_FindFunction(&uninit_game_mode.name, uninit_game_mode.rt, "name_ptr");
+
+			uninit_game_modes[index] = uninit_game_mode;
+			index += 1;
+
+		}
+
+		num_game_modes = index;
+		closedir(game_mode_dir);
 
 	}
 
+
+	main_menu_state->uninit_game_modes = uninit_game_modes;
+	main_menu_state->current_game_mode_index = current_game_mode_index;
+	main_menu_state->num_game_modes = num_game_modes;
+	main_menu_state->game_mode_file_name = game_mode_file_name;
+
 	set_config_option("username", username);
 	set_config_option("ip_addr", ip_addr);
+	set_config_option("game_mode_file_name", game_mode_file_name);
 
 	*game_page = MainMenu;
 
@@ -297,6 +420,42 @@ void run_settings_state(GamePage* game_page, GameState* game_state) {
 
 		GuiDrawText(text_to_draw, name_textbox_rect, TEXT_ALIGN_CENTER, username_outline_color);
 
+
+		char game_mode_button_text[11 + 256] = "Game Mode: ";
+
+		uint64_t game_mode_name_ptr;
+
+		UninitGameMode* current_game_mode = &main_menu_state->uninit_game_modes[main_menu_state->current_game_mode_index];
+
+		m3_CallV(current_game_mode->name);
+		m3_GetResultsV(current_game_mode->name, &game_mode_name_ptr);
+		char* game_mode_name = (char*)&m3_GetMemory(current_game_mode->rt, NULL, 0)[game_mode_name_ptr];
+		memcpy(game_mode_button_text + 11, game_mode_name, strlen(game_mode_name));
+
+		const int game_mode_name_str_len = strlen(game_mode_button_text);
+		const float game_mode_button_width =  BUTTON_WIDTH + 6.0 * (9 + game_mode_name_str_len);
+		const float game_mode_button_x = (float)SCREEN_WIDTH / 2.0 - game_mode_button_width / 2.0; 
+		const float game_mode_button_y = FIRST_BUTTON_HEIGHT + 5 * BUTTON_HEIGHT;
+
+		Rectangle game_mode_rect = (Rectangle) { game_mode_button_x, game_mode_button_y, game_mode_button_width, BUTTON_HEIGHT }; 
+
+		GuiDrawRectangle(game_mode_rect, 3, username_outline_color, RAYWHITE);
+		GuiDrawText(game_mode_button_text, game_mode_rect, TEXT_ALIGN_CENTER, GRAY);
+
+		if (GuiButton((Rectangle){ game_mode_button_x + game_mode_button_width, game_mode_button_y, increment_button_width, BUTTON_HEIGHT }, "->") ) {
+			if (main_menu_state->current_game_mode_index == main_menu_state->num_game_modes - 1) {
+				main_menu_state->current_game_mode_index = 0;
+
+			} else {
+				main_menu_state->current_game_mode_index += 1;
+
+			}
+
+			memcpy(main_menu_state->game_mode_file_name, main_menu_state->uninit_game_modes[main_menu_state->current_game_mode_index].full_path, strlen(main_menu_state->uninit_game_modes[main_menu_state->current_game_mode_index].full_path) + 1);
+
+		}
+
+
 		char hosting_text[16] = { "Hosting: " };
 
 		if (main_menu_state->hosting) {
@@ -307,7 +466,7 @@ void run_settings_state(GamePage* game_page, GameState* game_state) {
 
 		}
 
-		if (GuiButton((Rectangle) { CENTER_BUTTON_X, FIRST_BUTTON_HEIGHT + 5 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS, BUTTON_WIDTH, BUTTON_HEIGHT }, hosting_text)) {
+		if (GuiButton((Rectangle) { CENTER_BUTTON_X, FIRST_BUTTON_HEIGHT + 6 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS * 2, BUTTON_WIDTH, BUTTON_HEIGHT }, hosting_text)) {
 			main_menu_state->hosting = !main_menu_state->hosting;
 
 		}
@@ -316,7 +475,7 @@ void run_settings_state(GamePage* game_page, GameState* game_state) {
 
 		if (!main_menu_state->hosting) {
 			Rectangle ip_addr_rect = name_textbox_rect;
-			ip_addr_rect.y = FIRST_BUTTON_HEIGHT + 6 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS;
+			ip_addr_rect.y = FIRST_BUTTON_HEIGHT + 7 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS * 2;
 
 			bool hovering_over_ip_addr = CheckCollisionPointRec(GetMousePosition(), ip_addr_rect);
 

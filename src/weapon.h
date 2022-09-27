@@ -1,5 +1,6 @@
 #ifndef WEAPON_H
 #define WEAPON_H
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef enum ProjectileType {
@@ -18,10 +19,10 @@ typedef enum WeaponIndex {
 #define NUM_WEAPONS 4
 
 typedef enum Weapon {
-	AssaultRifle,
-	Pistol,
-	Shotgun,
-	Sniper,
+	Pistol = 0,
+	AssaultRifle = 1,
+	Shotgun = 2,
+	Sniper = 3,
 
 } Weapon;
 

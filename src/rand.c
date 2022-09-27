@@ -8,13 +8,13 @@
 
 _Thread_local uint64_t RNG_SEED = 0;
 
-void init_fast_rand() {
+void init_fast_rand(void) {
 	//RNG_SEED = time(NULL);
 	RNG_SEED = 324903923123;
 
 }
 
-uint64_t fast_rand() {
+uint64_t fast_rand(void) {
 	return wyrand(&RNG_SEED);
 
 }
