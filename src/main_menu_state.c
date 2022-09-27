@@ -50,9 +50,15 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 	char* game_mode_file_name = NULL;
 
 	if (*game_page == InGame) {
-		username = game_state->in_game_state.players[0].username;
+		int username_len = strlen(game_state->in_game_state.players[0].username);
+		username = malloc(username_len + 1);
+		memcpy(username, game_state->in_game_state.players[0].username, username_len + 1);
+
 		ability = game_state->in_game_state.players[0].ability;
 		weapon = game_state->in_game_state.players[0].weapon;
+
+		free(game_state->in_game_state.players);
+
 		hosting = game_state->in_game_state.network_info.is_server;
 
 		current_game_mode_index = game_state->in_game_state.current_game_mode_index;
@@ -114,14 +120,6 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 			memcpy(game_mode_file_name, config_game_mode_file_name, strlen(config_game_mode_file_name) + 1);
 
 		}
-
-		main_menu_state->ability = ability;
-		main_menu_state->weapon = weapon;
-		main_menu_state->username = username;
-		main_menu_state->hosting = hosting;
-		main_menu_state->ip_addr = ip_addr;
-		main_menu_state->key_bindings = NULL;
-		main_menu_state->game_mode_file_name = game_mode_file_name;
 
 		free(ability_option);
 		free(weapon_option);
@@ -235,6 +233,13 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 
 	}
 
+	main_menu_state->ability = ability;
+	main_menu_state->weapon = weapon;
+	main_menu_state->username = username;
+	main_menu_state->hosting = hosting;
+	main_menu_state->ip_addr = ip_addr;
+	main_menu_state->key_bindings = NULL;
+	main_menu_state->game_mode_file_name = game_mode_file_name;
 
 	main_menu_state->uninit_game_modes = uninit_game_modes;
 	main_menu_state->current_game_mode_index = current_game_mode_index;

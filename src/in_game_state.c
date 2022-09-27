@@ -134,7 +134,6 @@ void exit_in_game(GameState* game_state, GamePage* game_page, GamePage new_game_
 
 	free(in_game_state->map.objects);
 	free(in_game_state->projectiles);
-	free(in_game_state->players);
 
 	free(in_game_state->network_info.addrs_to_send_to.item_list);
 
@@ -146,6 +145,9 @@ void exit_in_game(GameState* game_state, GamePage* game_page, GamePage new_game_
 	//free(in_game_state->game_mode_data.teams);
 
 	#ifdef __unix__
+	int t = true;
+	setsockopt(in_game_state->network_info.socket, SOL_SOCKET,SO_REUSEADDR, &t, sizeof(int));
+
 	if (close(in_game_state->network_info.socket) != 0) {
 		fprintf(stderr, "Failed to shutdown socket\n");
 		printf("errno: %d\n", errno);
