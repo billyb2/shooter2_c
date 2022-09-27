@@ -1,8 +1,7 @@
 build/
-src/game_modes/*.wasm
-game_modes/*.wasm
+**/*.wasm
 **/target*/
 **/target_web/
 .config/
-./vgcore*
+**/vgcore*
 **/*.o

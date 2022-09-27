@@ -1,4 +1,5 @@
 pack: build_deathmatch build_gun_game
+	mkdir -p ../../game_modes/
 	cp *.wasm ../../game_modes/
 
 build_weapon_c:

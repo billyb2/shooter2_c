@@ -1,3 +1,12 @@
-[submodule "deps/wasmer_easy_fork"]
-	path = deps/wasmer_easy_fork
-	url = https://github.com/billyb2/wasmer_easy_fork.git
+[submodule "deps/raylib"]
+	path = deps/raylib
+	url = https://github.com/raysan5/raylib
+	branch = 4.2.0
+[submodule "deps/json-c"]
+	path = deps/json-c
+	url = https://github.com/json-c/json-c.git
+	branch = json-c-0.16-20220414
+[submodule "deps/wasm3"]
+	path = deps/wasm3
+	url = https://github.com/wasm3/wasm3
+	branch = v0.5.0
