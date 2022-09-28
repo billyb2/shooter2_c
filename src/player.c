@@ -4,6 +4,8 @@
 #include <time.h>
 #include <math.h>
 
+#include "game_mode.h"
+#include "include/raylib.h"
 #include "minimal_state_info.h"
 #include "map.h"
 #include "math.h"
@@ -61,7 +63,7 @@ uint16_t get_max_ability_use_frames(Ability ability) {
 
 }
 
-Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map, char* player_name) {
+Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map, char* player_name, GameModeData* game_mode_data) {
 	uint8_t num_throwables;
 
 	switch (throwable) {
@@ -70,26 +72,11 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 			break;
 	};
 
-	uint16_t num_spawn_points = 0;
-	const MapObject** spawn_points = malloc(sizeof(MapObject*) * map->num_objects);
-
-	for (uint16_t i = 0; i < map->num_objects; i += 1) {
-		MapObject* map_obj = &map->objects[i];
-		
-		if (map_obj->spawn_point) {
-			spawn_points[num_spawn_points] = map_obj;
-			num_spawn_points += 1;
-		}
-
-	}
-
-	if (num_spawn_points == 0) {
+	if (map->num_spawn_points == 0) {
 		fprintf(stderr, "Failed to find any spawn points\n");
 		exit(-1);
 
 	}
-
-	const MapObject* spawn_point = spawn_points[rand_range_u64(0, num_spawn_points)];
 
 	Player player = {
 		.id = rand(),
@@ -97,8 +84,6 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 		.username = player_name,
 		.assigned_team_id = false,
 		.assigned_id = false,
-		.pos_x = fmaf(spawn_point->size_x, 0.5, spawn_point->pos_x),
-		.pos_y = fmaf(spawn_point->size_y, 0.5, spawn_point->pos_y),
 		.speed = DEFAULT_PLAYER_SPEED,
 		.ability = ability,
 		.weapon = weapon,
@@ -106,6 +91,8 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 		.throwable = throwable,
 		.direction = 0.0,
 		.health = 0,
+		.pos_x = 0.0,
+		.pos_y = 0.0,
 		.ability_charge = get_max_ability_charge(ability),
 		.num_frames_ability_in_use = 0,
 		.remaining_shooting_cooldown_frames = 0,
@@ -125,8 +112,6 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 
 	};
 
-	free(spawn_points);
-
 	return player;
 
 }
@@ -139,6 +124,7 @@ MinimalPlayerInfo get_minimal_player_info(const Player* player) {
 		.pos_y = player->pos_y,
 		.health = player->health,
 		.ability = player->ability,
+		.using_ability = (uint32_t)player->using_ability,
 		.weapon = player->weapon,
 		.direction = player->direction,
 		.ammo = player->ammo,
@@ -348,7 +334,7 @@ void update_player_cooldowns(Player* players, uint8_t num_players) {
 
 }
 
-void respawn_players(Player* players, uint8_t num_players, const Map* map) {
+void respawn_players(Player* players, uint8_t num_players, const Map* map, GameModeData* game_mode_data) {
 	for (uint8_t i = 0; i < num_players; i += 1) {
 		Player* player = &players[i];
 
@@ -362,31 +348,7 @@ void respawn_players(Player* players, uint8_t num_players, const Map* map) {
 
 			if (player->num_frames_dead >= 180) {
 				player->health = PLAYER_MAX_HEALTH;
-
-				uint16_t num_spawn_points = 0;
-				const MapObject** spawn_points = malloc(sizeof(MapObject*) * map->num_objects);
-
-				for (uint16_t i = 0; i < map->num_objects; i += 1) {
-					MapObject* map_obj = &map->objects[i];
-					
-					if (map_obj->spawn_point) {
-						spawn_points[num_spawn_points] = map_obj;
-						num_spawn_points += 1;
-					}
-
-				}
-
-				if (num_spawn_points == 0) {
-					fprintf(stderr, "Failed to find any spawn points\n");
-					exit(-1);
-
-				}
-
-				const MapObject* spawn_point = spawn_points[rand_range_u64(0, num_spawn_points)];
-
-				player->pos_x = fmaf(spawn_point->size_x, 0.5, spawn_point->pos_x);
-				player->pos_y = fmaf(spawn_point->size_y, 0.5, spawn_point->pos_y);
-
+				spawn_player(player, map, game_mode_data);
 				player->num_frames_dead = 0;
 
 			}
@@ -394,6 +356,21 @@ void respawn_players(Player* players, uint8_t num_players, const Map* map) {
 		}
 
 	}
+
+}
+
+
+
+const Player* find_const_player_by_id(uint64_t player_id, const Player* players, uint8_t num_players) {
+	for (uint8_t i = 0; i < num_players; i += 1) {
+		if (player_id == players[i].id) {
+			return &players[i];
+
+		}
+
+	}
+
+	return NULL;
 
 }
 

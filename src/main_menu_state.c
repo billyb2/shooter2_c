@@ -193,7 +193,7 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 			}
 
 			IM3Environment env = m3_NewEnvironment();
-			IM3Runtime rt = m3_NewRuntime(env, 500000, NULL); // 500 KB
+			IM3Runtime rt = m3_NewRuntime(env, 1000000, NULL); // 1 MB
 			IM3Module module = m3_NewModule(env);
 
 			FILE* wasm_file = fopen(full_path, "rb");
@@ -208,7 +208,27 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 			size_t wasm_file_size = get_file_size(wasm_file);
 
 			uint8_t* wasm_file_bytes = malloc(wasm_file_size);
-			fread(wasm_file_bytes, 1, wasm_file_size, wasm_file);
+
+			size_t remaining_bytes_to_read = wasm_file_size;
+			
+			while (remaining_bytes_to_read > 0) {
+				size_t bytes_read = fread(wasm_file_bytes + (wasm_file_size-remaining_bytes_to_read), 1, wasm_file_size, wasm_file);
+
+				if (bytes_read == 0) {
+					break;
+
+				} else {
+					remaining_bytes_to_read -= bytes_read;
+
+				}
+
+			}
+
+			if (remaining_bytes_to_read > 0) {
+				fprintf(stderr, "Failed to read entire wasm file\n");
+				exit(-1);
+
+			}
 
 			fclose(wasm_file);
 
@@ -221,7 +241,13 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 			
 			};
 
-			m3_FindFunction(&uninit_game_mode.name, uninit_game_mode.rt, "name_ptr");
+			if (m3_FindFunction(&uninit_game_mode.name, uninit_game_mode.rt, "name_ptr") != m3Err_none) {
+				M3ErrorInfo error_info;
+				m3_GetErrorInfo(uninit_game_mode.rt, &error_info);
+				printf("Error getting name_ptr: %s\n", error_info.message);
+				exit(-1);
+
+			}
 
 			uninit_game_modes[index] = uninit_game_mode;
 			index += 1;

@@ -1,6 +1,9 @@
-pack: build_deathmatch build_gun_game
+pack: build_deathmatch build_gun_game 
 	mkdir -p ../../game_modes/
-	cp *.wasm ../../game_modes/
+	find . -name "*.wasm" -exec cp {} ../../game_modes/ \;
+
+build_math_c:
+	clang -c -O3 -std=c11 -DWASM -nostdlib --target=wasm32-unknown -Wl,--export-all,--no-entry math.c -o math.o
 
 build_weapon_c:
 	clang -c -O3 -std=c11 -DWASM -nostdlib --target=wasm32-unknown -Wl,--export-all,--no-entry weapon.c -o weapon.o
@@ -8,6 +11,6 @@ build_weapon_c:
 build_deathmatch: build_weapon_c
 	clang -O1 -std=c11 -DWASM -nostdlib --target=wasm32-unknown -Wl,--export-all,--no-entry deathmatch.c weapon.o -o deathmatch.wasm
 
-
 build_gun_game: build_weapon_c
 	clang -O1 -std=c11 -DWASM -nostdlib --target=wasm32-unknown -Wl,--export-all,--no-entry gun_game.c weapon.o -o gun_game.wasm
+

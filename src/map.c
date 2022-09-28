@@ -10,6 +10,7 @@
 #include "math.h"
 #include "map.h"
 #include "include/raylib.h"
+#include "minimal_state_info.h"
 #include "raylib_defs.h"
 
 Map new_map(const char* file_name) {
@@ -114,7 +115,9 @@ Map new_map(const char* file_name) {
 	#define MAP_OBJ_SIZE 11
 
 	map.num_objects = (map_file_size - map_header_size) / MAP_OBJ_SIZE;
+	map.num_spawn_points = 0;
 	map.objects = malloc(map.num_objects * sizeof(MapObject));
+	map.spawn_points = NULL;
 	map.textures = index_to_texture;
 
 	for (uint16_t i = 0; i < map.num_objects; i += 1) {
@@ -137,6 +140,14 @@ Map new_map(const char* file_name) {
 		map.objects[i].size_y = tile_height;
 
 		map.objects[i].texture = texture;
+
+
+		if (spawn) {	
+			map.num_spawn_points += 1;
+			map.spawn_points = realloc(map.spawn_points, map.num_spawn_points * sizeof(MapObject*));
+			map.spawn_points[map.num_spawn_points - 1] = &map.objects[i];
+
+		}
 
 	}
 
@@ -197,5 +208,35 @@ bool map_collision_w_movement(float pos_x, float pos_y, float size_x, float size
 	}
 
 	return false;
+
+}
+
+MinimalMapObject get_minimal_map_object(const MapObject* map_object) {
+	MinimalMapObject minimal_map_obj = {
+		.pos_x = map_object->pos_x,
+		.pos_y = map_object->pos_y,
+		.width = map_object->size_x,
+		.height = map_object->size_y,
+
+	};
+
+	return minimal_map_obj;
+
+}
+
+MinimalMapInfo get_minimal_map_info(const Map* map) {
+	MinimalMapInfo minimal_map = {
+		.width = map->size_x,
+		.height = map->size_y,
+		.num_spawn_points = map->num_spawn_points,
+
+	};
+
+	for (uint8_t i = 0; i < map->num_spawn_points; i += 1) {
+		minimal_map.spawn_points[i] = get_minimal_map_object(map->spawn_points[i]);
+
+	}
+
+	return minimal_map;
 
 }

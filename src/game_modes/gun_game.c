@@ -1,4 +1,5 @@
 #include "weapon.h"
+#include "drawing_api.h"
 #include "minimal_state_info.h"
 
 const char GAME_MODE_NAME[256] = "Gun Game";
@@ -28,17 +29,22 @@ void* memcpy(void* dst, const void *restrict src, unsigned long n) {
 		
 }
 
-uint64_t RAND_NUM = 423842;
+uint64_t RNG_SEED;
 
 uint64_t rand(void) {
-	RAND_NUM += 1;
-	return RAND_NUM;
+	return(((RNG_SEED = RNG_SEED * 214013L + 2531011L) >> 16) & 0x7fff);
+
+}
+
+uint64_t rand_range_u64(uint64_t min, uint64_t max) {
+        return min + (rand() % (max - min));
 
 }
 
 MinimalTeamInfo TEAMS[255];
 uint8_t NUM_TEAMS;
 
+MinimalMapInfo MAP;
 
 uint64_t winning_score(void) {
 	return 2;
@@ -52,6 +58,7 @@ void init_game_mode(void) {
 		MinimalTeamInfo team = {
 			.num_players = 0,
 			.score = 0,
+			.color = 0xFF0000FF,
 			.id = rand(),
 
 		};
@@ -83,6 +90,15 @@ uint32_t add_player_to_team(void) {
 				
 
 	return false;
+}
+
+uint32_t spawn_player(void) {
+	MinimalMapObject* spawn = &MAP.spawn_points[rand_range_u64(0, MAP.num_spawn_points)];
+	PLAYER_TO_BE_ADDED.pos_x = spawn->pos_x + spawn->width / 2.0; 
+	PLAYER_TO_BE_ADDED.pos_y = spawn->pos_y + spawn->height / 2.0; 
+
+	return (bool)true;
+
 }
 
 MinimalTeamInfo WINNING_TEAM;
@@ -131,6 +147,18 @@ void set_player_stats(void) {
 	}
 }
 
+DrawableObject DRAWABLE_OBJECTS[256];
+
+uint64_t drawable_objects_ptr(void) {
+	return (uint64_t)DRAWABLE_OBJECTS;
+
+}
+
+uint64_t num_drawable_objects(void) {
+	return 0;
+
+}
+
 uint64_t player_to_be_added_ptr(void) {
 	return (uint64_t)&PLAYER_TO_BE_ADDED;
 
@@ -153,5 +181,15 @@ uint32_t num_teams(void) {
 
 uint64_t name_ptr(void) {
 	return (uint64_t)GAME_MODE_NAME;
+
+}
+
+uint64_t map_ptr(void) {
+	return (uint64_t)&MAP;
+
+}
+
+void set_rng_seed(uint64_t seed) {
+	RNG_SEED = seed;
 
 }

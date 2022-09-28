@@ -75,6 +75,7 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 	camera.zoom = 1.0;
 
 	Map map = new_map("maps/untitled.custom"); 
+	GameModeData game_mode_data = init_gamemode_data(uninit_game_modes[current_game_mode_index].rt, &map); 
 
 	uint8_t num_players = 255;
 	Player* players = malloc(num_players * sizeof(Player));
@@ -90,13 +91,12 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 
 		} 
 
-		players[i] = new_player(game_state->main_menu_state.ability, game_state->main_menu_state.weapon, Grenade, &map, new_player_username);
+		players[i] = new_player(game_state->main_menu_state.ability, game_state->main_menu_state.weapon, Grenade, &map, new_player_username, &game_mode_data);
 
 	}
 
 
-	GameModeData game_mode_data = init_gamemode_data(uninit_game_modes[current_game_mode_index].rt); 
-	NetworkInfo network_info = init_networking(hosting, game_state->main_menu_state.ip_addr, &players[0], &game_mode_data);
+	NetworkInfo network_info = init_networking(hosting, game_state->main_menu_state.ip_addr, &players[0], &game_mode_data, &map);
 
 
 	InGameState new_game_state = {
@@ -173,12 +173,12 @@ void run_in_game_state(GamePage* game_page, GameState* game_state) {
 	update_player_cooldowns(in_game_state->players, in_game_state->num_players);
 
 	player_input(&in_game_state->players[0], &in_game_state->key_bindings, &in_game_state->map, true);
-	handle_networking(&in_game_state->network_info, in_game_state->players, in_game_state->num_players, &in_game_state->game_mode_data);
+	handle_networking(&in_game_state->network_info, in_game_state->players, in_game_state->num_players, &in_game_state->game_mode_data, &in_game_state->map);
 	use_weapons(in_game_state->players, in_game_state->num_players, &in_game_state->projectiles, &in_game_state->num_projectiles);
 	update_projectiles(&in_game_state->projectiles, &in_game_state->num_projectiles, in_game_state->players, in_game_state->num_players, &in_game_state->map);
 	move_camera(&in_game_state->camera, &in_game_state->map, in_game_state->players[0].pos_x, in_game_state->players[0].pos_y);
 
-	respawn_players(in_game_state->players, in_game_state->num_players, &in_game_state->map);
+	respawn_players(in_game_state->players, in_game_state->num_players, &in_game_state->map, &in_game_state->game_mode_data);
 
 	sync_players_to_teams(in_game_state->players, in_game_state->num_players, &in_game_state->game_mode_data);
 
@@ -195,7 +195,7 @@ void run_in_game_state(GamePage* game_page, GameState* game_state) {
 
 	}
 
-	render(in_game_state->camera, in_game_state->players, in_game_state->num_players, in_game_state->game_mode_data.teams, in_game_state->game_mode_data.num_teams, in_game_state->projectiles, in_game_state->num_projectiles, &in_game_state->map, in_game_state->winning_team);	
+	render(in_game_state->camera, in_game_state->players, in_game_state->num_players, &in_game_state->game_mode_data, in_game_state->projectiles, in_game_state->num_projectiles, &in_game_state->map, in_game_state->winning_team);	
 
 	if (in_game_state->winning_team != NULL && in_game_state->countdown_frames_to_main_menu == 0) {
 		exit_in_game(game_state, game_page, MainMenu);

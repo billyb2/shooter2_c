@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "game_mode.h"
+#include "game_modes/drawing_api.h"
 #include "include/raylib.h"
 #include "math.h"
 #include "map.h"
@@ -15,7 +16,7 @@
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 
-void render(Camera2D camera, const Player* players, uint8_t num_players, const Team* teams, uint8_t num_teams, const Projectile* projectiles, uint16_t num_projectiles, const Map* map, const Team* winning_team) {
+void render(Camera2D camera, const Player* players, uint8_t num_players, const GameModeData* game_mode_data, const Projectile* projectiles, uint16_t num_projectiles, const Map* map, const Team* winning_team) {
 	camera.zoom = 0.85;
 	
 	if (players[0].weapon == Sniper) {
@@ -28,6 +29,34 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const T
 
 		BeginMode2D(camera);
 
+		for (uint8_t i = 0; i < game_mode_data->num_teams; i += 1) {
+			const Team* team = &game_mode_data->teams[i];
+
+			for (uint8_t j = 0; j < team->num_players; j += 1) {
+				const MinimalPlayerInfo* player = &team->players[j];
+
+				if (player->health == 0) {
+					continue;
+
+				}
+
+				if (player->cloaking && player->id == players[0].id) {
+					Color LIGHT_PLAYER_COLOR = *(Color*)&team->color;
+					LIGHT_PLAYER_COLOR.a = 70;
+
+					DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE / 2.0, LIGHT_PLAYER_COLOR);
+
+
+				} else {
+					DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE / 2.0, *(Color*)&team->color);
+
+				}
+
+
+			}
+
+		}
+
 		for (uint8_t i = 0; i < num_players; i += 1) {
 			const Player* player = &players[i];
 
@@ -36,30 +65,10 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const T
 				if (player->username != NULL && !player->cloaking) {
 					DrawText(player->username, player->pos_x - (float)strlen(player->username) * 1.5 , player->pos_y - 22, 12, BLACK);	
 
-				}
-
-				const Color LIGHT_RED = {
-					.r = 255,
-					.g = 0,
-					.b = 0,
-					.a = 70,
-
-				};
-
-				if (player->cloaking) {
-					// Only draw "our" player if we're cloaking
-					if (i == 0) {
-						DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE / 2.0, LIGHT_RED);
-
-					}
-
-				} else {
-					DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE / 2.0, RED);
-
-				}
+				}	
 
 				if (player->weapon == Sniper) {
-					Rectangle laser = {
+					struct Rectangle laser = {
 						.x = player->pos_x,
 						.y = player->pos_y,
 						.width = 500.0,
@@ -67,6 +76,12 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const T
 
 					};
 
+					const Color LIGHT_RED = {
+						.r = 255,
+						.g = 0,
+						.b = 0,
+						.a = 255,
+					};
 
 					DrawRectanglePro(laser, (Vector2){ 0.0, 0.0 }, player->direction * (180.0 / PI), LIGHT_RED);
 
@@ -74,25 +89,7 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const T
 
 			}
 
-		}
-
-		for (uint8_t i = 0; i < num_teams; i += 1) {
-			const Team* team = &teams[i];
-
-
-			if (team->num_players > 1) {
-				for (uint8_t j = 0; j < team->num_players; j += 1) {
-					const MinimalPlayerInfo* player = &team->players[j];
-
-					char team_text[50];
-					sprintf(team_text, "Team: %lu", player->team_id);
-					//DrawText(team_text, player->pos_x - (float)strlen(player->username) * 1.5 , player->pos_y - 32, 12, BLACK);
-
-				}
-
-			}
-
-		}
+		}	
 
 		for (uint16_t i = 0; i < num_projectiles; i += 1) {
 			const Projectile* projectile = &projectiles[i];
@@ -124,6 +121,25 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const T
 
 		}
 
+		for (uint64_t i = 0; i < get_num_drawable_objects(game_mode_data->rt); i += 1) {
+			DrawableObject* drawable_object = &game_mode_data->drawable_objects[i];
+
+			Color* color = (Color*)&drawable_object->color;
+
+			switch (drawable_object->shape) {
+				case DrawableCircle:
+					DrawCircle(drawable_object->pos_x, drawable_object->pos_y, drawable_object->width, *color);
+					break;
+
+				case DrawableRectangle:
+					DrawRectangle(drawable_object->pos_x, drawable_object->pos_y, drawable_object->width, drawable_object->height, *color);
+					break;
+
+
+			}
+
+		}
+
 		EndMode2D();
 
 		// Start drawing the UI
@@ -146,7 +162,7 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const T
 		};
 
 		DrawText("Health", SCREEN_WIDTH - 100, 0, 20, health_bar_outline_color);
-		Rectangle health_bar_rect = {
+		struct Rectangle health_bar_rect = {
 			.x = SCREEN_WIDTH - 120,
 			.y = 25.0,
 			.width = 125.0 * ((float)players[0].health / (float)PLAYER_MAX_HEALTH),
@@ -191,7 +207,7 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const T
 		};
 
 		DrawText("Charge", SCREEN_WIDTH - 100, 100, 20, health_bar_outline_color);
-		Rectangle ability_charge_rect = {
+		struct Rectangle ability_charge_rect = {
 			.x = SCREEN_WIDTH - 120,
 			.y = 125.0,
 			.width = 125.0 * ((float)players[0].ability_charge / (float)get_max_ability_charge(players[0].ability)),
@@ -206,7 +222,10 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const T
 		if (winning_team != NULL) {
 			if (winning_team->num_players == 1) {
 				//sprintf(player_wins_buffer, "%s WINS!", winning_team->players[0]->username);
-				sprintf(player_wins_buffer, "A player won!");
+				const Player* player = find_const_player_by_id(winning_team->players->id, players, num_players);
+
+				sprintf(player_wins_buffer, "%s wins!", player->username);
+
 			} else {
 				sprintf(player_wins_buffer, "Team %lu WINS!", winning_team->id);
 

@@ -39,7 +39,7 @@ typedef struct TeamScore {
 
 } TeamScore;
 
-static_assert(sizeof(NetPlayer) == 88, "NetPlayer is the wrong size");
+static_assert(sizeof(NetPlayer) % 8 == 0, "NetPlayer is the wrong size");
 
 typedef struct Addr {
 	struct sockaddr_in sockaddr;
@@ -58,6 +58,6 @@ typedef struct NetworkInfo {
 } NetworkInfo;
 
 
-NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player, GameModeData* game_mode_data);
-int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_players, GameModeData* game_mode_data);
+NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player, GameModeData* game_mode_data, const Map* map);
+int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_players, GameModeData* game_mode_data, const Map* map);
 #endif 

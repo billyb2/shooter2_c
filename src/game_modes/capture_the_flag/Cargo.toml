@@ -1,0 +1,32 @@
+[package]
+name = "capture_the_flag"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[profile.dev]
+opt-level = 0
+debug = 0
+overflow-checks = false
+incremental = true
+panic = "abort"
+
+[profile.release]
+strip = true
+opt-level = 3
+overflow-checks = false
+lto = "fat"
+panic = "abort"
+debug = 0
+codegen-units = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[dependencies]
+nanorand = { version = "0.7", default-features = false, features = ["wyrand"] }
+
+[build-dependencies]
+bindgen = { version = "0.60", default-features = false }

@@ -1,7 +1,7 @@
 #include <stdint.h>
+#ifndef WASM
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#endif
 
 #include "wyhash.h"
 #include "rand.h"
@@ -19,10 +19,12 @@ uint64_t fast_rand(void) {
 
 }
 
+#ifndef WASM
 uint64_t rand_range_u64(uint64_t min, uint64_t max) {
 	return min + (rand() % (max - min));
 
 }
+#endif
 
 uint64_t fast_rand_range_u64(uint64_t min, uint64_t max) {
 	return min + (fast_rand() % (max - min));

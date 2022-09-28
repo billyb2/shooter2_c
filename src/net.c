@@ -49,7 +49,7 @@ bool sockaddrs_are_eq(struct sockaddr_in* addr1, struct sockaddr_in* addr2) {
 
 
 
-NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player, GameModeData* game_mode_data) {
+NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player, GameModeData* game_mode_data, const Map* map) {
 	#ifdef __WIN32__
 	WSADATA wsadata;
 	if (WSAStartup(MAKEWORD(2,2), &wsadata) != 0) {
@@ -118,7 +118,7 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player
 
 	
 	if (hosting) {
-		add_player_to_team(get_minimal_player_info(my_player), game_mode_data, &my_player->team_id);
+		add_player_to_team(my_player, map, game_mode_data);
 		my_player->assigned_team_id = true;
 
 	}
@@ -147,7 +147,7 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player
 
 }
 
-void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_players, GameModeData* game_mode_data, bool hosting) {
+void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_players, GameModeData* game_mode_data, bool hosting, const Map* map) {
 	const MinimalPlayerInfo* minimal_player_info = &buffer->minimal_player_info;
 	bool shooting = buffer->shooting;
 
@@ -207,7 +207,7 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 	if (hosting) {
 		if (!net_player->assigned_team_id) {
 			printf("Adding player to team\n");
-			add_player_to_team(get_minimal_player_info(net_player), game_mode_data, &net_player->team_id);
+			add_player_to_team(net_player, map, game_mode_data);
 			net_player->assigned_team_id = true;
 
 		}
@@ -244,7 +244,7 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 
 }
 
-int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_players, GameModeData* game_mode_data) {	
+int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_players, GameModeData* game_mode_data, const Map* map) {	
 	#define BUFFER_LEN 1 + (num_players * sizeof(TeamScore)) + (sizeof(NetPlayer) * num_players)
 	char* buffer = malloc(BUFFER_LEN);
 
@@ -392,7 +392,7 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 
 		// Run through each NetPlayer and synchronize the actual player list with their info
 		for (uint64_t i = 0; i < num_net_players; i += 1) {
-			process_net_packets(&net_players[i], players, num_players, game_mode_data, network_info->is_server);
+			process_net_packets(&net_players[i], players, num_players, game_mode_data, network_info->is_server, map);
 			
 
 		}
