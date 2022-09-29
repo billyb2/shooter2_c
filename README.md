@@ -44,5 +44,8 @@ Finally, to actually run the project, run:
 or: 
 `just run[_windows]_release`
 
-To just build and not runhe project, replace run with build for the commands above
+To just build and not run the project, replace run with build for the commands above
+
+### Docker
+If you want to just compile a release build for Linux: run `sudo docker build -t shooter2_c . && sudo docker run -v (pwd):/out shooter2_c`
 
