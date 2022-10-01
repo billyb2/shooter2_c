@@ -1,8 +1,10 @@
 #include <stdint.h>
-#include <math.h>
-#include <xmmintrin.h>
 #include "math.h"
+#ifndef WASM
+#include <math.h>
+#endif
 
+#ifndef WASM
 float get_angle(float cx, float cy, float ex, float ey) {
 	float dy = ey - cy;
 	float dx = ex - cx;
@@ -40,18 +42,6 @@ float distance(float x1, float y1, float x2, float y2) {
 
 }
 
-
-bool aabb_collision(float pos_x1, float pos_y1, float size_x1, float size_y1, float pos_x2, float pos_y2, float size_x2, float size_y2) {
-	return (
-		pos_x1 - size_x1 <= pos_x2 + size_x2 &&
-    	pos_x1 + size_x1 >= pos_x2 &&
-    	pos_y1 - size_y1 <= pos_y2 + size_y2 &&
-    	pos_y1 + size_y1 >= pos_y2
-
-	);
-
-}
-
 /* Checks if an object will collide with another object on it's movement path */
 bool aabb_collision_w_movement(float pos_x1, float pos_y1, float size_x1, float size_y1, float pos_x2, float pos_y2, float size_x2, float size_y2, float obj1_distance, float obj1_angle) {
 	while (obj1_distance > F32_EPSILON) {
@@ -73,3 +63,18 @@ bool aabb_collision_w_movement(float pos_x1, float pos_y1, float size_x1, float 
 
 	return false;
 }
+#endif
+
+
+bool aabb_collision(float pos_x1, float pos_y1, float size_x1, float size_y1, float pos_x2, float pos_y2, float size_x2, float size_y2) {
+	return (
+		pos_x1 - size_x1 <= pos_x2 + size_x2 &&
+    	pos_x1 + size_x1 >= pos_x2 &&
+    	pos_y1 - size_y1 <= pos_y2 + size_y2 &&
+    	pos_y1 + size_y1 >= pos_y2
+
+	);
+
+}
+
+

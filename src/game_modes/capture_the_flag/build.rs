@@ -2,10 +2,10 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
-    println!("cargo:rustc-link-search=c/wrapper.h");
+    println!("cargo:rustc-link-search=deps/wrapper.h");
     let bindings = bindgen::Builder::default()
         .clang_arg("-DWASM=1")
-        .header("c/wrapper.h")
+        .header("deps/wrapper.h")
         .use_core()
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .generate()

@@ -85,6 +85,7 @@ const ZERO_PLAYER: MinimalPlayerInfo = MinimalPlayerInfo {
     pos_x: 0.0,
     pos_y: 0.0,
     weapon: 0,
+    throwing_grenade: false as u16,
 };
 
 const ZERO_TEAM: MinimalTeamInfo = MinimalTeamInfo {
@@ -227,7 +228,7 @@ pub unsafe fn set_player_stats() {
         // If the flag is being held by a player, just set the flag's position to the player's
         // position, UNLESS the player is using their ability or they die
         if let Some(player) = flag.held_by {
-            if player.using_ability == false as u32 && player.health > 0 {
+            if player.using_ability == false as u16 && player.health > 0 {
                 flag.pos_x = player.pos_x;
                 flag.pos_y = player.pos_y;
 
@@ -239,7 +240,7 @@ pub unsafe fn set_player_stats() {
         } else {
             // Find the first player in collision with the flag that's not using their ability and
             // is alive
-            let player = TEAMS.iter().flat_map(|t| t.players[0..(t.num_players as usize)].iter()).find(|p| (p.using_ability == false as u32) && p.health > 0 && aabb_collision(&**p, flag));
+            let player = TEAMS.iter().flat_map(|t| t.players[0..(t.num_players as usize)].iter()).find(|p| (p.using_ability == false as u16) && p.health > 0 && aabb_collision(&**p, flag));
 
             if let Some(player) = player {
                 // If a player is colliding with the flag, and the flag is of the opposite team,

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "game_modes/drawing_api.h"
+#include "game_modes/deps/drawing_api.h"
 #include "include/wasm3.h"
 #include "include/wasm3_ext.h"
 

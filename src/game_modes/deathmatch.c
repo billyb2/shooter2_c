@@ -1,6 +1,6 @@
-#include "weapon.h"
-#include "drawing_api.h"
-#include "minimal_state_info.h"
+#include "deps/weapon.h"
+#include "deps/drawing_api.h"
+#include "deps/minimal_state_info.h"
 #include <stdint.h>
 
 const char GAME_MODE_NAME[256] = "Deathmatch";

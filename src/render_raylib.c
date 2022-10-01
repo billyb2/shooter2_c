@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "game_mode.h"
-#include "game_modes/drawing_api.h"
+#include "game_modes/deps/drawing_api.h"
 #include "include/raylib.h"
 #include "math.h"
 #include "map.h"

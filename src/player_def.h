@@ -37,6 +37,7 @@ typedef struct Player {
 	bool assigned_team_id;
 
 	bool shooting;
+	bool throwing_grenade;
 	bool using_ability;
 	WeaponIndex equipped_weapon;
 	float throw_ratio;

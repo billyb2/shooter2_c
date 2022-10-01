@@ -19,7 +19,8 @@ typedef struct  __attribute__((__packed__)) MinimalPlayerInfo {
 	uint16_t health;
 	bool cloaking;
 	uint8_t ammo;
-	uint32_t using_ability;
+	uint16_t using_ability;
+	uint16_t throwing_grenade;
 
 	uint32_t num_kills;
 	Weapon weapon;

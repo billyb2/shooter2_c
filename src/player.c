@@ -99,6 +99,7 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 		.num_frames_dead = 0,
 		.using_ability = false,
 		.shooting = false,
+		.throwing_grenade = false,
 		.equipped_weapon = Primary,
 		.throw_ratio = 0.5,
 		.reloading = false,

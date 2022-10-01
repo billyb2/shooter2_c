@@ -1,7 +1,7 @@
 #ifndef GAME_MODE_H
 #define GAME_MODE_H
 #include "include/wasm3.h"
-#include "game_modes/drawing_api.h"
+#include "game_modes/deps/drawing_api.h"
 #include "minimal_state_info.h"
 #include "hashmap.h"
 #include "player_def.h"
