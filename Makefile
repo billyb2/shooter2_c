@@ -31,18 +31,21 @@ PACKAGE_EXEC_NAME:=$(PACKAGE_EXEC_NAME).exe
 	RUN_COMMAND:=wine 
 endif
 
-run: build game_modes/%.wasm
+run: build 
 	$(RUN_COMMAND) $(OUT_DIR)/$(EXEC_NAME)
 
-package: build
+package: build 
 	cp $(OUT_DIR)/$(EXEC_NAME) $(PACKAGE_EXEC_NAME)
 	$(PACKAGE_TOOL) $(PACKAGE_NAME)$(PACKAGE_FILE_TYPE) game_modes/ maps/ sprites/ $(PACKAGE_EXEC_NAME)
 	rm $(PACKAGE_EXEC_NAME)
 
-game_modes/%.wasm: game_modes/%.wasm
+
+build: build_bin game_modes/%.wasm
+
+game_modes/%.wasm:
 	$(MAKE) -C src/game_modes/ $(RELEASE_BUILD)
 
-build: configure
+build_bin: configure
 	ninja -C $(OUT_DIR) -j2
 
 configure: CMakeLists.txt
@@ -54,3 +57,4 @@ clean:
 	rm -rf $(OUT_DIR)
 	rm -f $(PACKAGE_NAME)$(PACKAGE_FILE_TYPE)
 	rm -rf src/game_modes/build/
+	rm -rf src/game_modes/*/target/

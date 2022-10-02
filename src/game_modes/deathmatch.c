@@ -43,7 +43,7 @@ uint64_t rand_range_u64(uint64_t min, uint64_t max) {
 }
 
 MinimalTeamInfo TEAMS[255];
-uint8_t NUM_TEAMS;
+uint8_t NUM_TEAMS = 255;
 
 MinimalMapInfo MAP;
 
@@ -53,8 +53,6 @@ uint64_t winning_score(void) {
 }
 
 void init_game_mode(void) {
-	NUM_TEAMS = 255;
-
 	for (uint8_t i = 0; i < NUM_TEAMS; i += 1) {
 		MinimalTeamInfo team = {
 			.num_players = 0,

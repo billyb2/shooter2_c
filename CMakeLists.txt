@@ -3,7 +3,7 @@ set(CC gcc)
 set(CMAKE_C_COMPILER gcc)
 project(main C)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall -Wextra -pipe -gdwarf-4")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall -Wextra -pipe -ggdb -fdebug-prefix-map=../../=./")
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 	message("Release build")

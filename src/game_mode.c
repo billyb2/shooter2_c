@@ -15,11 +15,20 @@
 #include "rand.h"
 
 uint8_t get_num_teams(IM3Runtime rt) {
-	uint8_t num_teams;
+	uint32_t num_teams;
 
-	IM3Function num_teams_fn;
-	m3_FindFunction(&num_teams_fn, rt, "num_teams");
-	m3_CallV(num_teams_fn);
+	IM3Function num_teams_fn = NULL;
+	if (m3_FindFunction(&num_teams_fn, rt, "num_teams") != m3Err_none || num_teams_fn == NULL) {
+		fprintf(stderr, "Error getting num_teams\n");
+		exit(-1);
+
+	}
+
+	if (m3_CallV(num_teams_fn) != m3Err_none) {
+		fprintf(stderr, "Error calling num_teams\n");
+
+	}
+
 	m3_GetResultsV(num_teams_fn, &num_teams);
 
 	return num_teams;
@@ -45,7 +54,12 @@ uint8_t* get_wasm_memory(IM3Runtime rt) {
 
 void update_map(const Map* map, IM3Runtime rt) {
 	IM3Function map_ptr_fn; 
-	m3_FindFunction(&map_ptr_fn, rt, "map_ptr");
+	if (m3_FindFunction(&map_ptr_fn, rt, "map_ptr") != m3Err_none) {
+		fprintf(stderr, "map_ptr fn not found\n");
+		exit(-1);
+
+	}
+
 	m3_CallV(map_ptr_fn);
 
 	uint64_t map_ptr;

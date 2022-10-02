@@ -181,6 +181,7 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 
 			}
 
+			// Make sure it's a file and not something else, like a subdirectory
 			if (!S_ISREG(stats.st_mode)) {
 				continue;
 
