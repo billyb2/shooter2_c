@@ -48,7 +48,7 @@ uint8_t NUM_TEAMS = 255;
 MinimalMapInfo MAP;
 
 uint64_t winning_score(void) {
-	return 2;
+	return 8;
 
 }
 

@@ -256,6 +256,13 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 		}
 
 		num_game_modes = index;
+
+		if (num_game_modes == 0) {
+			fprintf(stderr, "No game modes found\n");
+			exit(-1);
+
+		}
+
 		closedir(game_mode_dir);
 
 	}
