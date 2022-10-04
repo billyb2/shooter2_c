@@ -40,11 +40,14 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const G
 
 				}
 
-				if (player->cloaking && player->id == players[0].id) {
-					Color LIGHT_PLAYER_COLOR = *(Color*)&team->color;
-					LIGHT_PLAYER_COLOR.a = 70;
+				if (player->cloaking) {
+					if (player->id == players[0].id) {
+						Color LIGHT_PLAYER_COLOR = *(Color*)&team->color;
+						LIGHT_PLAYER_COLOR.a = 70;
 
-					DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE / 2.0, LIGHT_PLAYER_COLOR);
+						DrawCircle(player->pos_x, player->pos_y, PLAYER_SIZE / 2.0, LIGHT_PLAYER_COLOR);
+
+					}
 
 
 				} else {
