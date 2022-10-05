@@ -51,7 +51,7 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 
 	if (*game_page == InGame) {
 		int username_len = strlen(game_state->in_game_state.players[0].username);
-		username = malloc(username_len + 1);
+		username = calloc(1, 20);
 		memcpy(username, game_state->in_game_state.players[0].username, username_len + 1);
 
 		ability = game_state->in_game_state.players[0].ability;
@@ -100,7 +100,7 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 
 		if (username_option != NULL) {
 			int username_len = strlen(username_option);
-			username = malloc(username_len + 1); 
+			username = calloc(1, 20);
 			memcpy(username, username_option, username_len + 1);
 
 		}
@@ -131,7 +131,7 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 	}
 
 	if (username == NULL) {
-		username = malloc(20);
+		username = calloc(1, 20);
 		memcpy(username, "shooter2_c player", 18);
 
 	}

@@ -20,7 +20,7 @@ all: $(patsubst %.c,build/%.wasm,$(MODES)) $(patsubst %/Cargo.toml,build/%_rs.wa
 build/%.wasm: %.c $(patsubst %.c,build/%.o,$(DEPS))
 	$(CLANG) $(FLAGS) -std=c11 -DWASM -nostdlib --target=wasm32-unknown -Wl,--export-all,--no-entry $(patsubst %.c,build/%.o,$(DEPS)) $< -o build/$(*F).wasm
 
-build/%_rs.wasm: %/Cargo.toml
+build/%_rs.wasm: %/Cargo.toml %/src/*.rs
 	cargo build $(RUST_FLAGS) --manifest-path $<
 	cp $(<D)/target/wasm32-unknown-unknown/$(RUST_TARGET_DIR)/$(<D).wasm build/$(<D)_rs.wasm
 

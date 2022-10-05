@@ -16,7 +16,7 @@
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 
-void render(Camera2D camera, const Player* players, uint8_t num_players, const GameModeData* game_mode_data, const Projectile* projectiles, uint16_t num_projectiles, const Map* map, const Team* winning_team) {
+void render(Camera2D camera, const Player* players, uint8_t num_players, const GameModeData* game_mode_data, const Projectile* projectiles, uint16_t num_projectiles, const Map* map, const Team* winning_team, bool player_won) {
 	camera.zoom = 0.85;
 	
 	if (players[0].weapon == Sniper) {
@@ -222,7 +222,7 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const G
 
 		char player_wins_buffer[256];
 
-		if (winning_team != NULL) {
+		if (player_won) {
 			if (winning_team->num_players == 1) {
 				//sprintf(player_wins_buffer, "%s WINS!", winning_team->players[0]->username);
 				const Player* player = find_const_player_by_id(winning_team->players->id, players, num_players);

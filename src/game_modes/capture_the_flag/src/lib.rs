@@ -5,33 +5,19 @@
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 mod math;
+
+use std::mem::MaybeUninit;
+
 use nanorand::{rand::wyrand::WyRand, Rng};
 use math::*;
 
-#[derive(Copy, Clone)]
 struct Flag {
     pos_x: f32,
     pos_y: f32,
     default_pos_x: f32,
     default_pos_y: f32,
     held_by: Option<&'static MinimalPlayerInfo>,
-    team_id: u64,
-
-}
-
-impl Flag {
-    const fn zero() -> Self {
-        Flag {
-            pos_x: 0.0,
-            pos_y: 0.0,
-            default_pos_x: 0.0,
-            default_pos_y: 0.0,
-            held_by: None,
-            team_id: 0,
-
-        }
-
-    }
+    team: &'static mut MinimalTeamInfo,
 
 }
 
@@ -114,25 +100,33 @@ const ZERO_MAP: MinimalMapInfo = MinimalMapInfo {
 
 static mut NUM_TEAMS: u32 = 2;
 static mut TEAMS: [MinimalTeamInfo; 2] = [ZERO_TEAM; 2];
-static mut FLAGS: [Flag; 2] = [Flag::zero(); 2];
-static mut RNG: WyRand = WyRand::new_seed(23949034153135);
+static mut FLAGS: [MaybeUninit<Flag>; 2] = [MaybeUninit::uninit(), MaybeUninit::uninit()];
+static mut RNG: WyRand = WyRand::new_seed(0);
 
 static mut MAP: MinimalMapInfo = ZERO_MAP;
 
 #[no_mangle]
 pub unsafe fn init_game_mode() {
     for (i, (flag, team)) in FLAGS.iter_mut().zip(TEAMS.iter_mut()).enumerate() {
-        team.id = RNG.generate_range(0..u64::MAX);
+        //team.id = 100 + i as u64;
+        team.id = RNG.generate();
         team.color = match i == 0 {
             true => 0xFF0000FF,
             false => 0xFFFF0000,
         };
 
-        flag.pos_x = MAP.width * i as f32;
-        flag.pos_y = MAP.height / 2.0;
-        flag.default_pos_x = flag.pos_x;
-        flag.default_pos_y = flag.pos_y;
-        flag.team_id = team.id;
+        let pos_x = (MAP.width - 50.0) * i as f32;
+        let pos_y = MAP.height / 2.0;
+
+        flag.write(Flag {
+            pos_x,
+            pos_y,
+            default_pos_x: pos_x,
+            default_pos_y: pos_y,
+            team,
+            held_by: None,
+
+        });
 
     }
 
@@ -140,7 +134,7 @@ pub unsafe fn init_game_mode() {
 
 #[no_mangle]
 pub unsafe fn winning_score() -> u64 {
-    2
+    5
 
 }
 
@@ -168,6 +162,8 @@ static mut DRAWABLE_OBJECTS: [DrawableObject; 255] = [ZERO_DRAWABLE_OBJECT; 255]
 
 unsafe fn draw_flags() {
     for (i, (flag, obj)) in FLAGS.iter().zip(DRAWABLE_OBJECTS.iter_mut()).enumerate() {
+        let flag = flag.assume_init_ref();
+
         obj.pos_x = flag.pos_x;
         obj.pos_y = flag.pos_y;
         obj.width = 50.0;
@@ -191,9 +187,11 @@ static mut WINNING_TEAM: MinimalTeamInfo = ZERO_TEAM;
 #[no_mangle]
 pub unsafe fn calculate_scores() -> u32 {
     for flag in FLAGS.iter_mut() {
-        if (flag.default_pos_x == 0.0 && flag.pos_x >= MAP.width - 10.0) || (flag.default_pos_x == MAP.width && flag.pos_x <= 10.0) {
+        let flag = flag.assume_init_mut();
+        if (flag.default_pos_x == 0.0 && flag.pos_x >= MAP.width - 50.0) || (flag.default_pos_x == MAP.width && flag.pos_x <= 50.0) {
             // Find the flag's team and add to their score
-            let team = TEAMS.iter_mut().find(|t| t.id == flag.team_id).unwrap();
+            let team = &mut flag.team;
+             
             team.score += 1;
 
             // Reset the flag to its default position
@@ -225,10 +223,11 @@ pub unsafe fn set_player_stats() {
     draw_flags();
 
     for flag in FLAGS.iter_mut() {
+        let flag = flag.assume_init_mut();
         // If the flag is being held by a player, just set the flag's position to the player's
         // position, UNLESS the player is using their ability or they die
         if let Some(player) = flag.held_by {
-            if player.using_ability == false as u16 && player.health > 0 {
+            if true {//player.using_ability == false as u16 player.health > 0 {
                 flag.pos_x = player.pos_x;
                 flag.pos_y = player.pos_y;
 
@@ -245,7 +244,7 @@ pub unsafe fn set_player_stats() {
             if let Some(player) = player {
                 // If a player is colliding with the flag, and the flag is of the opposite team,
                 // have them start holding it
-                if player.team_id != flag.team_id {
+                if player.team_id != flag.team.id {
                     flag.pos_x = player.pos_x;
                     flag.pos_y = player.pos_y;
 
@@ -269,7 +268,7 @@ pub unsafe fn set_player_stats() {
 /// Returns whether or not a player was sucessfully spawned
 pub unsafe fn spawn_player() -> u32 {
     // Next, find a map position on whatever side the player is on
-    let is_left_team = FLAGS[0].team_id == PLAYER_TO_BE_ADDED.team_id;
+    let is_left_team = FLAGS[0].assume_init_ref().team.id == PLAYER_TO_BE_ADDED.team_id;
 
     let good_spawn_fn = match is_left_team {
         true => |spawn_point: &&MinimalMapObject| spawn_point.pos_x <= MAP.width / 2.0,

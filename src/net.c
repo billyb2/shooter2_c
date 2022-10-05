@@ -140,6 +140,7 @@ NetworkInfo init_networking(bool hosting, const char* ip_addr, Player* my_player
 		.socket = sockfd,
 		.is_server = hosting,
 		.addrs_to_send_to = addrs_to_send_to,
+		.net_buffer = NULL,
 
 	};
 
@@ -220,6 +221,7 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 	net_player->pos_y = minimal_player_info->pos_y;
 	net_player->direction = minimal_player_info->direction;
 	net_player->weapon = minimal_player_info->weapon;
+	net_player->using_ability = minimal_player_info->using_ability;
 	net_player->ability = minimal_player_info->ability;
 	net_player->cloaking = minimal_player_info->cloaking;
 	net_player->shooting = shooting;
@@ -235,9 +237,8 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 
 
 	if (net_player->username == NULL) {
-		net_player->username = malloc(30);
-		
-		memcpy(net_player->username, buffer->username, strlen(buffer->username) + 1);
+		net_player->username = calloc(1, 30);
+		memcpy(net_player->username, buffer->username, strlen(buffer->username));
 
 	}
 
@@ -245,8 +246,13 @@ void process_net_packets(const NetPlayer* buffer, Player* players, uint8_t num_p
 }
 
 int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_players, GameModeData* game_mode_data, const Map* map) {	
-	#define BUFFER_LEN 1 + (num_players * sizeof(TeamScore)) + (sizeof(NetPlayer) * num_players)
-	char* buffer = malloc(BUFFER_LEN);
+	#define BUFFER_LEN 1 + (game_mode_data->num_teams * sizeof(TeamScore)) + (sizeof(NetPlayer) * num_players)
+	if (network_info->net_buffer == NULL) {
+		network_info->net_buffer = malloc(BUFFER_LEN);
+
+	}
+
+	char* buffer = network_info->net_buffer;
 
 	if (network_info->is_server) {
 		if (network_info->addrs_to_send_to.num_items > 0) {
@@ -290,7 +296,7 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 			for (uint64_t i = 0; i < network_info->addrs_to_send_to.num_items; i += 1) {
 				const Addr* addr_to_send_to = &addrs_to_send_to[i];
 
-				int bytes_sent = sendto(network_info->socket, buffer, 1 + (game_mode_data->num_teams * sizeof(TeamScore)) + (sizeof(NetPlayer) * num_players_to_send) , 0, (struct sockaddr*)&addr_to_send_to->sockaddr, addr_to_send_to->addr_len);
+				sendto(network_info->socket, buffer, 1 + (game_mode_data->num_teams * sizeof(TeamScore)) + (sizeof(NetPlayer) * num_players_to_send) , 0, (struct sockaddr*)&addr_to_send_to->sockaddr, addr_to_send_to->addr_len);
 
 			}
 
@@ -400,6 +406,7 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 
 		// After running through all the players, have clients synchronize teams with the server
 		if (!network_info->is_server) {
+			// TODO: Just send a smaller version of MinimalTeamInfo and memcpy it to save time
 			const TeamScore* team_scores = (TeamScore*)(buffer + 1);
 
 			// First, properly set up teams and their IDs and scores
@@ -420,6 +427,11 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 
 				if (team == NULL) {
 					fprintf(stderr, "Invalid team ID: %lu\n", net_player->minimal_player_info.team_id);
+					for (uint8_t i = 0; i < game_mode_data->num_teams; i += 1) {
+						printf("Real team: %lu\n", game_mode_data->teams[i].id);
+
+					}
+
 					exit(-1);
 
 				} else {
@@ -442,8 +454,6 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 		}
 
 	}
-
-	free(buffer);
 
 	return 0;
 

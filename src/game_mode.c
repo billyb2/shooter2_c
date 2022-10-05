@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "game_modes/deps/drawing_api.h"
 #include "include/wasm3.h"
 #include "include/wasm3_ext.h"
@@ -103,6 +104,7 @@ GameModeData init_gamemode_data(IM3Runtime rt, const Map* map) {
 
 	IM3Function set_rng_seed_fn;
 	m3_FindFunction(&set_rng_seed_fn, rt, "set_rng_seed");
+	srand(time(0));
 	m3_CallV(set_rng_seed_fn, rand());
 
 	IM3Function init_gamemode;
@@ -257,24 +259,50 @@ Team* find_team_of_id(uint64_t team_id, GameModeData* game_mode_data) {
 
 }
 
-bool calculate_scores(const Team** winning_team, GameModeData* game_mode_data) {
-	IM3Function winning_team_fn;
-	m3_FindFunction(&winning_team_fn, game_mode_data->rt, "winning_team_ptr");
-	m3_CallV(winning_team_fn);
+bool calculate_scores(const Team** winning_team, GameModeData* game_mode_data) {	
+	IM3Function calculate_scores_fn = NULL;
+	m3_FindFunction(&calculate_scores_fn, game_mode_data->rt, "calculate_scores");
 
-	uint64_t winning_team_ptr;
-	m3_GetResultsV(winning_team_fn, &winning_team_ptr);
+	if (calculate_scores_fn == NULL) {
+		fprintf(stderr, "Error finding calculate scores fn\n");
+		exit(-1);
 
-	Team* wasm_winning_team = (Team*)&get_wasm_memory(game_mode_data->rt)[winning_team_ptr];
+	}
 
-	IM3Function calculate_scores;
-	m3_FindFunction(&calculate_scores, game_mode_data->rt, "calculate_scores");
-	m3_CallV(calculate_scores);
+	if (m3_CallV(calculate_scores_fn) != m3Err_none) {
+		M3ErrorInfo err;
+		m3_GetErrorInfo(game_mode_data->rt, &err);
+		fprintf(stderr, "Error calling calculate_scores with err: %s\n", err.message);
+		exit(-1);
+
+	}
 
 	uint32_t team_won;
-	m3_GetResultsV(calculate_scores, &team_won);
+
+	if (m3_GetResultsV(calculate_scores_fn, &team_won) != m3Err_none) {
+		fprintf(stderr, "Error getting calculate_scores results\n");
+		exit(-1);
+
+	}
 
 	if ((bool)team_won) {
+		IM3Function winning_team_fn;
+		if (m3_FindFunction(&winning_team_fn, game_mode_data->rt, "winning_team_ptr") != m3Err_none) {
+			fprintf(stderr, "Error getting winning_team_ptr\n");
+			exit(-1);
+
+		}
+		m3_CallV(winning_team_fn);
+
+		uint64_t winning_team_ptr;
+		if (m3_GetResultsV(winning_team_fn, &winning_team_ptr) != m3Err_none) {
+			M3ErrorInfo err;
+			m3_GetErrorInfo(game_mode_data->rt, &err);
+			fprintf(stderr, "Error calling winning_team_ptr: %s\n", err.message);
+			exit(-1);
+
+		}
+		Team* wasm_winning_team = (Team*)&get_wasm_memory(game_mode_data->rt)[winning_team_ptr];
 		*winning_team = wasm_winning_team;
 
 	}

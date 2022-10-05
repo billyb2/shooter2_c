@@ -50,6 +50,7 @@ typedef struct Addr {
 typedef struct NetworkInfo {
 	void* prev_msg;
 	uint64_t prev_msg_len;
+	char* net_buffer;
 
 	bool is_server;
 	int socket;

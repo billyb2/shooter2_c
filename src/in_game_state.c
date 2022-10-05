@@ -36,7 +36,7 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 
 	UninitGameMode* uninit_game_modes = NULL;
 	uint64_t num_game_modes;
-	uint64_t current_game_mode_index;
+	uint64_t current_game_mode_index = 0;
 
 	if (*game_page == MainMenu) {
 		MainMenuState* main_menu_state = &game_state->main_menu_state;
@@ -57,7 +57,7 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 	}
 
 	if (username == NULL) {
-		username = malloc(20);
+		username = calloc(1, 20);
 		memcpy(username, "shooter2_c player", 18);
 
 	}
@@ -104,7 +104,6 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 		.default_weapon = game_state->main_menu_state.weapon,
 		.players = players,
 		.num_players = num_players,
-		.winning_team = NULL,
 
 		.projectiles = projectiles,
 		.num_projectiles = num_projectiles,
@@ -182,9 +181,10 @@ void run_in_game_state(GamePage* game_page, GameState* game_state) {
 
 	sync_players_to_teams(in_game_state->players, in_game_state->num_players, &in_game_state->game_mode_data);
 
-	if (in_game_state->winning_team == NULL) {
-		bool player_won = calculate_scores(&in_game_state->winning_team, &in_game_state->game_mode_data);
 
+	bool player_won = calculate_scores(&in_game_state->winning_team, &in_game_state->game_mode_data);
+
+	if (in_game_state->countdown_frames_to_main_menu == 0) {
 		if (player_won) {
 			in_game_state->countdown_frames_to_main_menu = 5 * 60;
 
@@ -195,9 +195,9 @@ void run_in_game_state(GamePage* game_page, GameState* game_state) {
 
 	}
 
-	render(in_game_state->camera, in_game_state->players, in_game_state->num_players, &in_game_state->game_mode_data, in_game_state->projectiles, in_game_state->num_projectiles, &in_game_state->map, in_game_state->winning_team);	
+	render(in_game_state->camera, in_game_state->players, in_game_state->num_players, &in_game_state->game_mode_data, in_game_state->projectiles, in_game_state->num_projectiles, &in_game_state->map, in_game_state->winning_team, player_won);	
 
-	if (in_game_state->winning_team != NULL && in_game_state->countdown_frames_to_main_menu == 0) {
+	if (player_won && in_game_state->countdown_frames_to_main_menu == 0) {
 		exit_in_game(game_state, game_page, MainMenu);
 
 	}
