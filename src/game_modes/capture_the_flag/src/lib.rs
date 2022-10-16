@@ -132,16 +132,16 @@ unsafe fn draw_flags() {
 pub unsafe fn calculate_scores() -> u32 {
     for flag in FLAGS.iter_mut() {
         let flag = flag.assume_init_mut();
-        if (flag.default_pos_x == 0.0 && flag.pos_x >= MAP.width - 50.0) || (flag.default_pos_x == MAP.width && flag.pos_x <= 50.0) {
-            // Find the flag's team and add to their score
-            let team = &mut flag.team;
-             
-            team.score += 1;
 
-            // Reset the flag to its default position
-            flag.pos_x = flag.default_pos_x;
-            flag.pos_y = flag.default_pos_y;
-            flag.held_by = None;
+        if let Some(player) = flag.held_by {
+            if (flag.default_pos_x == 0.0 && player.pos_x >= MAP.width - PLAYER_SIZE as f32) || (flag.default_pos_x == MAP.width - 50.0 && player.pos_x <= PLAYER_SIZE as f32) {
+                flag.team.score += 1;
+                
+                flag.pos_x = flag.default_pos_x;
+                flag.pos_y = flag.default_pos_y;
+                flag.held_by = None;
+
+            }
 
         }
 
