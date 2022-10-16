@@ -78,4 +78,38 @@ typedef struct MinimalProjectileInfo {
 static_assert((sizeof(MinimalProjectileInfo) == 20), "MinimalProjectileInfo is the wrong size, add padding");
 #endif
 
+typedef enum XAxisMovement {
+	Left = 0,
+	Right = 0xFF,
+	NoneX = 0x80,
+
+} XAxisMovement;
+
+typedef enum YAxisMovement {
+	Up = 0,
+	Down = 0xFF,
+	NoneY = 0x80,
+
+} YAxisMovement;
+
+typedef struct PlayerMovementInfo {
+	XAxisMovement x_axis;
+	YAxisMovement y_axis;
+	
+} PlayerMovementInfo;
+
+#ifndef WASM
+static_assert((sizeof(PlayerMovementInfo) == 8), "Player movement info is wrong size");
+#endif
+
+#define N 0
+#define NE 1
+#define E 2
+#define SE 3
+#define S 4
+#define SW 5
+#define W 6 
+#define NW 7
+#define NO_MOVEMENT 8
+
 #endif

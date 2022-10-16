@@ -9,7 +9,6 @@
 #include "input.h"
 #include "projectile.h"
 
-
 typedef enum GamePage {
 	MainMenu,
 	InGame,
@@ -59,6 +58,7 @@ typedef struct MainMenuState {
 	uint64_t current_game_mode_index;
 	uint64_t num_game_modes;
 	UninitGameMode* uninit_game_modes;
+	uint8_t num_bots;
 
 } MainMenuState;
 

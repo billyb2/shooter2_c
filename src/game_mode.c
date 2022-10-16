@@ -104,7 +104,6 @@ GameModeData init_gamemode_data(IM3Runtime rt, const Map* map) {
 
 	IM3Function set_rng_seed_fn;
 	m3_FindFunction(&set_rng_seed_fn, rt, "set_rng_seed");
-	srand(time(0));
 	m3_CallV(set_rng_seed_fn, rand());
 
 	IM3Function init_gamemode;

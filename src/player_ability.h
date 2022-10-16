@@ -2,6 +2,7 @@
 #define PLAYER_ABILITY_H
 
 #define NUM_ABILITIES 3
+#include <stdbool.h>
 
 typedef enum Ability {
 	Warp,

@@ -40,6 +40,7 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 	bool hosting = false;
 	uint64_t num_game_modes;
 	uint64_t current_game_mode_index;
+	uint8_t num_bots = 0;
 	UninitGameMode* uninit_game_modes = NULL;
 
 	char* ip_addr = malloc(16);
@@ -77,6 +78,7 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 		num_game_modes = main_menu_state->num_game_modes;
 		uninit_game_modes = main_menu_state->uninit_game_modes;
 		game_mode_file_name = main_menu_state->game_mode_file_name;
+		num_bots = main_menu_state->num_bots;
 
 
 	// Usually means the game just started
@@ -280,6 +282,8 @@ void enter_main_menu(GamePage* game_page, GameState* game_state) {
 	main_menu_state->num_game_modes = num_game_modes;
 	main_menu_state->game_mode_file_name = game_mode_file_name;
 
+	main_menu_state->num_bots = num_bots;
+
 	set_config_option("username", username);
 	set_config_option("ip_addr", ip_addr);
 	set_config_option("game_mode_file_name", game_mode_file_name);
@@ -478,7 +482,7 @@ void run_settings_state(GamePage* game_page, GameState* game_state) {
 
 		Rectangle game_mode_rect = (Rectangle) { game_mode_button_x, game_mode_button_y, game_mode_button_width, BUTTON_HEIGHT }; 
 
-		GuiDrawRectangle(game_mode_rect, 3, username_outline_color, RAYWHITE);
+		GuiDrawRectangle(game_mode_rect, 3, GRAY, RAYWHITE);
 		GuiDrawText(game_mode_button_text, game_mode_rect, TEXT_ALIGN_CENTER, GRAY);
 
 		if (GuiButton((Rectangle){ game_mode_button_x + game_mode_button_width, game_mode_button_y, increment_button_width, BUTTON_HEIGHT }, "->") ) {
@@ -518,16 +522,108 @@ void run_settings_state(GamePage* game_page, GameState* game_state) {
 
 		}
 
-		if (GuiButton((Rectangle) { CENTER_BUTTON_X, FIRST_BUTTON_HEIGHT + 6 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS * 2, BUTTON_WIDTH, BUTTON_HEIGHT }, hosting_text)) {
+
+		GuiDrawText("Number of Bots: ", (Rectangle){ 0.0, FIRST_BUTTON_HEIGHT + 6 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS, SCREEN_WIDTH, 50.0 }, TEXT_ALIGN_CENTER, BLACK);
+
+		const Rectangle num_bots_textbox_rec = {
+			.x = (float)SCREEN_WIDTH / 2.0 - (float)SCREEN_WIDTH * (2.0 / 5.0) * 0.5,
+			.y = FIRST_BUTTON_HEIGHT + 7 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS,
+			.width = (float)SCREEN_WIDTH * (2.0 / 5.0),
+			.height = 50.0,
+
+		};
+
+		Color num_bots_color = GRAY;
+
+
+		bool hovering_over_num_bots = CheckCollisionPointRec(GetMousePosition(), num_bots_textbox_rec);
+
+		if (hovering_over_num_bots) {
+			num_bots_color = DARKGRAY;
+
+		}
+
+		GuiDrawRectangle(num_bots_textbox_rec, 3, num_bots_color, RAYWHITE);
+
+
+		if (GuiButton((Rectangle) { CENTER_BUTTON_X, FIRST_BUTTON_HEIGHT + 8 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS * 3, BUTTON_WIDTH, BUTTON_HEIGHT }, hosting_text)) {
 			main_menu_state->hosting = !main_menu_state->hosting;
 
 		}
+
+		char num_bots_text[5];
+		sprintf(num_bots_text, "%u", main_menu_state->num_bots);
+
+		int num_bots_text_len = strlen(num_bots_text);
+
+		if (hovering_over_num_bots) {
+			num_bots_text[num_bots_text_len] = '|';
+
+			int key = GetCharPressed();
+
+			while (key > 0) {
+				if (num_bots_text_len < 3) { 
+					if ((char)key >= '0' && (char)key <= '9') {
+						uint64_t index;
+
+						if (strcmp(num_bots_text, "0") == 0) {
+							index = 0;
+
+						} else {
+							index = num_bots_text_len;
+
+						}
+
+						num_bots_text[index] = (char)key;	
+						num_bots_text_len += 1;
+
+					}
+				}
+
+				key = GetCharPressed();
+
+			}
+
+			if (IsKeyPressed(KEY_BACKSPACE) && num_bots_text_len > 0) {
+				if (IsKeyDown(KEY_LEFT_CONTROL) || num_bots_text_len == 1) {
+					strcpy(num_bots_text, "0");
+					num_bots_text_len = 1;
+
+				} else {
+					*(num_bots_text + num_bots_text_len) = 0;
+					num_bots_text_len -= 1;
+
+				}
+
+				
+
+			}
+
+			if (num_bots_text_len > 0) {
+				memset(num_bots_text + num_bots_text_len, 0, 4 - num_bots_text_len);
+				uint32_t potential_num_bots;
+				sscanf(num_bots_text, "%d", &potential_num_bots);
+
+				if (potential_num_bots > 100) {
+					main_menu_state->num_bots = 100;
+
+				} else {
+					main_menu_state->num_bots = potential_num_bots;
+
+				}
+
+			}
+			
+
+		}
+
+		GuiDrawText(num_bots_text, num_bots_textbox_rec, TEXT_ALIGN_CENTER, BLACK);
 
 		char ip_addr_text_to_draw[17] = { 0 };
 
 		if (!main_menu_state->hosting) {
 			Rectangle ip_addr_rect = name_textbox_rect;
-			ip_addr_rect.y = FIRST_BUTTON_HEIGHT + 7 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS * 2;
+			ip_addr_rect.y = FIRST_BUTTON_HEIGHT + 9 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS * 2;
 
 			bool hovering_over_ip_addr = CheckCollisionPointRec(GetMousePosition(), ip_addr_rect);
 

@@ -63,7 +63,7 @@ uint16_t get_max_ability_use_frames(Ability ability) {
 
 }
 
-Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map, char* player_name, GameModeData* game_mode_data) {
+Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map* map, char* player_name, GameModeData* game_mode_data, Bot* bot_data) {
 	uint8_t num_throwables;
 
 	switch (throwable) {
@@ -110,6 +110,7 @@ Player new_player(Ability ability, Weapon weapon, Throwable throwable, const Map
 		.num_kills = 0,
 		.cloaking = false,
 		.weapon_switch_cooldown = 0,
+		.bot_data = bot_data,
 
 	};
 

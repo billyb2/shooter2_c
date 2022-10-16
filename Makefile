@@ -40,10 +40,13 @@ package: build
 	rm $(PACKAGE_EXEC_NAME)
 
 
-build: build_bin game_modes/%.wasm
+build: build_bin game_modes/%.wasm bots/%.wasm
 
 game_modes/%.wasm:
 	$(MAKE) -C src/game_modes/ $(RELEASE_BUILD)
+
+bots/%.wasm:
+	$(MAKE) -C src/bots/ $(RELEASE_BUILD)
 
 build_bin: configure
 	ninja -C $(OUT_DIR) -j2

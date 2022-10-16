@@ -1,6 +1,8 @@
 #ifndef PLAYER_DEF_H
 #define PLAYER_DEF_H
 
+#include "bot_def.h"
+#include "include/wasm3.h"
 #include "player_ability.h"
 #include "weapon.h"
 typedef struct PlayerKill {
@@ -53,6 +55,8 @@ typedef struct Player {
 	uint16_t num_kills;
 
 	uint16_t weapon_switch_cooldown;
+
+	Bot* bot_data;
 	
 } Player;
 #endif

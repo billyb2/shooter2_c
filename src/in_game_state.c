@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <ctype.h>
 
+#include "bots.h"
 #include "camera.h"
 #include "game_mode.h"
 #include "input.h"
@@ -37,6 +38,7 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 	UninitGameMode* uninit_game_modes = NULL;
 	uint64_t num_game_modes;
 	uint64_t current_game_mode_index = 0;
+	uint8_t num_bots = 0;
 
 	if (*game_page == MainMenu) {
 		MainMenuState* main_menu_state = &game_state->main_menu_state;
@@ -51,6 +53,7 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 		ip_addr = main_menu_state->ip_addr;
 		
 		uninit_game_modes = main_menu_state->uninit_game_modes;
+		num_bots = main_menu_state->num_bots;
 		num_game_modes = main_menu_state->num_game_modes;
 		current_game_mode_index = main_menu_state->current_game_mode_index;
 
@@ -91,8 +94,30 @@ void enter_in_game(GamePage* game_page, GameState* game_state) {
 
 		} 
 
-		players[i] = new_player(game_state->main_menu_state.ability, game_state->main_menu_state.weapon, Grenade, &map, new_player_username, &game_mode_data);
+		players[i] = new_player(game_state->main_menu_state.ability, game_state->main_menu_state.weapon, Grenade, &map, new_player_username, &game_mode_data, NULL);
 
+	}
+
+	if (hosting) {
+		// Start at the second bot since the first one is always the main player
+		for (uint8_t i = 1; i < game_state->main_menu_state.num_bots + 1; i += 1) {
+			Player* player = &players[i];
+			Ability ability;
+			Weapon weapon;
+
+			Bot* bot_data = new_bot("bots/simple.wasm", &ability, &weapon);
+
+			char* username = malloc(20);
+			sprintf(username, "Bot %u", i);
+			*player = new_player(ability, weapon, Grenade, &map, username, &game_mode_data, bot_data);
+
+			player->assigned_id = true;
+			player->id = rand();
+			player->health = PLAYER_MAX_HEALTH;
+
+			add_player_to_team(player, &map, &game_mode_data);
+
+		}
 	}
 
 
@@ -172,6 +197,8 @@ void run_in_game_state(GamePage* game_page, GameState* game_state) {
 	update_player_cooldowns(in_game_state->players, in_game_state->num_players);
 
 	player_input(&in_game_state->players[0], &in_game_state->key_bindings, &in_game_state->map, true);
+	sync_teams_bots(in_game_state->players, in_game_state->num_players, &in_game_state->game_mode_data);
+	run_bots(in_game_state->players, in_game_state->num_players, &in_game_state->map);
 	handle_networking(&in_game_state->network_info, in_game_state->players, in_game_state->num_players, &in_game_state->game_mode_data, &in_game_state->map);
 	use_weapons(in_game_state->players, in_game_state->num_players, &in_game_state->projectiles, &in_game_state->num_projectiles);
 	update_projectiles(&in_game_state->projectiles, &in_game_state->num_projectiles, in_game_state->players, in_game_state->num_players, &in_game_state->map);
