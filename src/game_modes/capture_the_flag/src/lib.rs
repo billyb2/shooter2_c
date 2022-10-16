@@ -171,7 +171,7 @@ pub unsafe fn set_player_stats() {
         // If the flag is being held by a player, just set the flag's position to the player's
         // position, UNLESS the player is using their ability or they die
         if let Some(player) = flag.held_by {
-            if true {//player.using_ability == false as u16 player.health > 0 {
+            if player.using_ability == false as u16 && player.health > 0 {
                 flag.pos_x = player.pos_x;
                 flag.pos_y = player.pos_y;
 

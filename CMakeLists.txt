@@ -7,7 +7,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall -Wextra -pipe -ggdb -fdebug-p
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 	message("Release build")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -flto")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -flto=auto")
 endif()
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
