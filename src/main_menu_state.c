@@ -523,101 +523,104 @@ void run_settings_state(GamePage* game_page, GameState* game_state) {
 		}
 
 
-		GuiDrawText("Number of Bots: ", (Rectangle){ 0.0, FIRST_BUTTON_HEIGHT + 6 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS, SCREEN_WIDTH, 50.0 }, TEXT_ALIGN_CENTER, BLACK);
+		if (main_menu_state->hosting) {
+			GuiDrawText("Number of Bots: ", (Rectangle){ 0.0, FIRST_BUTTON_HEIGHT + 6 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS, SCREEN_WIDTH, 50.0 }, TEXT_ALIGN_CENTER, BLACK);
 
-		const Rectangle num_bots_textbox_rec = {
-			.x = (float)SCREEN_WIDTH / 2.0 - (float)SCREEN_WIDTH * (2.0 / 5.0) * 0.5,
-			.y = FIRST_BUTTON_HEIGHT + 7 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS,
-			.width = (float)SCREEN_WIDTH * (2.0 / 5.0),
-			.height = 50.0,
+			const Rectangle num_bots_textbox_rec = {
+				.x = (float)SCREEN_WIDTH / 2.0 - (float)SCREEN_WIDTH * (2.0 / 5.0) * 0.5,
+				.y = FIRST_BUTTON_HEIGHT + 7 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS,
+				.width = (float)SCREEN_WIDTH * (2.0 / 5.0),
+				.height = 50.0,
 
-		};
+			};
 
-		Color num_bots_color = GRAY;
+			Color num_bots_color = GRAY;
 
 
-		bool hovering_over_num_bots = CheckCollisionPointRec(GetMousePosition(), num_bots_textbox_rec);
+			bool hovering_over_num_bots = CheckCollisionPointRec(GetMousePosition(), num_bots_textbox_rec);
 
-		if (hovering_over_num_bots) {
-			num_bots_color = DARKGRAY;
+			if (hovering_over_num_bots) {
+				num_bots_color = DARKGRAY;
+
+			}
+
+			GuiDrawRectangle(num_bots_textbox_rec, 3, num_bots_color, RAYWHITE);
+
+			char num_bots_text[5];
+			sprintf(num_bots_text, "%u", main_menu_state->num_bots);
+
+			int num_bots_text_len = strlen(num_bots_text);
+
+			if (hovering_over_num_bots) {
+				num_bots_text[num_bots_text_len] = '|';
+
+				int key = GetCharPressed();
+
+				while (key > 0) {
+					if (num_bots_text_len < 3) { 
+						if ((char)key >= '0' && (char)key <= '9') {
+							uint64_t index;
+
+							if (strcmp(num_bots_text, "0") == 0) {
+								index = 0;
+
+							} else {
+								index = num_bots_text_len;
+
+							}
+
+							num_bots_text[index] = (char)key;	
+							num_bots_text_len += 1;
+
+						}
+					}
+
+					key = GetCharPressed();
+
+				}
+
+				if (IsKeyPressed(KEY_BACKSPACE) && num_bots_text_len > 0) {
+					if (IsKeyDown(KEY_LEFT_CONTROL) || num_bots_text_len == 1) {
+						strcpy(num_bots_text, "0");
+						num_bots_text_len = 1;
+
+					} else {
+						*(num_bots_text + num_bots_text_len) = 0;
+						num_bots_text_len -= 1;
+
+					}
+
+					
+
+				}
+
+				if (num_bots_text_len > 0) {
+					memset(num_bots_text + num_bots_text_len, 0, 4 - num_bots_text_len);
+					uint32_t potential_num_bots;
+					sscanf(num_bots_text, "%d", &potential_num_bots);
+
+					if (potential_num_bots > 100) {
+						main_menu_state->num_bots = 100;
+
+					} else {
+						main_menu_state->num_bots = potential_num_bots;
+
+					}
+
+				}
+				
+
+			}
+
+			GuiDrawText(num_bots_text, num_bots_textbox_rec, TEXT_ALIGN_CENTER, BLACK);
 
 		}
-
-		GuiDrawRectangle(num_bots_textbox_rec, 3, num_bots_color, RAYWHITE);
 
 
 		if (GuiButton((Rectangle) { CENTER_BUTTON_X, FIRST_BUTTON_HEIGHT + 8 * BUTTON_HEIGHT + SPACE_BETWEEEN_BUTTONS * 3, BUTTON_WIDTH, BUTTON_HEIGHT }, hosting_text)) {
 			main_menu_state->hosting = !main_menu_state->hosting;
 
 		}
-
-		char num_bots_text[5];
-		sprintf(num_bots_text, "%u", main_menu_state->num_bots);
-
-		int num_bots_text_len = strlen(num_bots_text);
-
-		if (hovering_over_num_bots) {
-			num_bots_text[num_bots_text_len] = '|';
-
-			int key = GetCharPressed();
-
-			while (key > 0) {
-				if (num_bots_text_len < 3) { 
-					if ((char)key >= '0' && (char)key <= '9') {
-						uint64_t index;
-
-						if (strcmp(num_bots_text, "0") == 0) {
-							index = 0;
-
-						} else {
-							index = num_bots_text_len;
-
-						}
-
-						num_bots_text[index] = (char)key;	
-						num_bots_text_len += 1;
-
-					}
-				}
-
-				key = GetCharPressed();
-
-			}
-
-			if (IsKeyPressed(KEY_BACKSPACE) && num_bots_text_len > 0) {
-				if (IsKeyDown(KEY_LEFT_CONTROL) || num_bots_text_len == 1) {
-					strcpy(num_bots_text, "0");
-					num_bots_text_len = 1;
-
-				} else {
-					*(num_bots_text + num_bots_text_len) = 0;
-					num_bots_text_len -= 1;
-
-				}
-
-				
-
-			}
-
-			if (num_bots_text_len > 0) {
-				memset(num_bots_text + num_bots_text_len, 0, 4 - num_bots_text_len);
-				uint32_t potential_num_bots;
-				sscanf(num_bots_text, "%d", &potential_num_bots);
-
-				if (potential_num_bots > 100) {
-					main_menu_state->num_bots = 100;
-
-				} else {
-					main_menu_state->num_bots = potential_num_bots;
-
-				}
-
-			}
-			
-
-		}
-
-		GuiDrawText(num_bots_text, num_bots_textbox_rec, TEXT_ALIGN_CENTER, BLACK);
 
 		char ip_addr_text_to_draw[17] = { 0 };
 
