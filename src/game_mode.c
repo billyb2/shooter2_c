@@ -121,10 +121,8 @@ GameModeData init_gamemode_data(IM3Runtime rt, const Map* map) {
 	teams = get_wasm_team_ptr(rt);
 	DrawableObject* drawable_objects = get_drawable_objects_ptr(rt);
 
-
 	GameModeData game_mode_data = {
 		.num_teams = num_teams,
-		.teams = teams,
 		.rt = rt,
 		.drawable_objects = drawable_objects,
 
@@ -162,7 +160,6 @@ MinimalPlayerInfo* find_team_player_by_id(uint64_t id, GameModeData* game_mode_d
 }
 
 void sync_players_to_teams(Player* players, uint8_t num_players, GameModeData* game_mode_data) {
-	game_mode_data->teams = get_wasm_team_ptr(game_mode_data->rt);
 	game_mode_data->num_teams = get_num_teams(game_mode_data->rt);
 	game_mode_data->drawable_objects = get_drawable_objects_ptr(game_mode_data->rt);
 
@@ -245,7 +242,7 @@ bool add_player_to_team(Player* player, const Map* map, GameModeData* game_mode_
 
 Team* find_team_of_id(uint64_t team_id, GameModeData* game_mode_data) {
 	for (uint8_t i = 0; i < game_mode_data->num_teams; i += 1) {
-		Team* team = &game_mode_data->teams[i];
+		Team* team = &game_mode_data_teams[i];
 
 		if (team->id == team_id) {
 			return team;

@@ -30,7 +30,7 @@ void render(Camera2D camera, const Player* players, uint8_t num_players, const G
 		BeginMode2D(camera);
 
 		for (uint8_t i = 0; i < game_mode_data->num_teams; i += 1) {
-			const Team* team = &game_mode_data->teams[i];
+			const Team* team = &game_mode_data_teams[i];
 
 			for (uint8_t j = 0; j < team->num_players; j += 1) {
 				const MinimalPlayerInfo* player = &team->players[j];

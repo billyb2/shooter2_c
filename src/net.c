@@ -262,8 +262,8 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 			TeamScore* current_team_score = (TeamScore*)&buffer[1];
 
 			for (uint8_t i = 0; i < game_mode_data->num_teams; i += 1) {
-				current_team_score->score = game_mode_data->teams[i].score;
-				current_team_score->id = game_mode_data->teams[i].id;
+				current_team_score->score = game_mode_data_teams[i].score;
+				current_team_score->id = game_mode_data_teams[i].id;
 
 				current_team_score += 1;
 
@@ -377,7 +377,6 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 			uint8_t num_teams = buffer[0];
 
 			if (game_mode_data->num_teams != num_teams) {
-				game_mode_data->teams = realloc(game_mode_data->teams, num_teams * sizeof(Team));
 				game_mode_data->num_teams = num_teams;
 
 			}
@@ -412,7 +411,7 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 			// First, properly set up teams and their IDs and scores
 			for (uint64_t i = 0; i < game_mode_data->num_teams; i += 1) {
 				const TeamScore* team_score = &team_scores[i];
-				Team* team = &game_mode_data->teams[i];
+				Team* team = &game_mode_data_teams[i];
 
 				team->id = team_score->id;
 				team->score = team_score->score;
@@ -428,7 +427,7 @@ int handle_networking(NetworkInfo* network_info, Player* players, uint8_t num_pl
 				if (team == NULL) {
 					fprintf(stderr, "Invalid team ID: %lu\n", net_player->minimal_player_info.team_id);
 					for (uint8_t i = 0; i < game_mode_data->num_teams; i += 1) {
-						printf("Real team: %lu\n", game_mode_data->teams[i].id);
+						printf("Real team: %lu\n", game_mode_data_teams[i].id);
 
 					}
 

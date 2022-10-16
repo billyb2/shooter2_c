@@ -208,7 +208,7 @@ void sync_teams_bots(Player* players, uint8_t num_players, const GameModeData* g
 		uint8_t* num_teams = get_bot_wasm_num_teams_ptr(player->bot_data->rt);
 
 		*num_teams = game_mode_data->num_teams;
-		memcpy(team_ptr, game_mode_data->teams, sizeof(Team) * game_mode_data->num_teams);
+		memcpy(team_ptr, game_mode_data_teams, sizeof(Team) * game_mode_data->num_teams);
 
 		uint64_t* player_id_ptr = get_bot_player_id_ptr(player->bot_data->rt);
 		*player_id_ptr = player->id;

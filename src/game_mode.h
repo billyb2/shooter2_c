@@ -7,6 +7,11 @@
 #include "player_def.h"
 #include "map.h"
 
+MinimalTeamInfo* get_wasm_team_ptr(IM3Runtime rt);
+
+#define game_mode_data_teams get_wasm_team_ptr(game_mode_data->rt)
+
+
 typedef struct UninitGameMode {
 	const char* full_path;
 	IM3Runtime rt;
@@ -29,7 +34,6 @@ typedef enum GameMode {
 #define Team MinimalTeamInfo
 
 typedef struct GameModeData {
-	Team* teams;
 	DrawableObject* drawable_objects;
 	uint8_t num_teams;
 	IM3Runtime rt;
