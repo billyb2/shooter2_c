@@ -3,6 +3,7 @@
 
 #include "raylib_defs.h"
 #include "minimal_state_info.h"
+#include "math.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -33,8 +34,8 @@ typedef struct Map {
 } Map;
 
 Map new_map(const char* file_name);
-bool map_collision(float pos_x, float pos_y, float size_x, float size_y, const Map* map);
-bool map_collision_w_movement(float pos_x, float pos_y, float size_x, float size_y, float distance, float angle, const Map* map);
+bool map_collision(AABB aabb, const Map* map);
+bool map_collision_w_movement(AABB aabb, float distance, float angle, const Map* map);
 MinimalMapInfo get_minimal_map_info(const Map* map);
 
 

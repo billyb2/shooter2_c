@@ -64,6 +64,19 @@ void damage_player(Player* players, uint8_t num_players, Player* player_who_took
 
 }
 
+AABB projectile_to_aabb(const Projectile* projectile) {
+	AABB aabb = {
+		.top_edge = projectile->pos_y,
+		.left_edge = projectile->pos_x,
+		.right_edge = projectile->pos_x + projectile->size,
+		.bottom_edge = projectile->pos_y + projectile->size,
+
+	};
+
+	return aabb;
+
+}
+
 // A cheap and lazy way of doing this, but it's simple
 void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Player* players, uint8_t num_players, const Map* map) {
 	Projectile* buff_projectile_list = malloc(*num_projectiles * sizeof(Projectile));
@@ -75,25 +88,27 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 
 		bool projectile_should_be_copied = true;
 
+		AABB projectile_aabb = projectile_to_aabb(projectile);
 
 		switch (projectile->projectile_type) {
 			case StandardBullet: {
 				projectile->pos_x += projectile->speed * cosf(projectile->angle);
 				projectile->pos_y += projectile->speed * sinf(projectile->angle);
 
-				bool collided_with_map = map_collision(projectile->pos_x, projectile->pos_y, projectile->size, projectile->size, map);
+				bool collided_with_map = map_collision(projectile_aabb, map);
 				bool player_collision = false;
 
 				if (!collided_with_map) {
 					for(uint8_t i = 0; i < num_players; i += 1) {
 						Player* player = &players[i];
+						AABB player_aabb = player_to_aabb(player);
 
 						if (player->health == 0 || !player->assigned_id) {
 							continue;
 
 						}
 
-						player_collision = aabb_collision(player->pos_x, player->pos_y, PLAYER_SIZE, PLAYER_SIZE, projectile->pos_x, projectile->pos_y, projectile->size, projectile->size);
+						player_collision = aabb_collision(projectile_aabb, player_aabb);
 
 						if (player_collision) {
 							damage_player(players, num_players, player, projectile->shot_by, projectile->damage);
@@ -112,18 +127,19 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 
 			case SniperBullet: {
 				bool player_collision = false;
-				bool collided_with_map = map_collision_w_movement(projectile->pos_x, projectile->pos_y, (float)projectile->size, (float)projectile->size, projectile->speed, projectile->angle, map);
+				bool collided_with_map = map_collision_w_movement(projectile_aabb, projectile->speed, projectile->angle, map);
 
 				if (!collided_with_map) {
 					for (uint8_t i = 0; i < num_players; i += 1) {
 						Player* player = &players[i];
+						AABB player_aabb = player_to_aabb(player);
 
 						if (player->health == 0) {
 							continue;
 
 						}
 
-						player_collision = aabb_collision_w_movement(projectile->pos_x, projectile->pos_y, (float)projectile->size, (float)projectile->size, player->pos_x, player->pos_y, (float)PLAYER_SIZE, (float)PLAYER_SIZE, projectile->speed, projectile->angle);
+						player_collision = aabb_collision_w_movement(projectile_aabb, player_aabb, projectile->speed, projectile->angle);
 
 						if (player_collision) {
 							damage_player(players, num_players, player, projectile->shot_by, projectile->damage);
@@ -161,7 +177,7 @@ void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Pla
 
 					bool should_explode = projectile->num_frames_existed >= FRAMES_TILL_EXPLOSION;
 
-					bool collided_with_map = map_collision(projectile->pos_x, projectile->pos_y, projectile->size, projectile->size, map);
+					bool collided_with_map = map_collision(projectile_aabb, map);
 
 					if (should_explode) {
 						float distance_to_player = distance(player->pos_x, player->pos_y, projectile->pos_x, projectile->pos_y);

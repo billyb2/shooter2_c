@@ -155,27 +155,40 @@ Map new_map(const char* file_name) {
 
 }
 
-bool map_oob(float pos_x, float pos_y, float size_x, float size_y, const Map* map) {
-	return (pos_x < 0.0 || pos_x + size_x > map->size_x || pos_y < 0.0 || pos_y + size_y > map->size_y);
+AABB map_object_to_aabb(const MapObject* map_object) {
+	AABB aabb = {
+		.top_edge = map_object->pos_y,
+		.left_edge = map_object->pos_x,
+		.right_edge = map_object->pos_x + map_object->size_x,
+		.bottom_edge = map_object->pos_y + map_object->size_y,
+
+	};
+
+	return aabb;
 
 }
 
-bool map_collision(float pos_x, float pos_y, float size_x, float size_y, const Map* map) {
-	if (map_oob(pos_x, pos_y, size_x, size_y, map)) {
+bool map_oob(AABB aabb, const Map* map) {
+	return (aabb.left_edge < 0.0 || aabb.right_edge > map->size_x || aabb.top_edge < 0.0 || aabb.bottom_edge > map->size_y);
+
+}
+
+bool map_collision(AABB aabb, const Map* map) {
+	if (map_oob(aabb, map)) {
 		return true;
 
 	}
-	
 
 	for (uint16_t i = 0; i < map->num_objects; i += 1) {
 		const MapObject* map_obj = &map->objects[i];
+		const AABB obj_aabb = map_object_to_aabb(map_obj);
 
 		if (map_obj->spawn_point) {
 			continue;
 
 		}
 
-		if (aabb_collision(pos_x, pos_y, size_x, size_y, map_obj->pos_x, map_obj->pos_y, map_obj->size_x, map_obj->size_y)) {
+		if (aabb_collision(aabb, obj_aabb)) {
 			return true;
 
 		}
@@ -186,21 +199,22 @@ bool map_collision(float pos_x, float pos_y, float size_x, float size_y, const M
 
 }
 
-bool map_collision_w_movement(float pos_x, float pos_y, float size_x, float size_y, float distance, float angle, const Map* map) {
-	if (map_oob(pos_x + (cosf(angle) * distance), pos_y + (sinf(angle) * distance), size_x, size_y, map)) {
+bool map_collision_w_movement(AABB aabb, float distance, float angle, const Map* map) {
+	if (map_oob(aabb, map)) {
 		return true;
 
 	}
 
 	for (uint16_t i = 0; i < map->num_objects; i += 1) {
 		const MapObject* map_obj = &map->objects[i];
+		const AABB obj_aabb = map_object_to_aabb(map_obj);
 
 		if (!map_obj->collidable) {
 			continue;
 
 		}
 
-		if (aabb_collision_w_movement(pos_x, pos_y, size_x, size_y, map_obj->pos_x, map_obj->pos_y, map_obj->size_x, map_obj->size_y, distance, angle)) {
+		if (aabb_collision_w_movement(aabb, obj_aabb, distance, angle)) {
 			return true;
 
 		}
