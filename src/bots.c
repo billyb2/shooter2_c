@@ -106,7 +106,6 @@ Bot* new_bot(const char* bot_file, Ability* ability, Weapon* weapon) {
 	*ability = bot_info->ability;
 	*weapon = bot_info->weapon;
 
-
 	Bot* bot = malloc(sizeof(Bot));
 	bot->rt = rt;
 
@@ -139,58 +138,19 @@ void run_bots(Player* players, uint8_t num_players, const Map* map) {
 		}
 
 
-		BotActions bot_actions;
-		m3_GetResultsV(bot_actions_fn, &bot_actions);
+		uint64_t bot_actions_ptr;
+		m3_GetResultsV(bot_actions_fn, &bot_actions_ptr);
 
-		PlayerMovementInfo movement_info = {
-			.x_axis = NoneX,
-			.y_axis = NoneY,
+		BotActions* bot_actions = (BotActions*)&get_bot_wasm_memory(player->bot_data->rt)[bot_actions_ptr];
 
-		};
-		
-		
-		switch (bot_actions.direction) {
-			case W:
-				movement_info.x_axis = Left;
-				break;
+		if (bot_actions->using_ability) {
+			use_ability(player, map);
 
-			case E:
-				movement_info.x_axis = Right;
-				break;
+		}
 
-			case N:
-				movement_info.y_axis = Up;
-				break;
-
-			case S:
-				movement_info.y_axis = Down;
-				break;
-
-			case NE:
-				movement_info.x_axis = Right;
-				movement_info.y_axis = Up;
-				break;
-
-			case NW:
-				movement_info.x_axis = Left;
-				movement_info.y_axis = Up;
-				break;
-
-			case SE:
-				movement_info.x_axis = Right;
-				movement_info.y_axis = Down;
-				break;
-
-			case SW:
-				movement_info.x_axis = Left;
-				movement_info.y_axis = Down;
-				break;
-
-		};
-
-		move_player(player,	movement_info, map);
-		player->shooting = bot_actions.shooting;
-		player->direction = bot_actions.direction;
+		player->shooting = bot_actions->shooting;
+		player->direction = bot_actions->angle;
+		move_player(player,	bot_actions->movement_info, map);
 
 	}
 }

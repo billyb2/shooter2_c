@@ -6,6 +6,7 @@
 
 #include "include/raylib.h"
 
+#include "minimal_state_info.h"
 #include "player.h"
 #include "input.h"
 #include "math.h"
@@ -24,28 +25,37 @@ void keyboard_input(Player* player, const KeyBindings* key_bindings, const Map* 
 		
 	}
 
-	PlayerMovementInfo movement_info = {
-		.x_axis = NoneX,
-		.y_axis = NoneY,
-
-	};
+	float y_axis = 0.0;
+	float x_axis = 0.0;
+	
 
 	// Movement input
 	if (IsKeyDown(key_bindings->up)) {
-		movement_info.y_axis = Up;
+		y_axis = -1.0;
 	}
 
 	if (IsKeyDown(key_bindings->down)) {
-		movement_info.y_axis = Down;
+		y_axis = 1.0;
 
 	}
 
 	if (IsKeyDown(key_bindings->left)) {
-		movement_info.x_axis = Left;
+		x_axis = -1.0;
 	}
 
 	if (IsKeyDown(key_bindings->right)) {
-		movement_info.x_axis = Right;
+		x_axis = 1.0;
+
+	}
+
+	PlayerMovementInfo movement_info;
+
+	if (x_axis == 0.0 && y_axis == 0.0) {
+		movement_info.moving = false;
+
+	} else {
+		movement_info.moving = true;
+		movement_info.angle = atan2f(y_axis, x_axis);
 
 	}
 
@@ -121,7 +131,7 @@ void keyboard_input(Player* player, const KeyBindings* key_bindings, const Map* 
 }
 
 void controller_input(Player* player, const Map* map, int gamepad_id) {
-	PlayerMovementInfo movement_info = {
+	/*PlayerMovementInfo movement_info = {
 		.x_axis = NoneX,
 		.y_axis = NoneY,
 
@@ -181,6 +191,7 @@ void controller_input(Player* player, const Map* map, int gamepad_id) {
 
 	}
 
+	*/
 }
 
 void player_input(Player* player, const KeyBindings* key_bindings, const Map* map, bool using_keyboard) {
@@ -194,6 +205,3 @@ void player_input(Player* player, const KeyBindings* key_bindings, const Map* ma
 	}
 
 }
-
-
-

@@ -8,6 +8,10 @@
 // Generic math babyyyy
 #define saturating_sub(x, y) ( (x < y) ? 0 : (x - y) );
 
+#ifdef WASM
+float atanf(float x);
+#endif
+
 typedef struct AABB {
 	float left_edge;
 	float right_edge;

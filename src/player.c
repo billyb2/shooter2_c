@@ -168,15 +168,16 @@ void use_ability(Player* player, const Map* map) {
 
 			}
 
-			float potential_x = player->pos_x + cosf(player->direction) * TELEPORATION_SPEED;
-			float potential_y = player->pos_y + sinf(player->direction) * TELEPORATION_SPEED;
+			player->pos_x += cosf(player->direction) * TELEPORATION_SPEED;
+			player->pos_y += sinf(player->direction) * TELEPORATION_SPEED;
 
 			if (!map_collision(player_to_aabb(player), map)) {
-				player->pos_x = potential_x;
-				player->pos_y = potential_y;
-
 				player->using_ability = true;
 				player->ability_charge = saturating_sub(player->ability_charge, half_max_ability_charge);
+
+			} else {
+				player->pos_x -= cosf(player->direction) * TELEPORATION_SPEED;
+				player->pos_y -= sinf(player->direction) * TELEPORATION_SPEED;
 
 			}
 
@@ -241,46 +242,27 @@ void move_player(Player* player, PlayerMovementInfo movement_info, const Map* ma
 
 	}
 
-	if (movement_info.x_axis == Left) {
-		player->pos_x = saturating_sub(player->pos_x, player->speed);
-
-		if (map_collision(player_to_aabb(player), map)) {
-			player->pos_x += player->speed;
-
-		}
+	if (!movement_info.moving) {
+		return;
 
 	}
 
-	if (movement_info.x_axis == Right) {
-		player->pos_x += player->speed;
+	float x_movement = cosf(movement_info.angle) * player->speed;
+	float y_movement = sinf(movement_info.angle) * player->speed;
 
-		if (map_collision(player_to_aabb(player), map)) {
-			player->pos_x -= player->speed;
+	player->pos_x += x_movement;
 
-		}
-	
-	}
-
-	if (movement_info.y_axis == Up) {
-		player->pos_y = saturating_sub(player->pos_y, player->speed);
-
-		if (map_collision(player_to_aabb(player), map)) {
-			player->pos_y += player->speed;
-
-		}
+	if (map_collision(player_to_aabb(player), map)) {
+		player->pos_x -= x_movement;
 
 	}
 
-	if (movement_info.y_axis == Down) {
-		player->pos_y += player->speed;
+	player->pos_y += y_movement;
 
-		if (map_collision(player_to_aabb(player), map)) {
-			player->pos_y -= player->speed;
+	if (map_collision(player_to_aabb(player), map)) {
+		player->pos_y -= y_movement;
 
-		}
-
-	}	
-
+	}
 
 }
 

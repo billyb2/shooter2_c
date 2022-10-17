@@ -13,16 +13,16 @@ typedef struct __attribute__((__packed__)) BotInfo {
 } BotInfo;
 
 typedef struct __attribute__((__packed__)) BotActions {
-	uint8_t direction;
 	bool shooting;
 	bool using_ability;
-	uint8_t _padding0;
+	uint16_t _padding;
 	float angle;
+	PlayerMovementInfo movement_info;
 
 } BotActions;
 
 #ifndef WASM 
-static_assert(sizeof(BotActions) == 8, "BotActions is the wrong size");
+static_assert(sizeof(BotActions) % 8 == 0, "BotActions is the wrong size");
 static_assert(sizeof(BotInfo) == 24, "BotInfo is the wrong size");
 #endif
 

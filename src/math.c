@@ -1,16 +1,10 @@
 #include <stdint.h>
 #include "math.h"
+
 #ifndef WASM
 #include <math.h>
 #endif
 
-#ifndef WASM
-#include <stdlib.h>
-# else
-#define NULL 0
-#endif
-
-#ifndef WASM
 float get_angle(float cx, float cy, float ex, float ey) {
 	float dy = ey - cy;
 	float dx = ex - cx;
@@ -54,7 +48,6 @@ bool aabb_collision_w_movement(AABB aabb1, AABB aabb2, float aabb1_distance, flo
 	return aabb_collision(aabb1, aabb2);
 
 }
-#endif
 
 
 bool aabb_collision(AABB aabb1, AABB aabb2) {

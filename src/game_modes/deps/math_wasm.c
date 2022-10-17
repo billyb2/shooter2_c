@@ -1,0 +1,1 @@
+../../wasm_deps/math_wasm.c
