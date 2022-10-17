@@ -231,3 +231,9 @@ pub unsafe fn spawn_player() -> u32 {
     
 }
 
+#[no_mangle]
+pub fn team_killing() -> u32 {
+    false as u32
+
+}
+

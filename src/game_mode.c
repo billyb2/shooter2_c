@@ -48,6 +48,18 @@ uint64_t get_num_drawable_objects(IM3Runtime rt) {
 
 }
 
+bool team_kill(IM3Runtime rt) {
+	IM3Function team_kills_fn;
+	m3_FindFunction(&team_kills_fn, rt, "team_killing");
+	m3_CallV(team_kills_fn);
+
+	uint32_t team_kills;
+	m3_GetResultsV(team_kills_fn, &team_kills);
+
+	return (bool)team_kills;
+
+}
+
 uint8_t* get_wasm_memory(IM3Runtime rt) {
 	return m3_GetMemory(rt, NULL, 0);
 

@@ -47,5 +47,6 @@ bool add_player_to_team(Player* player, const Map* map, GameModeData* game_mode_
 Team* find_team_of_id(uint64_t team_id, GameModeData* game_mode_data);
 void sync_players_to_teams(Player* players, uint8_t num_players, GameModeData* game_mode_data);
 uint64_t get_num_drawable_objects(IM3Runtime rt);
+bool team_kill(IM3Runtime rt);
 
 #endif

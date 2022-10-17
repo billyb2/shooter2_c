@@ -201,7 +201,7 @@ void run_in_game_state(GamePage* game_page, GameState* game_state) {
 	run_bots(in_game_state->players, in_game_state->num_players, &in_game_state->map);
 	handle_networking(&in_game_state->network_info, in_game_state->players, in_game_state->num_players, &in_game_state->game_mode_data, &in_game_state->map);
 	use_weapons(in_game_state->players, in_game_state->num_players, &in_game_state->projectiles, &in_game_state->num_projectiles);
-	update_projectiles(&in_game_state->projectiles, &in_game_state->num_projectiles, in_game_state->players, in_game_state->num_players, &in_game_state->map);
+	update_projectiles(&in_game_state->projectiles, &in_game_state->num_projectiles, in_game_state->players, in_game_state->num_players, &in_game_state->map, &in_game_state->game_mode_data);
 	move_camera(&in_game_state->camera, &in_game_state->map, in_game_state->players[0].pos_x, in_game_state->players[0].pos_y);
 
 	respawn_players(in_game_state->players, in_game_state->num_players, &in_game_state->map, &in_game_state->game_mode_data);

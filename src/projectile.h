@@ -22,10 +22,11 @@ typedef struct Projectile {
 	ProjectileType projectile_type;
 
 	uint64_t shot_by;
+	uint64_t shot_by_team;
 
 } Projectile;
 
-void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Player* players, uint8_t num_players, const Map* map);
+void update_projectiles(Projectile** projectiles, uint16_t* num_projectiles, Player* players, uint8_t num_players, const Map* map, GameModeData* game_mode_data);
 void use_weapons(Player* players, uint8_t num_players, Projectile** projectiles, uint16_t* num_projectiles);
 uint8_t get_ammo_count(Weapon weapon);
 void add_kill(Player* players, uint8_t num_players, Player* player_who_died);

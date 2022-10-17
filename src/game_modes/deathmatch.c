@@ -89,3 +89,7 @@ void set_player_stats(void) {
 
 }
 
+uint32_t team_killing(void) {
+	return (uint32_t)false;
+
+}
