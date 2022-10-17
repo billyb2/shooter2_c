@@ -28,35 +28,64 @@ BotActions ACTIONS = {
 uint64_t bot_actions(void) {
 	const MinimalPlayerInfo* my_player = NULL;
 	const MinimalPlayerInfo* enemy_player = NULL;
+	float enemy_player_distance2 = 0.0;
 
-	// Find the first player that isn't my player and isn't on my team
+	// First, find my player (TODO: Just copy this over)
 	for (const MinimalTeamInfo* team = TEAMS; team < TEAMS + NUM_TEAMS; team += 1) {
 		for (const MinimalPlayerInfo* player = team->players; player < team->players + team->num_players; player += 1) {
 			if (player->id == MY_PLAYER_ID) {
 				my_player = player;
-				continue;
-
-			} else if(player->health > 0) {	
-				enemy_player = player;
-
-			}
-
-			if (my_player != NULL && enemy_player != NULL) {
 				break;
 
 			}
 		}
 	}
 
+
+	// Next, find the closest enemy player
+	for (const MinimalTeamInfo* team = TEAMS; team < TEAMS + NUM_TEAMS; team += 1) {
+		if (team->id == my_player->team_id) {
+			continue;
+
+		}
+		
+		for (const MinimalPlayerInfo* player = team->players; player < team->players + team->num_players; player += 1) {
+			if (enemy_player == NULL) {
+				enemy_player = player;
+				enemy_player_distance2 = distance2(my_player->pos_x, my_player->pos_y, enemy_player->pos_x, enemy_player->pos_y);
+
+			} else {
+				float distance = distance2(my_player->pos_x, my_player->pos_y, enemy_player->pos_x, enemy_player->pos_y);
+
+				if (distance < enemy_player_distance2) {
+					enemy_player = player;
+					enemy_player_distance2 = distance;
+
+				}
+
+			}
+			
+		}
+	}
+
 	if (enemy_player != NULL) {
 		float angle = get_angle(enemy_player->pos_x, enemy_player->pos_y, my_player->pos_x, my_player->pos_y);
-		
-		ACTIONS.movement_info.angle = angle;
-		ACTIONS.movement_info.moving = true;
-
 		ACTIONS.angle = angle;
-		ACTIONS.using_ability = true;
-		ACTIONS.shooting = true;
+		
+		if (enemy_player_distance2 > 2500.0) {
+			ACTIONS.movement_info.angle = angle;
+			ACTIONS.movement_info.moving = true;
+
+			if (enemy_player_distance2 > 5000.0) {
+				ACTIONS.using_ability = true;
+
+			}
+
+		} else {
+			ACTIONS.shooting = true;
+
+		}
+
 
 	}	
 
