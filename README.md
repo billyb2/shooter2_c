@@ -1,7 +1,5 @@
 # Shooter2_C
 
-shooter2_c is a proejct i builtha allows users towrite bots in ay language that cna compile down to WASM, and have those bots fight to the death!
-
 ## Build instructions
 ### Linux
 You'll need the following packages
